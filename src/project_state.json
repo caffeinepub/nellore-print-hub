@@ -1,0 +1,360 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 9,
+  "summary": "Business website for Nellore Print Hub (Magic Advertising) - a printing and design services company offering digital printing, flex/banner printing, offset printing, and creative design services with manual quotation system, flexible payment options, and local delivery.",
+  "architectural_notes": [
+    "Manual quotation workflow requiring admin review before customer notification",
+    "Multi-channel notification system (mobile and email) for quotation delivery",
+    "Role-based access control with admin-only permissions for content management",
+    "Payment gateway integration with flexible payment split options",
+    "Distance-based delivery fee calculation system",
+    "Customer-facing quotation response system with accept/reject workflow",
+    "Negotiation messaging system between customer and admin",
+    "Admin dashboard with real-time quotation status tracking and statistics",
+    "Office location display triggered post-approval",
+    "Real-time chat system for customer-owner communication"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-homepage-with-a-hero-section-displaying-the-headline-your-vision-our-print-quality-you-can-see-service-you-can-trust-and-sub-headline-from-business-cards-to-massive-flex-banners-nellore-print-hub-delivers-premium-printing-and-design-solutions-tailored-to-your-brand-fast-reliable-and-professional-include-a-prominent-call-to-action-button",
+      "title": "Create a homepage with a hero section displaying the headline 'Your Vision, Our Print. Quality You Can See, Service You Can Trust.' and sub-headline 'From business cards to massive flex banners, Nellore Print Hub delivers premium printing and design solutions tailored to your brand. Fast, reliable, and professional.' Include a prominent call-to-action button.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-about-us-page-with-main-text-welcome-to-nellore-print-hub-where-your-brand-s-identity-takes-physical-form-we-specialize-in-high-quality-digital-offset-and-flex-printing-backed-by-the-creative-expertise-of-magic-advertising-our-mission-is-to-provide-businesses-with-top-tier-marketing-materials-that-leave-a-lasting-impression-include-a-why-choose-us-section-with-three-bullet-points-expert-design-we-don-t-just-print-we-create-digital-assets-that-sell-modern-technology-utilizing-the-latest-in-digital-and-offset-machinery-and-customer-focused-easy-manual-quotations-and-direct-delivery-to-your-mobile-or-email",
+      "title": "Create an About Us page with main text 'Welcome to Nellore Print Hub, where your brand's identity takes physical form. We specialize in high-quality digital, offset, and flex printing, backed by the creative expertise of Magic Advertising. Our mission is to provide businesses with top-tier marketing materials that leave a lasting impression.' Include a 'Why Choose Us?' section with three bullet points: 'Expert Design: We don't just print; we create digital assets that sell.', 'Modern Technology: Utilizing the latest in digital and offset machinery.', and 'Customer Focused: Easy manual quotations and direct delivery to your mobile or email.'",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-services-page-with-four-service-categories-digital-printing-with-items-high-quality-flyers-leaflets-professional-business-cards-custom-books-magazines-official-letterheads-envelopes-flex-banner-printing-with-items-normal-star-banners-premium-flex-printing-canvas-prints-vinyl-black-grey-backing-custom-die-cut-stickers-offset-printing-with-items-bulk-flyers-magazines-1-2-4-color-printing-newspaper-printing-books-and-creative-design-services-with-items-professional-logo-design-company-digital-product-design-social-media-graphics-custom-templates-each-category-must-include-its-specific-description-and-tagline-as-provided",
+      "title": "Create a Services page with four service categories: Digital Printing (with items: High-quality Flyers & Leaflets, Professional Business Cards, Custom Books & Magazines, Official Letterheads & Envelopes), Flex & Banner Printing (with items: Normal & Star Banners, Premium Flex Printing, Canvas Prints, Vinyl Black/Grey Backing, Custom Die-cut Stickers), Offset Printing (with items: Bulk Flyers & Magazines, 1/2/4 Color Printing, Newspaper Printing & Books), and Creative Design Services (with items: Professional Logo Design, Company Digital Product Design, Social Media Graphics, Custom Templates). Each category must include its specific description and tagline as provided.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-quotation-request-system-where-users-can-1-select-a-service-type-digital-banner-offset-or-design-2-submit-a-deadline-date-3-provide-project-details-in-a-text-field-store-quotation-requests-in-the-backend-with-fields-for-service-type-deadline-project-details-customer-contact-information-mobile-number-and-email-status-pending-reviewed-approved-and-timestamp",
+      "title": "Create a quotation request system where users can: 1) Select a service type (Digital, Banner, Offset, or Design), 2) Submit a deadline date, 3) Provide project details in a text field. Store quotation requests in the backend with fields for service type, deadline, project details, customer contact information (mobile number and email), status (pending/reviewed/approved), and timestamp.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-only-quotation-management-interface-where-administrators-can-view-all-pending-quotation-requests-manually-create-and-attach-custom-quotation-details-price-description-terms-and-mark-quotations-as-approved-when-a-quotation-is-approved-the-system-should-record-the-approval-timestamp",
+      "title": "Create an admin-only quotation management interface where administrators can view all pending quotation requests, manually create and attach custom quotation details (price, description, terms), and mark quotations as approved. When a quotation is approved, the system should record the approval timestamp.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-quotation-information-including-notification-delivery-details-on-the-quotation-confirmation-page-showing-that-quotes-will-be-sent-to-the-customer-s-provided-mobile-number-and-email-include-a-section-explaining-the-three-payment-options-50-deposit-100-upfront-payment-or-custom-agreed-upon-amount-with-a-note-that-payment-is-enabled-after-quotation-approval",
+      "title": "Display quotation information including notification delivery details on the quotation confirmation page, showing that quotes will be sent to the customer's provided Mobile Number and Email. Include a section explaining the three payment options: 50% deposit, 100% upfront payment, or custom agreed-upon amount, with a note that payment is enabled after quotation approval.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-delivery-information-page-explaining-that-local-delivery-is-available-within-a-35-km-radius-with-transparent-per-kilometer-pricing-include-a-simple-distance-based-delivery-fee-calculator-where-users-can-input-their-distance-to-see-estimated-delivery-cost",
+      "title": "Create a delivery information page explaining that local delivery is available within a 35 km radius with transparent per-kilometer pricing. Include a simple distance-based delivery fee calculator where users can input their distance to see estimated delivery cost.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-project-gallery-that-displays-previous-work-with-project-images-titles-and-descriptions-store-project-data-in-the-backend-with-fields-for-image-url-title-description-category-digital-flex-offset-design-and-date-completed-implement-admin-only-capabilities-to-add-edit-and-delete-project-entries",
+      "title": "Create a project gallery that displays previous work with project images, titles, and descriptions. Store project data in the backend with fields for image URL, title, description, category (digital/flex/offset/design), and date completed. Implement admin-only capabilities to add, edit, and delete project entries.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-customer-review-system-where-users-can-submit-reviews-with-optional-project-photos-store-reviews-in-the-backend-with-fields-for-customer-name-review-text-rating-1-5-stars-optional-image-url-project-type-and-submission-date-display-reviews-on-a-dedicated-testimonials-page-with-the-ability-to-filter-by-rating-or-project-type",
+      "title": "Create a customer review system where users can submit reviews with optional project photos. Store reviews in the backend with fields for customer name, review text, rating (1-5 stars), optional image URL, project type, and submission date. Display reviews on a dedicated testimonials page with the ability to filter by rating or project type.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-authentication-using-internet-identity-to-secure-all-administrative-functions-including-quotation-management-project-gallery-editing-and-site-content-management-only-authenticated-admin-users-can-access-these-protected-routes-and-functions",
+      "title": "Implement admin authentication using Internet Identity to secure all administrative functions including quotation management, project gallery editing, and site content management. Only authenticated admin users can access these protected routes and functions.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-design-a-professional-print-industry-appropriate-visual-theme-for-the-entire-website-with-a-color-palette-that-evokes-trust-creativity-and-quality-use-typography-that-balances-professionalism-with-approachability-the-design-should-feel-modern-yet-established-with-layout-patterns-that-guide-users-through-the-quotation-and-service-selection-process-apply-this-theme-consistently-across-all-pages-including-hero-sections-service-displays-forms-and-galleries",
+      "title": "Design a professional, print-industry-appropriate visual theme for the entire website with a color palette that evokes trust, creativity, and quality. Use typography that balances professionalism with approachability. The design should feel modern yet established, with layout patterns that guide users through the quotation and service selection process. Apply this theme consistently across all pages including hero sections, service displays, forms, and galleries.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-a-quotation-is-approved-display-the-company-office-location-to-the-customer-on-the-quotation-confirmation-page-or-in-a-follow-up-view-accessible-to-authenticated-users",
+      "title": "After a quotation is approved, display the company office location to the customer on the quotation confirmation page or in a follow-up view accessible to authenticated users",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-capability-to-upload-and-change-the-company-logo-storing-the-logo-as-a-blob-in-the-backend-and-displaying-it-in-the-header-navigation-across-all-pages",
+      "title": "Implement admin capability to upload and change the company logo, storing the logo as a blob in the backend and displaying it in the header navigation across all pages",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-dashboard-page-showing-quotation-statistics-including-counts-for-pending-quotations-completed-quotations-customer-accepted-quotations-and-customer-rejected-quotations",
+      "title": "Create an admin dashboard page showing quotation statistics including counts for pending quotations, completed quotations, customer-accepted quotations, and customer-rejected quotations",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-customer-facing-quotation-response-page-where-authenticated-customers-can-view-their-approved-quotations-and-respond-with-accept-reject-or-negotiate-actions",
+      "title": "Create a customer-facing quotation response page where authenticated customers can view their approved quotations and respond with accept, reject, or negotiate actions",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-notification-instructions-on-the-quotation-confirmation-page-explaining-that-customers-will-receive-a-message-or-email-when-the-owner-sends-the-approved-quotation-with-options-to-accept-reject-or-negotiate",
+      "title": "Display notification instructions on the quotation confirmation page explaining that customers will receive a message or email when the owner sends the approved quotation, with options to accept, reject, or negotiate",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-negotiation-message-system-to-quotation-requests-allowing-customers-to-submit-counter-offer-messages-and-admins-to-view-and-respond-to-negotiation-messages",
+      "title": "Add a negotiation message system to quotation requests allowing customers to submit counter-offer messages and admins to view and respond to negotiation messages",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-or-hide-the-login-logout-button-and-authentication-ui-elements-from-all-customer-facing-pages-homepage-aboutpage-servicespage-projectgallerypage-testimonialspage-deliveryinfopage-quotationrequestpage-quotationconfirmationpage-keep-authentication-functional-in-the-background-for-pages-that-require-it-myquotationspage-quotationresponsepage-but-do-not-display-login-logout-controls-to-regular-customers",
+      "title": "Remove or hide the login/logout button and authentication UI elements from all customer-facing pages (HomePage, AboutPage, ServicesPage, ProjectGalleryPage, TestimonialsPage, DeliveryInfoPage, QuotationRequestPage, QuotationConfirmationPage). Keep authentication functional in the background for pages that require it (MyQuotationsPage, QuotationResponsePage), but do not display login/logout controls to regular customers.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-chat-system-that-allows-customers-to-send-messages-to-the-owner-for-questions-about-the-site-or-personal-inquiries-store-chat-messages-in-the-backend-with-fields-for-sender-name-sender-email-message-text-timestamp-and-reply-status-provide-a-persistent-chat-interface-accessible-from-all-customer-pages",
+      "title": "Create a chat system that allows customers to send messages to the owner for questions about the site or personal inquiries. Store chat messages in the backend with fields for sender name, sender email, message text, timestamp, and reply status. Provide a persistent chat interface accessible from all customer pages.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-chat-management-interface-where-the-owner-can-view-all-customer-chat-messages-mark-them-as-read-and-send-replies-display-messages-in-chronological-order-with-customer-contact-information-visible",
+      "title": "Create an admin chat management interface where the owner can view all customer chat messages, mark them as read, and send replies. Display messages in chronological order with customer contact information visible.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-chat-icon-or-button-in-a-fixed-position-such-as-bottom-right-corner-on-all-customer-pages-that-opens-the-chat-interface-when-clicked-the-interface-should-allow-customers-to-type-and-send-messages-without-requiring-authentication",
+      "title": "Add a chat icon or button in a fixed position (such as bottom-right corner) on all customer pages that opens the chat interface when clicked. The interface should allow customers to type and send messages without requiring authentication.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-only-login-page-that-is-only-visible-and-accessible-to-admin-users-this-page-should-provide-login-options-for-email-password-authentication-and-biometric-authentication-display-a-login-form-with-email-and-password-fields-and-include-a-biometric-login-button-that-triggers-device-level-biometric-verification",
+      "title": "Create an admin-only login page that is only visible and accessible to admin users. This page should provide login options for email/password authentication and biometric authentication. Display a login form with email and password fields, and include a biometric login button that triggers device-level biometric verification.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-user-management-interface-page-where-authenticated-admins-can-view-the-list-of-all-admin-users-invite-new-admin-partners-by-email-and-manage-admin-access-display-admin-users-with-their-email-invitation-status-and-invitation-date-provide-a-form-to-send-new-admin-invitations",
+      "title": "Create an admin user management interface page where authenticated admins can view the list of all admin users, invite new admin partners by email, and manage admin access. Display admin users with their email, invitation status, and invitation date. Provide a form to send new admin invitations.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-frontend-biometric-authentication-flow-using-the-web-authentication-api-webauthn-when-the-biometric-login-button-is-clicked-initiate-device-level-biometric-verification-fingerprint-face-id-touch-id-and-send-verification-results-to-the-backend-for-authentication-handle-browser-compatibility-and-provide-appropriate-error-messages-if-biometric-hardware-is-not-available",
+      "title": "Implement frontend biometric authentication flow using the Web Authentication API (WebAuthn). When the biometric login button is clicked, initiate device-level biometric verification (fingerprint, Face ID, Touch ID) and send verification results to the backend for authentication. Handle browser compatibility and provide appropriate error messages if biometric hardware is not available.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-layout-component-and-admin-navigation-to-hide-the-existing-internet-identity-login-button-from-regular-admin-pages-and-replace-it-with-a-link-to-the-new-admin-only-email-password-biometric-login-page-ensure-the-new-login-option-is-only-visible-on-admin-routes",
+      "title": "Update the Layout component and admin navigation to hide the existing Internet Identity login button from regular admin pages and replace it with a link to the new admin-only email/password/biometric login page. Ensure the new login option is only visible on admin routes.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Homepage with hero section featuring headline, sub-headline, and call-to-action",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "About Us page with company mission, expertise highlights, and why choose us section",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Services page showcasing digital printing, flex/banner printing, offset printing, and creative design services with detailed descriptions",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Manual quotation system: service selection, deadline submission, manual review process, and notification delivery to mobile/email",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Payment system with flexible options (50% deposit, 100% upfront, custom amounts) enabled after quotation approval",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Delivery information system with 35 km radius coverage and per-kilometer pricing calculator",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Project gallery displaying previous work with admin-only edit capabilities",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Customer review system allowing reviews with project photos",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Admin panel with secure access control for managing site content and project photos",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Display office location to customer after quotation approval",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Admin capability to change/upload company logo",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Admin dashboard showing quotation statistics (pending, completed, accepted, rejected counts)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Customer notification system with accept/reject options and negotiation capability via message or email",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Extend the quotation data model in the backend to include a customer response status field with values: pending_customer_response, accepted, rejected, and negotiating",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Remove or hide login/logout option on customer pages",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Create chat system for customers to communicate with owner for site-related or personal inquiries",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Admin user management system allowing admins to invite and share website access with other partners",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Create admin-only visible login option with email/password and biometric authentication support",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Create a new admin user management system in the backend that allows existing admins to invite and share website access with other partners. Store invited admin users with fields for email, hashed password, biometric registration status, invitation status (pending/accepted), invited by (admin principal), and invitation timestamp.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Implement email and password authentication for admin users in the backend. Support password hashing for secure storage, password verification on login attempts, and return authentication tokens or principals on successful authentication. This authentication method should work alongside the existing Internet Identity authentication.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Add biometric authentication registration and verification capability in the backend. Store biometric template data or registration status for admin users who enable biometric login. Provide backend functions to register biometric credentials and verify biometric authentication attempts.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Nellore Print Hub",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

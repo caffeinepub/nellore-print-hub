@@ -1,0 +1,113 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-24T02:41:03.725Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 7,
+    "implemented": 4,
+    "items": [
+      {
+        "id": "REQ-23",
+        "summary": "Create a new admin user management system in the backend that allows existing admins to invite and share website access with other partners. Store invited admin users with fields for email, hashed password, biometric registration status, invitation status (pending/accepted), invited by (admin principal), and invitation timestamp.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-24",
+        "summary": "Implement email and password authentication for admin users in the backend. Support password hashing for secure storage, password verification on login attempts, and return authentication tokens or principals on successful authentication. This authentication method should work alongside the existing Internet Identity authentication.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-25",
+        "summary": "Add biometric authentication registration and verification capability in the backend. Store biometric template data or registration status for admin users who enable biometric login. Provide backend functions to register biometric credentials and verify biometric authentication attempts.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-26",
+        "summary": "Create an admin-only login page that is only visible and accessible to admin users. This page should provide login options for email/password authentication and biometric authentication. Display a login form with email and password fields, and include a biometric login button that triggers device-level biometric verification.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/hooks/useAdminAuth.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/hooks/useAdminAuth.ts"
+        ]
+      },
+      {
+        "id": "REQ-27",
+        "summary": "Create an admin user management interface page where authenticated admins can view the list of all admin users, invite new admin partners by email, and manage admin access. Display admin users with their email, invitation status, and invitation date. Provide a form to send new admin invitations.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/admin/AdminUserManagementPage.tsx",
+          "frontend/src/hooks/useAdminInvitations.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/admin/AdminUserManagementPage.tsx",
+          "frontend/src/hooks/useAdminInvitations.ts"
+        ]
+      },
+      {
+        "id": "REQ-28",
+        "summary": "Implement frontend biometric authentication flow using the Web Authentication API (WebAuthn). When the biometric login button is clicked, initiate device-level biometric verification (fingerprint, Face ID, Touch ID) and send verification results to the backend for authentication. Handle browser compatibility and provide appropriate error messages if biometric hardware is not available.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useBiometricAuth.ts",
+          "frontend/src/utils/webauthn.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useBiometricAuth.ts",
+          "frontend/src/utils/webauthn.ts"
+        ]
+      },
+      {
+        "id": "REQ-29",
+        "summary": "Update the Layout component and admin navigation to hide the existing Internet Identity login button from regular admin pages and replace it with a link to the new admin-only email/password/biometric login page. Ensure the new login option is only visible on admin routes.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/App.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useAdminAuth.ts",
+    "frontend/src/hooks/useAdminInvitations.ts",
+    "frontend/src/hooks/useBiometricAuth.ts",
+    "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/src/pages/admin/AdminUserManagementPage.tsx",
+    "frontend/src/utils/webauthn.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

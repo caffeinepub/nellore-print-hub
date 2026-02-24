@@ -1,0 +1,98 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Add admin user management and email/password authentication with biometric support",
+  "requirements": [
+    {
+      "id": "REQ-26",
+      "summary": "Create an admin-only login page with email/password and biometric authentication options",
+      "acceptanceCriteria": [
+        "Admin login page is created and only accessible via admin routes",
+        "Page displays email and password input fields",
+        "Page includes a biometric login button",
+        "Login form submission calls backend authentication",
+        "Successful login redirects to admin dashboard"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "operation": "create",
+          "description": "Create admin login page component with email/password form fields and biometric login button. Include form validation, loading states, and error handling. On successful authentication, redirect to /admin route. Use shadcn/ui components (Card, Input, Button, Label) for consistent styling."
+        },
+        {
+          "path": "frontend/src/hooks/useAdminAuth.ts",
+          "operation": "create",
+          "description": "Create React Query mutation hooks for admin authentication. Implement useVerifyEmailPassword hook that calls backend verifyAuthentication with email and hashed password. Include error handling and success callbacks. Hash passwords client-side before sending to backend using Web Crypto API."
+        }
+      ]
+    },
+    {
+      "id": "REQ-27",
+      "summary": "Create an admin user management interface for viewing and inviting admin users",
+      "acceptanceCriteria": [
+        "Admin user management page displays all admin users in a table or list",
+        "Each admin entry shows email, status, and invitation details",
+        "Form to invite new admin by email address",
+        "Invitation submission calls backend to create new admin invitation",
+        "Success/error feedback is displayed to the user"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/admin/AdminUserManagementPage.tsx",
+          "operation": "create",
+          "description": "Create admin user management page displaying list of all admin users with email, biometric registration status, invitation timestamp, and invited-by information. Include form dialog for inviting new admins with email and password fields. Wrap page with AdminGuard component. Use shadcn/ui Table component for admin list and Dialog component for invite form."
+        },
+        {
+          "path": "frontend/src/hooks/useAdminInvitations.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for admin invitation management. Implement useGetAdminInvitations hook to fetch all admin invitation entries from backend. Implement useInviteAdminUser mutation hook that calls backend inviteAdminUser with email and hashed password. Include query invalidation on successful invitation creation. Hash passwords client-side before submission."
+        }
+      ]
+    },
+    {
+      "id": "REQ-28",
+      "summary": "Implement frontend biometric authentication flow using Web Authentication API",
+      "acceptanceCriteria": [
+        "Biometric login button triggers WebAuthn authentication flow",
+        "Device-level biometric prompt is displayed to user",
+        "Authentication result is sent to backend for verification",
+        "Successful biometric auth grants admin access",
+        "Error handling for unsupported browsers or hardware"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useBiometricAuth.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for biometric authentication. Implement useBiometricLogin hook that initiates WebAuthn authentication flow using navigator.credentials.get() with publicKey challenge. Handle browser compatibility checks and provide error messages for unsupported devices. On successful biometric verification, call backend registerBiometric or verifyAuthentication. Include useRegisterBiometric mutation hook for initial biometric registration."
+        },
+        {
+          "path": "frontend/src/utils/webauthn.ts",
+          "operation": "create",
+          "description": "Create utility functions for WebAuthn operations. Implement functions to check browser support for Web Authentication API, generate credential creation options, handle credential registration, and verify authentication assertions. Include helper functions to convert between ArrayBuffer and base64 for credential transmission. Add error handling for various WebAuthn error scenarios (NotAllowedError, NotSupportedError, etc.)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-29",
+      "summary": "Update Layout component to show admin email/password login instead of Internet Identity on admin routes",
+      "acceptanceCriteria": [
+        "Internet Identity login button is hidden on admin pages",
+        "New admin login link is displayed only on admin routes",
+        "Login link navigates to the new admin login page",
+        "Regular customer pages remain unaffected"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Update Layout component to conditionally render login UI based on current route. Use useLocation hook to detect admin routes. When on admin routes (paths starting with '/admin'), replace the existing Internet Identity LoginButton with a link to /admin/login. Keep LoginButton visible on non-admin pages. Ensure mobile menu also reflects these changes."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Add route registration for AdminLoginPage at path /admin/login. Add route registration for AdminUserManagementPage at path /admin/users. Ensure both routes use Layout wrapper. No authentication guard needed for /admin/login (public admin login), but wrap /admin/users with AdminGuard component."
+        }
+      ]
+    }
+  ]
+}
