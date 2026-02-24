@@ -1,60 +1,35 @@
-/**
- * Utility class for handling blob storage URLs
- * Provides methods to work with blob URLs stored in the backend
- */
+import { ExternalBlob as BackendExternalBlob } from '../backend';
+
 export class ExternalBlob {
-  private url: string;
-  private progressCallback?: (percentage: number) => void;
+  private blob: BackendExternalBlob;
 
-  private constructor(url: string) {
-    this.url = url;
+  constructor(blob: BackendExternalBlob) {
+    this.blob = blob;
   }
 
-  /**
-   * Create an ExternalBlob from a URL string
-   */
-  static fromURL(url: string): ExternalBlob {
-    return new ExternalBlob(url);
-  }
-
-  /**
-   * Create an ExternalBlob from bytes (for uploads)
-   * In a real implementation, this would upload to the backend
-   * For now, we create a data URL
-   */
-  static fromBytes(bytes: Uint8Array): ExternalBlob {
-    // Create a new Uint8Array to ensure we have a proper ArrayBuffer
-    const buffer = new Uint8Array(bytes);
-    const blob = new Blob([buffer]);
-    const url = URL.createObjectURL(blob);
-    return new ExternalBlob(url);
-  }
-
-  /**
-   * Set upload progress callback
-   */
-  withUploadProgress(callback: (percentage: number) => void): ExternalBlob {
-    this.progressCallback = callback;
-    // Simulate upload progress
-    if (this.progressCallback) {
-      setTimeout(() => this.progressCallback?.(100), 100);
-    }
-    return this;
-  }
-
-  /**
-   * Get the direct URL for displaying the blob
-   */
-  getDirectURL(): string {
-    return this.url;
-  }
-
-  /**
-   * Get bytes (async operation)
-   */
   async getBytes(): Promise<Uint8Array> {
-    const response = await fetch(this.url);
-    const arrayBuffer = await response.arrayBuffer();
-    return new Uint8Array(arrayBuffer);
+    return this.blob.getBytes();
+  }
+
+  getDirectURL(): string {
+    return this.blob.getDirectURL();
+  }
+
+  static fromURL(url: string): ExternalBlob {
+    return new ExternalBlob(BackendExternalBlob.fromURL(url));
+  }
+
+  static fromBytes(blob: Uint8Array): ExternalBlob {
+    // Create a new Uint8Array to ensure proper TypeScript type compatibility
+    const bytes = new Uint8Array(blob);
+    return new ExternalBlob(BackendExternalBlob.fromBytes(bytes));
+  }
+
+  withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob {
+    return new ExternalBlob(this.blob.withUploadProgress(onProgress));
+  }
+
+  toBackendBlob(): BackendExternalBlob {
+    return this.blob;
   }
 }

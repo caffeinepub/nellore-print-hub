@@ -12,6 +12,7 @@ export function useGetAllQuotations() {
       return actor.getAllQuotations();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
 
@@ -25,6 +26,7 @@ export function useGetMyQuotations() {
       return actor.getMyQuotations();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
 

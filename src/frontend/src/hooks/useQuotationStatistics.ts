@@ -16,6 +16,7 @@ export function useQuotationStatistics() {
       return actor.getQuotationStatistics();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 30 * 1000, // 30 seconds
     refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 }

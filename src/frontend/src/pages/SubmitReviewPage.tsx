@@ -35,6 +35,14 @@ export default function SubmitReviewPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Image size must be less than 10MB');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload a valid image file');
+        return;
+      }
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -74,7 +82,7 @@ export default function SubmitReviewPage() {
       await addReview.mutateAsync({
         customerName,
         reviewText,
-        rating: BigInt(rating),
+        rating,
         imageUrl,
         projectType: projectType as ServiceType,
       });
@@ -84,8 +92,7 @@ export default function SubmitReviewPage() {
       navigate({ to: '/testimonials' });
     } catch (error) {
       haptics.error();
-      toast.error('Failed to submit review');
-      console.error(error);
+      toast.error('Failed to submit review. Please try again.');
     }
   };
 

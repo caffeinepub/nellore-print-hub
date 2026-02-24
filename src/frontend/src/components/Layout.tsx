@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { Printer } from 'lucide-react';
+import { Printer, ShieldCheck } from 'lucide-react';
 import LoginButton from './LoginButton';
 import ChatWidget from './ChatWidget';
 import BottomNav from './BottomNav';
@@ -44,8 +44,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Main Content with bottom padding for nav */}
-      <main className={`flex-1 ${showBottomNav ? 'pb-16' : ''}`}>{children}</main>
+      {/* Main Content with bottom padding for nav and admin button */}
+      <main className={`flex-1 ${showBottomNav ? 'pb-28' : ''}`}>{children}</main>
+
+      {/* Admin Login Button - visible on mobile above bottom nav */}
+      {showBottomNav && (
+        <div className="fixed bottom-16 left-0 right-0 z-30 md:hidden border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container px-4 py-3">
+            <Link
+              to="/admin/login"
+              className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-500 font-medium transition-colors border border-amber-500/20"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Admin Login
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Navigation - only on customer pages */}
       {showBottomNav && <BottomNav onChatOpen={() => setChatOpen(true)} />}
@@ -102,6 +117,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/request-quote" className="hover:text-foreground transition-colors">Request Quote</Link></li>
                 <li><Link to="/submit-review" className="hover:text-foreground transition-colors">Leave Review</Link></li>
+                <li>
+                  <Link 
+                    to="/admin/login" 
+                    className="flex items-center gap-1.5 hover:text-foreground transition-colors text-amber-600 dark:text-amber-500 font-medium"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Admin Login
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

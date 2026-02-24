@@ -13,9 +13,6 @@ import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-
-// Apply migration
-
 actor {
   include MixinStorage();
 
@@ -135,7 +132,7 @@ actor {
     id.toText();
   };
 
-  // Chat System
+  // Chat System - Guests can send messages (customer inquiries)
   public shared ({ caller }) func sendMessage(
     senderName : Text,
     senderEmail : Text,
@@ -318,10 +315,12 @@ actor {
     officeLocation := ?_location;
   };
 
+  // Public information - no auth required
   public query ({ caller }) func getCompanyLogo() : async ?Storage.ExternalBlob {
     companyLogo;
   };
 
+  // Public information - no auth required
   public query ({ caller }) func getOfficeLocation() : async ?OfficeLocation {
     officeLocation;
   };
@@ -345,12 +344,9 @@ actor {
     adminUsers.add(email, newUser);
   };
 
+  // Used during authentication flow - must verify email ownership
   public shared ({ caller }) func registerBiometric(email : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can register biometric");
-    };
-
-    // Verify the caller owns this email
+    // Verify the caller owns this email through their profile
     switch (userProfiles.get(caller)) {
       case (?profile) {
         if (profile.email != email) {
@@ -379,12 +375,9 @@ actor {
     };
   };
 
+  // Used during authentication flow - must verify email ownership
   public shared ({ caller }) func verifyAuthentication(email : Text, hashedPassword : Text) : async Bool {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can verify authentication");
-    };
-
-    // Verify the caller owns this email
+    // Verify the caller owns this email through their profile
     switch (userProfiles.get(caller)) {
       case (?profile) {
         if (profile.email != email) {
@@ -411,7 +404,7 @@ actor {
     adminUsers.values().toArray();
   };
 
-  // Quotations
+  // Quotations - Guests can create quotation requests
   public shared ({ caller }) func createQuotationRequest(
     serviceType : ServiceType,
     deadline : Int,
@@ -716,6 +709,7 @@ actor {
     projects.remove(projectId);
   };
 
+  // Guests can add reviews - no auth required
   public shared ({ caller }) func addReview(
     customerName : Text,
     reviewText : Text,
@@ -737,22 +731,27 @@ actor {
     id;
   };
 
+  // Public information - no auth required
   public query ({ caller }) func getReviewsByRating(rating : Int) : async [Review] {
     reviews.values().toArray().filter(func(r) { r.rating == rating });
   };
 
+  // Public information - no auth required
   public query ({ caller }) func getAllReviews() : async [Review] {
     reviews.values().toArray();
   };
 
+  // Public information - no auth required
   public query ({ caller }) func getProjectsByCategory(category : ServiceType) : async [Project] {
     projects.values().toArray().filter(func(p) { p.category == category });
   };
 
+  // Public information - no auth required
   public query ({ caller }) func getAllProjects() : async [Project] {
     projects.values().toArray();
   };
 
+  // Public utility - no auth required
   public query ({ caller }) func calculateDeliveryFee(distance : Int) : async Int {
     distance * 10_000;
   };

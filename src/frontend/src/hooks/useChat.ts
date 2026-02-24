@@ -32,6 +32,7 @@ export function useAllChatMessages() {
       return actor.getAllChatMessages();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
 
@@ -61,5 +62,6 @@ export function useCustomerChatHistory(senderEmail: string) {
       return actor.getCustomerChatHistory(senderEmail);
     },
     enabled: !!actor && !isFetching && !!senderEmail,
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }

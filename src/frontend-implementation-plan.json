@@ -1,308 +1,303 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Convert website to mobile app format with app-like UI/UX",
+  "title": "Finalize and prepare Nellore Print Hub for production deployment",
   "requirements": [
     {
-      "id": "REQ-30",
-      "summary": "Implement bottom navigation bar for primary navigation replacing header-based navigation",
+      "id": "REQ-42",
+      "summary": "Review all frontend pages and components to ensure production readiness with proper error handling, form validation, and navigation flows",
       "acceptanceCriteria": [
-        "Bottom navigation bar is fixed at the bottom of the viewport on all customer-facing pages",
-        "Navigation items have icons and labels",
-        "Active navigation item is visually highlighted",
-        "Navigation bar is responsive and works on mobile, tablet, and desktop viewports"
+        "All customer-facing pages (Home, Services, Gallery, Testimonials, Delivery Info, Quotation Request, Quotation Confirmation) load without errors",
+        "All admin pages (Dashboard, Login, User Management, Project Management, Chat Management, Quotation Management, Logo Management) function correctly when authenticated",
+        "Form validation works on QuotationRequestPage and SubmitReviewPage",
+        "Bottom navigation bar is functional on all customer pages",
+        "Chat widget opens and allows message submission",
+        "Admin login button is visible at the bottom of the app"
       ],
       "file_operations": [
-        {
-          "path": "frontend/src/components/BottomNav.tsx",
-          "operation": "create",
-          "description": "Create a bottom navigation bar component with icons and labels for Home, Services, Gallery, Testimonials, and Chat sections. Use TanStack Router's Link component with active state detection. Include touch-optimized tap targets (minimum 44x44px) and visual highlighting for the active route. Make it fixed at the bottom of the viewport with proper z-index."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Integrate the new BottomNav component into the Layout. Conditionally render BottomNav for non-admin pages. Add bottom padding to the main content area to prevent overlap with the fixed bottom navigation bar. Keep the existing header but prepare for simplification in REQ-31."
-        }
-      ]
-    },
-    {
-      "id": "REQ-31",
-      "summary": "Update Layout header to mobile app-style with minimal top bar showing only logo and essential actions",
-      "acceptanceCriteria": [
-        "Header displays company logo on the left",
-        "Header is compact and mobile-optimized",
-        "No horizontal navigation links in the header",
-        "Header remains consistent across all pages"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Simplify the header to show only the company logo on the left and LoginButton on the right. Remove all horizontal navigation menu items. Make the header compact and mobile-optimized with minimal height. Ensure the header remains visible across all pages and works with the bottom navigation bar."
-        }
-      ]
-    },
-    {
-      "id": "REQ-32",
-      "summary": "Implement swipeable page transitions between main sections for native app-like navigation gestures",
-      "acceptanceCriteria": [
-        "Horizontal swipe gestures navigate between adjacent pages",
-        "Smooth animated transitions when swiping",
-        "Visual feedback during swipe gesture",
-        "Swipe navigation works on touch devices"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useSwipeNavigation.ts",
-          "operation": "create",
-          "description": "Create a custom hook that implements touch event handlers for horizontal swipe gestures. Detect swipe direction (left/right), calculate swipe distance, and trigger navigation to adjacent pages when threshold is met. Include visual feedback during swipe (e.g., page shift animation). Define the page order: Home -> Services -> Gallery -> Testimonials."
-        },
-        {
-          "path": "frontend/src/components/SwipeContainer.tsx",
-          "operation": "create",
-          "description": "Create a wrapper component that uses the useSwipeNavigation hook to enable swipe gestures on customer-facing pages. Add smooth CSS transitions for page changes. Include visual indicators during swipe (optional drag effect)."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Wrap the HomePage content with SwipeContainer to enable swipe navigation to ServicesPage."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Wrap the ServicesPage content with SwipeContainer to enable swipe navigation to Gallery and back to Home."
-        },
-        {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
-          "operation": "modify",
-          "description": "Wrap the ProjectGalleryPage content with SwipeContainer to enable swipe navigation to Testimonials and back to Services."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Wrap the TestimonialsPage content with SwipeContainer to enable swipe navigation back to Gallery."
-        }
-      ]
-    },
-    {
-      "id": "REQ-33",
-      "summary": "Add pull-to-refresh functionality on all customer-facing pages that reloads page data",
-      "acceptanceCriteria": [
-        "Pull-down gesture triggers refresh animation",
-        "Data is refetched after pull-to-refresh",
-        "Loading indicator shows during refresh",
-        "Works on touch-enabled devices"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/usePullToRefresh.ts",
-          "operation": "create",
-          "description": "Create a custom hook that implements pull-to-refresh functionality using touch events. Detect pull-down gesture from the top of the page, show a loading spinner or refresh indicator, and trigger a callback to refetch data. Include threshold detection and smooth animations."
-        },
-        {
-          "path": "frontend/src/components/PullToRefreshContainer.tsx",
-          "operation": "create",
-          "description": "Create a wrapper component that uses usePullToRefresh hook and displays the refresh indicator. Accept a callback prop for the refresh action and wrap child content with pull-to-refresh behavior."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Wrap HomePage content with PullToRefreshContainer and implement a refresh callback that invalidates relevant queries (projects preview, reviews, etc.) using React Query's queryClient."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Wrap ServicesPage content with PullToRefreshContainer. Since this page is mostly static, the refresh callback can be minimal or trigger a simple page reload."
-        },
-        {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
-          "operation": "modify",
-          "description": "Wrap ProjectGalleryPage content with PullToRefreshContainer and implement a refresh callback that invalidates the projects query to refetch gallery data."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Wrap TestimonialsPage content with PullToRefreshContainer and implement a refresh callback that invalidates the reviews query to refetch testimonial data."
-        }
-      ]
-    },
-    {
-      "id": "REQ-34",
-      "summary": "Optimize all page layouts for mobile-first vertical scrolling with card-based designs and increased touch target sizes",
-      "acceptanceCriteria": [
-        "All interactive elements meet minimum 44x44px touch target size",
-        "Content is organized in scrollable card-based layouts",
-        "Spacing and typography are optimized for mobile readability",
-        "Single-column layouts are prioritized for mobile viewports"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add mobile-first CSS utility classes for touch-friendly interactions. Define minimum touch target sizes (44x44px), increased padding for mobile cards, and optimized typography scales for mobile readability. Add utility classes for mobile card layouts with proper spacing."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Refactor the hero section and features into mobile-optimized card-based layouts. Use single-column layouts on mobile with proper spacing. Ensure all buttons and interactive elements meet 44x44px minimum touch target size. Increase font sizes for mobile readability."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Redesign service cards for mobile-first vertical scrolling. Use single-column layout on mobile viewports with large touch-friendly cards. Increase padding and spacing between service items for better touch interaction."
-        },
-        {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
-          "operation": "modify",
-          "description": "Optimize gallery grid for mobile with larger touch targets. Use single-column or 2-column grid on mobile devices. Ensure project cards have adequate spacing and tap areas. Make category filter buttons touch-friendly (minimum 44x44px)."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Redesign review cards for mobile-first display. Use single-column layout on mobile with card-based design. Ensure rating filter buttons meet minimum touch target size. Optimize typography for mobile readability."
-        }
-      ]
-    },
-    {
-      "id": "REQ-35",
-      "summary": "Convert chat widget to full-screen modal chat interface that opens from bottom navigation bar",
-      "acceptanceCriteria": [
-        "Chat opens as a full-screen overlay from the bottom nav",
-        "Chat interface follows mobile messaging app patterns",
-        "Back/close button returns to previous page",
-        "Message input is fixed at the bottom of the chat screen"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/ChatWidget.tsx",
-          "operation": "modify",
-          "description": "Transform the existing floating ChatWidget into a full-screen modal interface. Add a close/back button in the header. Style the chat messages to follow mobile messaging app patterns (bubbles, timestamps). Fix the message input at the bottom of the screen. Make it open/close based on a prop or context state."
-        },
-        {
-          "path": "frontend/src/components/BottomNav.tsx",
-          "operation": "modify",
-          "description": "Add a Chat navigation item in the BottomNav that opens the full-screen ChatWidget modal when tapped. Use state management (e.g., React state or context) to control the chat modal visibility."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Update Layout to render the ChatWidget as a full-screen modal overlay when active, instead of as a floating widget. Ensure it appears above all other content with proper z-index."
-        }
-      ]
-    },
-    {
-      "id": "REQ-36",
-      "summary": "Add haptic feedback for key user interactions on devices that support the Vibration API",
-      "acceptanceCriteria": [
-        "Button taps trigger subtle haptic feedback",
-        "Form submissions provide haptic confirmation",
-        "Navigation changes include haptic feedback",
-        "Haptic feedback gracefully degrades on unsupported devices"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/haptics.ts",
-          "operation": "create",
-          "description": "Create utility functions for haptic feedback using the Vibration API. Implement different haptic patterns for different interaction types (tap, success, error). Include feature detection to gracefully handle unsupported devices."
-        },
-        {
-          "path": "frontend/src/components/BottomNav.tsx",
-          "operation": "modify",
-          "description": "Add haptic feedback when navigation items are tapped using the haptics utility."
-        },
-        {
-          "path": "frontend/src/components/ChatWidget.tsx",
-          "operation": "modify",
-          "description": "Add haptic feedback when sending messages or opening/closing the chat using the haptics utility."
-        },
         {
           "path": "frontend/src/pages/QuotationRequestPage.tsx",
           "operation": "modify",
-          "description": "Add haptic feedback on form submission success using the haptics utility."
+          "description": "Review and enhance form validation for service type, deadline, project details, mobile number, and email fields. Ensure error states display user-friendly messages and haptic feedback triggers appropriately on validation failures."
         },
         {
           "path": "frontend/src/pages/SubmitReviewPage.tsx",
           "operation": "modify",
-          "description": "Add haptic feedback on form submission success using the haptics utility."
-        }
-      ]
-    },
-    {
-      "id": "REQ-37",
-      "summary": "Implement native-like loading states and skeleton screens for all data-fetching operations",
-      "acceptanceCriteria": [
-        "Skeleton screens display during initial page loads",
-        "Smooth fade-in animations when content loads",
-        "Shimmer effects on skeleton elements",
-        "Loading states match the layout of loaded content"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/SkeletonCard.tsx",
-          "operation": "create",
-          "description": "Create a reusable skeleton card component with shimmer animation effects. Use gradient animations to create a native-like loading shimmer. Make it configurable for different card layouts (project card, review card, service card)."
+          "description": "Review and enhance form validation for rating, review text, and project type fields. Verify image upload validation (file type and size) displays clear error messages. Ensure haptic feedback works on form submission."
         },
         {
-          "path": "frontend/src/index.css",
+          "path": "frontend/src/components/BottomNav.tsx",
           "operation": "modify",
-          "description": "Add CSS keyframe animations for skeleton shimmer effects and fade-in transitions. Define utility classes for smooth content loading animations."
+          "description": "Review navigation functionality across all tabs (Home, Services, Gallery, Reviews, Chat). Verify active state styling works correctly, haptic feedback triggers on tab changes, and safe area padding displays properly on various devices."
         },
         {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "path": "frontend/src/components/ChatWidget.tsx",
           "operation": "modify",
-          "description": "Replace loading spinners with skeleton screens that match the project card layout. Add fade-in animation when project data loads. Use SkeletonCard component during the loading state."
+          "description": "Review chat widget functionality including name/email collection on first use, message submission flow, and full-screen modal behavior. Verify error states display appropriate messages if message sending fails."
         },
         {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Replace existing skeleton loaders with enhanced SkeletonCard components that match review card layout. Add shimmer effects and fade-in animations when review data loads."
+          "description": "Review layout component to ensure admin login button is visible at the bottom, company logo loads correctly, and conditional bottom navigation works properly for admin vs customer pages."
         },
         {
           "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Add skeleton screens for the features and services preview sections during data loading. Use fade-in animations when content appears."
+          "description": "Review hero section image loading (frontend/public/assets/generated/hero-bg.dim_1920x1080.png), feature cards display, swipe navigation functionality, and pull-to-refresh behavior. Ensure all navigation flows work as expected."
+        },
+        {
+          "path": "frontend/src/pages/ServicesPage.tsx",
+          "operation": "modify",
+          "description": "Review service category display with icon images (frontend/public/assets/generated/digital-icon.dim_256x256.png, frontend/public/assets/generated/flex-icon.dim_256x256.png, frontend/public/assets/generated/offset-icon.dim_256x256.png, frontend/public/assets/generated/design-icon.dim_256x256.png). Verify pull-to-refresh and swipe navigation work correctly."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Review project gallery filtering by category, pull-to-refresh functionality, swipe navigation, and image loading behavior. Verify skeleton loading states display before data loads."
+        },
+        {
+          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "operation": "modify",
+          "description": "Review testimonials display with star ratings, rating filter functionality, pull-to-refresh behavior, and skeleton loading states. Ensure all images load correctly."
+        },
+        {
+          "path": "frontend/src/pages/DeliveryInfoPage.tsx",
+          "operation": "modify",
+          "description": "Review delivery information display and distance-based fee calculator functionality. Verify error states display appropriate messages if calculation fails."
+        },
+        {
+          "path": "frontend/src/pages/QuotationConfirmationPage.tsx",
+          "operation": "modify",
+          "description": "Review confirmation page display with request ID and step-by-step process explanation. Ensure navigation flows work as expected."
         },
         {
           "path": "frontend/src/pages/MyQuotationsPage.tsx",
           "operation": "modify",
-          "description": "Add skeleton screens for quotation cards during loading. Use SkeletonCard component and fade-in animations when quotation data loads."
+          "description": "Review quotations list display with status badges, project details, and conditional office location rendering for accepted quotations. Verify skeleton loading states and status-based color coding work correctly."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Review admin dashboard statistics display with proper authentication guard. Verify metrics load correctly and display appropriate error messages if backend calls fail."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "operation": "modify",
+          "description": "Review admin authentication page with email/password and biometric login flows. Verify form validation, error message display, and redirect behavior on successful authentication."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminUserManagementPage.tsx",
+          "operation": "modify",
+          "description": "Review admin user management page with invitation functionality and admin list display. Verify form validation, error handling, and timestamp formatting work correctly."
+        },
+        {
+          "path": "frontend/src/pages/admin/ProjectManagementPage.tsx",
+          "operation": "modify",
+          "description": "Review project CRUD operations including add, edit, and delete functionality with image upload. Verify form validation, upload progress tracking, and error message display."
+        },
+        {
+          "path": "frontend/src/pages/admin/ChatManagementPage.tsx",
+          "operation": "modify",
+          "description": "Review chat management page with customer message grouping, expandable conversation threads, and reply functionality. Verify error handling for message sending failures."
+        },
+        {
+          "path": "frontend/src/pages/admin/QuotationManagementPage.tsx",
+          "operation": "modify",
+          "description": "Review quotation management with pricing details, approval flow, negotiation responses, and history display. Verify error states display appropriate messages."
+        },
+        {
+          "path": "frontend/src/pages/admin/LogoManagementPage.tsx",
+          "operation": "modify",
+          "description": "Review logo upload functionality with image preview, file validation, and upload progress tracking. Verify error messages display for invalid file types or sizes."
         }
       ]
     },
     {
-      "id": "REQ-38",
-      "summary": "Update form pages to use mobile-optimized form controls with bottom sheets and touch-friendly inputs",
+      "id": "REQ-44",
+      "summary": "Optimize application performance for production with image optimization, React Query caching, lazy loading, and bundle size checks",
       "acceptanceCriteria": [
-        "Select inputs open as bottom sheet drawers",
-        "Date picker uses native mobile date input",
-        "Input fields are large and touch-friendly",
-        "Keyboard types match input context (numeric, email, etc.)"
+        "Images load efficiently without blocking page render",
+        "React Query queries use appropriate staleTime and cacheTime settings",
+        "Page transitions are smooth with swipe navigation",
+        "Pull-to-refresh functionality works without lag",
+        "Skeleton loading states display before data loads"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/BottomSheet.tsx",
-          "operation": "create",
-          "description": "Create a reusable bottom sheet component that slides up from the bottom of the screen. Include backdrop overlay, swipe-to-dismiss gesture, and smooth animations. Make it configurable for different content types (select options, date picker, etc.)."
-        },
-        {
-          "path": "frontend/src/components/BottomSheetSelect.tsx",
-          "operation": "create",
-          "description": "Create a select input component that opens options in a BottomSheet instead of a native select dropdown. Display options as large touch-friendly list items in the bottom sheet."
-        },
-        {
-          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "path": "frontend/src/hooks/useProjects.ts",
           "operation": "modify",
-          "description": "Replace the service type select input with BottomSheetSelect component. Update the deadline input to use native date input type. Increase input field sizes for touch-friendly interaction. Add appropriate inputMode and type attributes (email for email, tel for phone). Ensure all form controls meet 44x44px minimum touch target size."
+          "description": "Review and optimize React Query cache settings for project queries. Ensure appropriate staleTime and cacheTime values are configured for efficient data fetching and caching."
+        },
+        {
+          "path": "frontend/src/hooks/useReviews.ts",
+          "operation": "modify",
+          "description": "Review and optimize React Query cache settings for review queries. Configure appropriate staleTime and cacheTime values to reduce unnecessary refetches."
+        },
+        {
+          "path": "frontend/src/hooks/useQuotations.ts",
+          "operation": "modify",
+          "description": "Review and optimize React Query cache settings for quotation queries. Ensure appropriate staleTime and cacheTime values are configured for optimal performance."
+        },
+        {
+          "path": "frontend/src/hooks/useQuotationStatistics.ts",
+          "operation": "modify",
+          "description": "Review React Query cache settings for quotation statistics with 30-second auto-refresh. Verify staleTime and refetchInterval are appropriately configured."
+        },
+        {
+          "path": "frontend/src/hooks/useChat.ts",
+          "operation": "modify",
+          "description": "Review and optimize React Query cache settings for chat message queries. Configure appropriate staleTime and cacheTime values for efficient message fetching."
+        },
+        {
+          "path": "frontend/src/hooks/useSwipeNavigation.ts",
+          "operation": "modify",
+          "description": "Review swipe navigation implementation for smooth page transitions. Verify touch event handlers are optimized and scroll prevention works correctly without lag."
+        },
+        {
+          "path": "frontend/src/hooks/usePullToRefresh.ts",
+          "operation": "modify",
+          "description": "Review pull-to-refresh implementation to ensure it works without lag. Verify touch event handlers, pull distance tracking, and threshold triggering are optimized for smooth performance."
+        },
+        {
+          "path": "frontend/src/components/SkeletonCard.tsx",
+          "operation": "modify",
+          "description": "Review skeleton loading components for all variants (project, review, service, quotation). Verify shimmer animations perform efficiently and display before actual data loads."
+        },
+        {
+          "path": "frontend/src/lib/blobStorage.ts",
+          "operation": "modify",
+          "description": "Review ExternalBlob utility class for efficient blob handling. Verify getDirectURL() is used for streaming and caching, and upload progress callbacks work without blocking UI."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Verify hero background image (frontend/public/assets/generated/hero-bg.dim_1920x1080.png) is appropriately sized and loads efficiently. Review image loading strategy to prevent blocking page render."
+        },
+        {
+          "path": "frontend/src/pages/ServicesPage.tsx",
+          "operation": "modify",
+          "description": "Verify service icon images (frontend/public/assets/generated/digital-icon.dim_256x256.png, frontend/public/assets/generated/flex-icon.dim_256x256.png, frontend/public/assets/generated/offset-icon.dim_256x256.png, frontend/public/assets/generated/design-icon.dim_256x256.png) are appropriately sized and load efficiently without blocking page render."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Review project image loading strategy using ExternalBlob.getDirectURL() for efficient streaming and caching. Verify images load without blocking page render and skeleton states display appropriately."
         },
         {
           "path": "frontend/src/pages/SubmitReviewPage.tsx",
           "operation": "modify",
-          "description": "Replace the project type select input with BottomSheetSelect component. Increase input field and textarea sizes for touch-friendly interaction. Add appropriate inputMode attributes. Ensure all form controls including the rating selector meet 44x44px minimum touch target size."
+          "description": "Review image upload implementation with ExternalBlob.withUploadProgress() to ensure progress tracking doesn't block UI and provides smooth user feedback."
+        }
+      ]
+    },
+    {
+      "id": "REQ-45",
+      "summary": "Ensure mobile app-like experience is consistent across all devices with responsive bottom navigation, haptic feedback, touch targets, and accessible interactions",
+      "acceptanceCriteria": [
+        "Bottom navigation bar is fixed and visible on all customer pages",
+        "Haptic feedback triggers on button taps, form submissions, and navigation actions",
+        "All buttons and interactive elements meet minimum touch target size",
+        "Swipe gestures work smoothly for page navigation",
+        "Chat widget opens as full-screen modal from bottom navigation"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/BottomNav.tsx",
+          "operation": "modify",
+          "description": "Review bottom navigation responsiveness across different screen sizes. Verify fixed positioning works correctly, safe area padding applies on various devices, and navigation is visible on all customer pages."
         },
         {
-          "path": "frontend/src/components/ProfileSetup.tsx",
+          "path": "frontend/src/utils/haptics.ts",
           "operation": "modify",
-          "description": "Update form inputs to be mobile-optimized with larger touch targets. Add appropriate inputMode and type attributes for email and phone inputs. Ensure all form controls meet 44x44px minimum touch target size."
+          "description": "Review haptic feedback utility functions (tap, success, error, select) for consistency. Verify different vibration patterns trigger appropriately on supported devices and degrade gracefully on unsupported devices."
+        },
+        {
+          "path": "frontend/src/components/BottomSheetSelect.tsx",
+          "operation": "modify",
+          "description": "Review touch-friendly select component to ensure 56px minimum tap target height is maintained. Verify haptic feedback triggers on option selection and component is accessible via touch on all devices."
+        },
+        {
+          "path": "frontend/src/components/ChatWidget.tsx",
+          "operation": "modify",
+          "description": "Verify chat widget opens as full-screen modal from bottom navigation. Review touch interactions for message sending and ensure the widget is accessible via touch on all devices."
+        },
+        {
+          "path": "frontend/src/hooks/useSwipeNavigation.ts",
+          "operation": "modify",
+          "description": "Review swipe navigation implementation to ensure gestures work smoothly across different devices and screen sizes. Verify configurable threshold and scroll prevention work correctly."
+        },
+        {
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Review form buttons and input fields to ensure all interactive elements meet minimum 44x44px touch target size. Verify haptic feedback triggers on form submission."
+        },
+        {
+          "path": "frontend/src/pages/SubmitReviewPage.tsx",
+          "operation": "modify",
+          "description": "Review form buttons, rating stars, and input fields to ensure all interactive elements meet minimum 44x44px touch target size. Verify haptic feedback triggers on form submission and rating selection."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "operation": "modify",
+          "description": "Review login form buttons to ensure all interactive elements meet minimum touch target size. Verify haptic feedback triggers on button taps for both email/password and biometric authentication."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Review custom CSS for mobile features including safe area utilities, touch target sizing, and animations. Verify mobile-first design principles are applied consistently across the application."
+        }
+      ]
+    },
+    {
+      "id": "REQ-46",
+      "summary": "Configure production environment settings with mainnet canister IDs, Internet Identity production endpoints, and appropriate error logging",
+      "acceptanceCriteria": [
+        "Canister IDs are configured for mainnet deployment",
+        "Internet Identity provider uses production settings",
+        "All backend actor calls reference correct production canisters",
+        "Error messages are user-friendly and do not expose sensitive information",
+        "Console logs are minimized or removed for production"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useInternetIdentity.ts",
+          "operation": "modify",
+          "description": "Review Internet Identity authentication configuration to ensure production endpoints are used for mainnet deployment. Verify AuthClient initialization uses appropriate derivationOrigin and identity provider settings for production environment."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Review backend actor initialization to ensure production canister IDs are used. Verify actor creation references correct mainnet endpoints and error handling displays user-friendly messages without exposing sensitive information."
+        },
+        {
+          "path": "frontend/src/components/ChatWidget.tsx",
+          "operation": "modify",
+          "description": "Review error handling and console logs in chat widget. Minimize or remove development console.log statements and ensure error messages are user-friendly for production."
+        },
+        {
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Review error handling and console logs in quotation request form. Ensure error messages are user-friendly and do not expose sensitive information. Minimize development console.log statements."
+        },
+        {
+          "path": "frontend/src/pages/SubmitReviewPage.tsx",
+          "operation": "modify",
+          "description": "Review error handling and console logs in review submission form. Ensure error messages are user-friendly and do not expose backend implementation details. Minimize development console.log statements."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "operation": "modify",
+          "description": "Review error handling in admin authentication flows. Ensure error messages do not expose sensitive authentication details like password hashing mechanisms. Minimize development console.log statements."
+        },
+        {
+          "path": "frontend/src/components/LoginButton.tsx",
+          "operation": "modify",
+          "description": "Review error handling in Internet Identity login flow. Ensure error messages are user-friendly and console.error statements are minimized for production. Verify query cache clearing works correctly on logout."
+        },
+        {
+          "path": "frontend/src/lib/blobStorage.ts",
+          "operation": "modify",
+          "description": "Review blob storage utility for production-ready error handling. Ensure error messages are user-friendly when blob operations fail and console logs are minimized."
         }
       ]
     }

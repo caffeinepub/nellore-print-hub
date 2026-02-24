@@ -1,193 +1,109 @@
 {
   "kind": "build_request",
-  "title": "Convert website to mobile app format with app-like UI/UX",
+  "title": "Finalize and prepare application for production deployment",
   "projectName": "Nellore Print Hub",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-30",
-      "text": "Convert the existing website layout to a mobile app-like interface by implementing a bottom navigation bar for primary navigation instead of the current header-based navigation. The bottom nav should include icons and labels for Home, Services, Gallery, Testimonials, and Chat sections.",
+      "id": "REQ-42",
+      "text": "Review all frontend pages and components to ensure production readiness: verify all images load correctly, check that all forms validate properly, ensure error states display appropriate messages, and confirm all navigation flows work as expected",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
+          "msg-final"
         ]
       },
       "acceptanceCriteria": [
-        "Bottom navigation bar is fixed at the bottom of the viewport on all customer-facing pages",
-        "Navigation items have icons and labels",
-        "Active navigation item is visually highlighted",
-        "Navigation bar is responsive and works on mobile, tablet, and desktop viewports"
+        "All customer-facing pages (Home, Services, Gallery, Testimonials, Delivery Info, Quotation Request, Quotation Confirmation) load without errors",
+        "All admin pages (Dashboard, Login, User Management, Project Management, Chat Management, Quotation Management, Logo Management) function correctly when authenticated",
+        "Form validation works on QuotationRequestPage and SubmitReviewPage",
+        "Bottom navigation bar is functional on all customer pages",
+        "Chat widget opens and allows message submission",
+        "Admin login button is visible at the bottom of the app"
       ]
     },
     {
-      "id": "REQ-31",
-      "text": "Update the Layout component to use a mobile app-style header with a minimal top bar showing only the company logo and essential actions (no horizontal navigation menu). Remove the current desktop-style navigation menu from the header.",
-      "target": "frontend",
+      "id": "REQ-43",
+      "text": "Verify all backend actor methods are functioning correctly: test quotation creation and management flows, confirm admin authentication (email/password and biometric) works, validate project CRUD operations, ensure chat message storage and retrieval works, and verify review submission and filtering",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
+          "msg-final"
         ]
       },
       "acceptanceCriteria": [
-        "Header displays company logo on the left",
-        "Header is compact and mobile-optimized",
-        "No horizontal navigation links in the header",
-        "Header remains consistent across all pages"
+        "Quotation requests can be created, viewed, and managed by admins",
+        "Admin users can authenticate using email/password or biometric methods",
+        "Projects can be added, edited, and deleted by admins",
+        "Chat messages are stored and retrievable by both customers and admins",
+        "Reviews can be submitted and filtered by rating",
+        "User profiles are created and updated correctly",
+        "Company logo and office location can be set and retrieved"
       ]
     },
     {
-      "id": "REQ-32",
-      "text": "Implement swipeable page transitions between main sections to provide native app-like navigation gestures. Users should be able to swipe left/right to navigate between Home, Services, Gallery, and Testimonials pages.",
+      "id": "REQ-44",
+      "text": "Optimize application performance for production: ensure all images are appropriately sized and compressed, verify React Query caching strategies are working efficiently, confirm lazy loading is implemented where appropriate, and check that bundle sizes are reasonable",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
+          "msg-final"
         ]
       },
       "acceptanceCriteria": [
-        "Horizontal swipe gestures navigate between adjacent pages",
-        "Smooth animated transitions when swiping",
-        "Visual feedback during swipe gesture",
-        "Swipe navigation works on touch devices"
+        "Images load efficiently without blocking page render",
+        "React Query queries use appropriate staleTime and cacheTime settings",
+        "Page transitions are smooth with swipe navigation",
+        "Pull-to-refresh functionality works without lag",
+        "Skeleton loading states display before data loads"
       ]
     },
     {
-      "id": "REQ-33",
-      "text": "Add pull-to-refresh functionality on all customer-facing pages (Home, Services, Gallery, Testimonials) that reloads page data when the user pulls down from the top of the page, similar to native mobile apps.",
+      "id": "REQ-45",
+      "text": "Ensure mobile app-like experience is consistent across all devices: verify bottom navigation works on different screen sizes, confirm haptic feedback triggers on supported devices, test touch targets meet minimum 44x44px requirements, and validate that all interactive elements are accessible via touch",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
+          "msg-final"
         ]
       },
       "acceptanceCriteria": [
-        "Pull-down gesture triggers refresh animation",
-        "Data is refetched after pull-to-refresh",
-        "Loading indicator shows during refresh",
-        "Works on touch-enabled devices"
+        "Bottom navigation bar is fixed and visible on all customer pages",
+        "Haptic feedback triggers on button taps, form submissions, and navigation actions",
+        "All buttons and interactive elements meet minimum touch target size",
+        "Swipe gestures work smoothly for page navigation",
+        "Chat widget opens as full-screen modal from bottom navigation"
       ]
     },
     {
-      "id": "REQ-34",
-      "text": "Optimize all page layouts for mobile-first vertical scrolling with card-based designs and increased touch target sizes (minimum 44x44px). Redesign hero sections, service cards, project gallery items, and review cards to follow mobile app UI patterns.",
-      "target": "frontend",
+      "id": "REQ-46",
+      "text": "Configure production environment settings: ensure canister IDs are correctly set for mainnet deployment, verify Internet Identity integration uses production endpoints, confirm all API calls use production actor endpoints, and validate that error logging is appropriate for production",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
+          "msg-final"
         ]
       },
       "acceptanceCriteria": [
-        "All interactive elements meet minimum 44x44px touch target size",
-        "Content is organized in scrollable card-based layouts",
-        "Spacing and typography are optimized for mobile readability",
-        "Single-column layouts are prioritized for mobile viewports"
-      ]
-    },
-    {
-      "id": "REQ-35",
-      "text": "Convert the chat widget to a full-screen modal chat interface that opens from the bottom navigation bar, similar to messaging apps. The chat should occupy the full screen when active and include a close/back button.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Chat opens as a full-screen overlay from the bottom nav",
-        "Chat interface follows mobile messaging app patterns",
-        "Back/close button returns to previous page",
-        "Message input is fixed at the bottom of the chat screen"
-      ]
-    },
-    {
-      "id": "REQ-36",
-      "text": "Add haptic feedback (vibration) for key user interactions like button taps, form submissions, and navigation actions on devices that support the Vibration API, enhancing the native app feel.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Button taps trigger subtle haptic feedback",
-        "Form submissions provide haptic confirmation",
-        "Navigation changes include haptic feedback",
-        "Haptic feedback gracefully degrades on unsupported devices"
-      ]
-    },
-    {
-      "id": "REQ-37",
-      "text": "Implement native-like loading states and skeleton screens for all data-fetching operations using smooth fade-in animations and shimmer effects, replacing traditional spinners where appropriate.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Skeleton screens display during initial page loads",
-        "Smooth fade-in animations when content loads",
-        "Shimmer effects on skeleton elements",
-        "Loading states match the layout of loaded content"
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "text": "Update the form pages (QuotationRequestPage, SubmitReviewPage) to use mobile-optimized form controls with bottom sheets for select inputs, date pickers, and large touch-friendly input fields with appropriate keyboard types.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user-current"
-        ],
-        "quotes": [
-          "Can you make same website like a app"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Select inputs open as bottom sheet drawers",
-        "Date picker uses native mobile date input",
-        "Input fields are large and touch-friendly",
-        "Keyboard types match input context (numeric, email, etc.)"
+        "Canister IDs are configured for mainnet deployment",
+        "Internet Identity provider uses production settings",
+        "All backend actor calls reference correct production canisters",
+        "Error messages are user-friendly and do not expose sensitive information",
+        "Console logs are minimized or removed for production"
       ]
     }
   ],
   "constraints": [
-    "Do not modify the backend actor structure or data models",
-    "Maintain compatibility with existing authentication flows (Internet Identity and admin login)",
-    "Preserve all existing functionality while converting UI to app-like format",
-    "Do not change any immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui"
+    "Do not modify the backend data model or actor structure",
+    "Do not change authentication flows or access control logic",
+    "Preserve all existing features and functionality",
+    "Maintain mobile-first UI design and bottom navigation pattern"
   ],
   "nonGoals": [
-    "Building an actual native iOS or Android app",
-    "Adding offline functionality or service workers",
-    "Implementing push notifications",
-    "Adding app store deployment capabilities",
-    "Creating a Progressive Web App (PWA) manifest"
+    "Adding new features or functionality beyond what exists",
+    "Redesigning UI components or layouts",
+    "Implementing new authentication methods",
+    "Adding new pages or routes"
   ],
   "imageRequirements": {
     "required": [],

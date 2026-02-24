@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
+  "projectStateVersion": 17,
   "summary": "Business website for Nellore Print Hub (Magic Advertising) - a printing and design services company offering digital printing, flex/banner printing, offset printing, and creative design services with manual quotation system, flexible payment options, and local delivery.",
   "architectural_notes": [
     "Manual quotation workflow requiring admin review before customer notification",
@@ -288,6 +288,54 @@
         "REQ-38"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-layout-component-to-display-an-admin-login-link-in-the-header-or-footer-that-is-visible-to-all-users-allowing-easy-access-to-the-admin-authentication-page-at-admin-login",
+      "title": "Update the Layout component to display an admin login link in the header or footer that is visible to all users, allowing easy access to the admin authentication page at /admin/login.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-layout-component-to-display-an-admin-login-button-or-link-at-the-bottom-of-the-app-interface-positioned-above-or-within-the-footer-area-making-it-easily-visible-and-accessible-to-admin-users-on-all-pages",
+      "title": "Update the Layout component to display an 'Admin Login' button or link at the bottom of the app interface, positioned above or within the footer area, making it easily visible and accessible to admin users on all pages",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-review-all-frontend-pages-and-components-to-ensure-production-readiness-verify-all-images-load-correctly-check-that-all-forms-validate-properly-ensure-error-states-display-appropriate-messages-and-confirm-all-navigation-flows-work-as-expected",
+      "title": "Review all frontend pages and components to ensure production readiness: verify all images load correctly, check that all forms validate properly, ensure error states display appropriate messages, and confirm all navigation flows work as expected",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-optimize-application-performance-for-production-ensure-all-images-are-appropriately-sized-and-compressed-verify-react-query-caching-strategies-are-working-efficiently-confirm-lazy-loading-is-implemented-where-appropriate-and-check-that-bundle-sizes-are-reasonable",
+      "title": "Optimize application performance for production: ensure all images are appropriately sized and compressed, verify React Query caching strategies are working efficiently, confirm lazy loading is implemented where appropriate, and check that bundle sizes are reasonable",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-mobile-app-like-experience-is-consistent-across-all-devices-verify-bottom-navigation-works-on-different-screen-sizes-confirm-haptic-feedback-triggers-on-supported-devices-test-touch-targets-meet-minimum-44x44px-requirements-and-validate-that-all-interactive-elements-are-accessible-via-touch",
+      "title": "Ensure mobile app-like experience is consistent across all devices: verify bottom navigation works on different screen sizes, confirm haptic feedback triggers on supported devices, test touch targets meet minimum 44x44px requirements, and validate that all interactive elements are accessible via touch",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-configure-production-environment-settings-ensure-canister-ids-are-correctly-set-for-mainnet-deployment-verify-internet-identity-integration-uses-production-endpoints-confirm-all-api-calls-use-production-actor-endpoints-and-validate-that-error-logging-is-appropriate-for-production",
+      "title": "Configure production environment settings: ensure canister IDs are correctly set for mainnet deployment, verify Internet Identity integration uses production endpoints, confirm all API calls use production actor endpoints, and validate that error logging is appropriate for production",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -429,6 +477,20 @@
       "id": "AR-25",
       "summary": "Convert website to mobile app format with app-like UI/UX",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Make admin login option visible on the last/bottom section of the mobile app interface",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Verify all backend actor methods are functioning correctly: test quotation creation and management flows, confirm admin authentication (email/password and biometric) works, validate project CRUD operations, ensure chat message storage and retrieval works, and verify review submission and filtering",
+      "reqIds": [
+        "REQ-43"
+      ],
       "status": "pending"
     }
   ],

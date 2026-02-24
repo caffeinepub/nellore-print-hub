@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Send, Loader2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -76,8 +76,7 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
       toast.success('Message sent successfully');
     } catch (error) {
       haptics.error();
-      toast.error('Failed to send message');
-      console.error(error);
+      toast.error('Failed to send message. Please try again.');
     }
   };
 

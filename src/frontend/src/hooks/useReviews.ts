@@ -12,19 +12,21 @@ export function useGetAllReviews() {
       return actor.getAllReviews();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
-export function useGetReviewsByRating(rating: bigint, enabled: boolean = true) {
+export function useGetReviewsByRating(rating: number, enabled: boolean = true) {
   const { actor, isFetching } = useActor();
 
   return useQuery<Review[]>({
-    queryKey: ['reviews', rating.toString()],
+    queryKey: ['reviews', rating],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getReviewsByRating(rating);
+      return actor.getReviewsByRating(BigInt(rating));
     },
     enabled: !!actor && !isFetching && enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
@@ -36,7 +38,7 @@ export function useAddReview() {
     mutationFn: async (data: {
       customerName: string;
       reviewText: string;
-      rating: bigint;
+      rating: number;
       imageUrl: string | null;
       projectType: ServiceType;
     }) => {
@@ -44,7 +46,7 @@ export function useAddReview() {
       return actor.addReview(
         data.customerName,
         data.reviewText,
-        data.rating,
+        BigInt(data.rating),
         data.imageUrl,
         data.projectType
       );

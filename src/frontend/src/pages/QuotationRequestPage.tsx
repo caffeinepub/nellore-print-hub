@@ -52,8 +52,7 @@ export default function QuotationRequestPage() {
       navigate({ to: '/quotation-confirmation/$id', params: { id } });
     } catch (error) {
       haptics.error();
-      toast.error('Failed to submit quotation request');
-      console.error(error);
+      toast.error('Failed to submit quotation request. Please try again.');
     }
   };
 

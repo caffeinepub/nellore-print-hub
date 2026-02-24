@@ -12,6 +12,7 @@ export function useGetAllProjects() {
       return actor.getAllProjects();
     },
     enabled: !!actor && !isFetching,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
@@ -25,6 +26,7 @@ export function useGetProjectsByCategory(category: ServiceType, enabled: boolean
       return actor.getProjectsByCategory(category);
     },
     enabled: !!actor && !isFetching && enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
