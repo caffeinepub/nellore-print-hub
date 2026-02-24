@@ -1,96 +1,308 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add admin user management and email/password authentication with biometric support",
+  "title": "Convert website to mobile app format with app-like UI/UX",
   "requirements": [
     {
-      "id": "REQ-26",
-      "summary": "Create an admin-only login page with email/password and biometric authentication options",
+      "id": "REQ-30",
+      "summary": "Implement bottom navigation bar for primary navigation replacing header-based navigation",
       "acceptanceCriteria": [
-        "Admin login page is created and only accessible via admin routes",
-        "Page displays email and password input fields",
-        "Page includes a biometric login button",
-        "Login form submission calls backend authentication",
-        "Successful login redirects to admin dashboard"
+        "Bottom navigation bar is fixed at the bottom of the viewport on all customer-facing pages",
+        "Navigation items have icons and labels",
+        "Active navigation item is visually highlighted",
+        "Navigation bar is responsive and works on mobile, tablet, and desktop viewports"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "path": "frontend/src/components/BottomNav.tsx",
           "operation": "create",
-          "description": "Create admin login page component with email/password form fields and biometric login button. Include form validation, loading states, and error handling. On successful authentication, redirect to /admin route. Use shadcn/ui components (Card, Input, Button, Label) for consistent styling."
+          "description": "Create a bottom navigation bar component with icons and labels for Home, Services, Gallery, Testimonials, and Chat sections. Use TanStack Router's Link component with active state detection. Include touch-optimized tap targets (minimum 44x44px) and visual highlighting for the active route. Make it fixed at the bottom of the viewport with proper z-index."
         },
         {
-          "path": "frontend/src/hooks/useAdminAuth.ts",
-          "operation": "create",
-          "description": "Create React Query mutation hooks for admin authentication. Implement useVerifyEmailPassword hook that calls backend verifyAuthentication with email and hashed password. Include error handling and success callbacks. Hash passwords client-side before sending to backend using Web Crypto API."
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Integrate the new BottomNav component into the Layout. Conditionally render BottomNav for non-admin pages. Add bottom padding to the main content area to prevent overlap with the fixed bottom navigation bar. Keep the existing header but prepare for simplification in REQ-31."
         }
       ]
     },
     {
-      "id": "REQ-27",
-      "summary": "Create an admin user management interface for viewing and inviting admin users",
+      "id": "REQ-31",
+      "summary": "Update Layout header to mobile app-style with minimal top bar showing only logo and essential actions",
       "acceptanceCriteria": [
-        "Admin user management page displays all admin users in a table or list",
-        "Each admin entry shows email, status, and invitation details",
-        "Form to invite new admin by email address",
-        "Invitation submission calls backend to create new admin invitation",
-        "Success/error feedback is displayed to the user"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/admin/AdminUserManagementPage.tsx",
-          "operation": "create",
-          "description": "Create admin user management page displaying list of all admin users with email, biometric registration status, invitation timestamp, and invited-by information. Include form dialog for inviting new admins with email and password fields. Wrap page with AdminGuard component. Use shadcn/ui Table component for admin list and Dialog component for invite form."
-        },
-        {
-          "path": "frontend/src/hooks/useAdminInvitations.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for admin invitation management. Implement useGetAdminInvitations hook to fetch all admin invitation entries from backend. Implement useInviteAdminUser mutation hook that calls backend inviteAdminUser with email and hashed password. Include query invalidation on successful invitation creation. Hash passwords client-side before submission."
-        }
-      ]
-    },
-    {
-      "id": "REQ-28",
-      "summary": "Implement frontend biometric authentication flow using Web Authentication API",
-      "acceptanceCriteria": [
-        "Biometric login button triggers WebAuthn authentication flow",
-        "Device-level biometric prompt is displayed to user",
-        "Authentication result is sent to backend for verification",
-        "Successful biometric auth grants admin access",
-        "Error handling for unsupported browsers or hardware"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useBiometricAuth.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for biometric authentication. Implement useBiometricLogin hook that initiates WebAuthn authentication flow using navigator.credentials.get() with publicKey challenge. Handle browser compatibility checks and provide error messages for unsupported devices. On successful biometric verification, call backend registerBiometric or verifyAuthentication. Include useRegisterBiometric mutation hook for initial biometric registration."
-        },
-        {
-          "path": "frontend/src/utils/webauthn.ts",
-          "operation": "create",
-          "description": "Create utility functions for WebAuthn operations. Implement functions to check browser support for Web Authentication API, generate credential creation options, handle credential registration, and verify authentication assertions. Include helper functions to convert between ArrayBuffer and base64 for credential transmission. Add error handling for various WebAuthn error scenarios (NotAllowedError, NotSupportedError, etc.)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-29",
-      "summary": "Update Layout component to show admin email/password login instead of Internet Identity on admin routes",
-      "acceptanceCriteria": [
-        "Internet Identity login button is hidden on admin pages",
-        "New admin login link is displayed only on admin routes",
-        "Login link navigates to the new admin login page",
-        "Regular customer pages remain unaffected"
+        "Header displays company logo on the left",
+        "Header is compact and mobile-optimized",
+        "No horizontal navigation links in the header",
+        "Header remains consistent across all pages"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Update Layout component to conditionally render login UI based on current route. Use useLocation hook to detect admin routes. When on admin routes (paths starting with '/admin'), replace the existing Internet Identity LoginButton with a link to /admin/login. Keep LoginButton visible on non-admin pages. Ensure mobile menu also reflects these changes."
+          "description": "Simplify the header to show only the company logo on the left and LoginButton on the right. Remove all horizontal navigation menu items. Make the header compact and mobile-optimized with minimal height. Ensure the header remains visible across all pages and works with the bottom navigation bar."
+        }
+      ]
+    },
+    {
+      "id": "REQ-32",
+      "summary": "Implement swipeable page transitions between main sections for native app-like navigation gestures",
+      "acceptanceCriteria": [
+        "Horizontal swipe gestures navigate between adjacent pages",
+        "Smooth animated transitions when swiping",
+        "Visual feedback during swipe gesture",
+        "Swipe navigation works on touch devices"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useSwipeNavigation.ts",
+          "operation": "create",
+          "description": "Create a custom hook that implements touch event handlers for horizontal swipe gestures. Detect swipe direction (left/right), calculate swipe distance, and trigger navigation to adjacent pages when threshold is met. Include visual feedback during swipe (e.g., page shift animation). Define the page order: Home -> Services -> Gallery -> Testimonials."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/SwipeContainer.tsx",
+          "operation": "create",
+          "description": "Create a wrapper component that uses the useSwipeNavigation hook to enable swipe gestures on customer-facing pages. Add smooth CSS transitions for page changes. Include visual indicators during swipe (optional drag effect)."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Add route registration for AdminLoginPage at path /admin/login. Add route registration for AdminUserManagementPage at path /admin/users. Ensure both routes use Layout wrapper. No authentication guard needed for /admin/login (public admin login), but wrap /admin/users with AdminGuard component."
+          "description": "Wrap the HomePage content with SwipeContainer to enable swipe navigation to ServicesPage."
+        },
+        {
+          "path": "frontend/src/pages/ServicesPage.tsx",
+          "operation": "modify",
+          "description": "Wrap the ServicesPage content with SwipeContainer to enable swipe navigation to Gallery and back to Home."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Wrap the ProjectGalleryPage content with SwipeContainer to enable swipe navigation to Testimonials and back to Services."
+        },
+        {
+          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "operation": "modify",
+          "description": "Wrap the TestimonialsPage content with SwipeContainer to enable swipe navigation back to Gallery."
+        }
+      ]
+    },
+    {
+      "id": "REQ-33",
+      "summary": "Add pull-to-refresh functionality on all customer-facing pages that reloads page data",
+      "acceptanceCriteria": [
+        "Pull-down gesture triggers refresh animation",
+        "Data is refetched after pull-to-refresh",
+        "Loading indicator shows during refresh",
+        "Works on touch-enabled devices"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/usePullToRefresh.ts",
+          "operation": "create",
+          "description": "Create a custom hook that implements pull-to-refresh functionality using touch events. Detect pull-down gesture from the top of the page, show a loading spinner or refresh indicator, and trigger a callback to refetch data. Include threshold detection and smooth animations."
+        },
+        {
+          "path": "frontend/src/components/PullToRefreshContainer.tsx",
+          "operation": "create",
+          "description": "Create a wrapper component that uses usePullToRefresh hook and displays the refresh indicator. Accept a callback prop for the refresh action and wrap child content with pull-to-refresh behavior."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Wrap HomePage content with PullToRefreshContainer and implement a refresh callback that invalidates relevant queries (projects preview, reviews, etc.) using React Query's queryClient."
+        },
+        {
+          "path": "frontend/src/pages/ServicesPage.tsx",
+          "operation": "modify",
+          "description": "Wrap ServicesPage content with PullToRefreshContainer. Since this page is mostly static, the refresh callback can be minimal or trigger a simple page reload."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Wrap ProjectGalleryPage content with PullToRefreshContainer and implement a refresh callback that invalidates the projects query to refetch gallery data."
+        },
+        {
+          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "operation": "modify",
+          "description": "Wrap TestimonialsPage content with PullToRefreshContainer and implement a refresh callback that invalidates the reviews query to refetch testimonial data."
+        }
+      ]
+    },
+    {
+      "id": "REQ-34",
+      "summary": "Optimize all page layouts for mobile-first vertical scrolling with card-based designs and increased touch target sizes",
+      "acceptanceCriteria": [
+        "All interactive elements meet minimum 44x44px touch target size",
+        "Content is organized in scrollable card-based layouts",
+        "Spacing and typography are optimized for mobile readability",
+        "Single-column layouts are prioritized for mobile viewports"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add mobile-first CSS utility classes for touch-friendly interactions. Define minimum touch target sizes (44x44px), increased padding for mobile cards, and optimized typography scales for mobile readability. Add utility classes for mobile card layouts with proper spacing."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Refactor the hero section and features into mobile-optimized card-based layouts. Use single-column layouts on mobile with proper spacing. Ensure all buttons and interactive elements meet 44x44px minimum touch target size. Increase font sizes for mobile readability."
+        },
+        {
+          "path": "frontend/src/pages/ServicesPage.tsx",
+          "operation": "modify",
+          "description": "Redesign service cards for mobile-first vertical scrolling. Use single-column layout on mobile viewports with large touch-friendly cards. Increase padding and spacing between service items for better touch interaction."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Optimize gallery grid for mobile with larger touch targets. Use single-column or 2-column grid on mobile devices. Ensure project cards have adequate spacing and tap areas. Make category filter buttons touch-friendly (minimum 44x44px)."
+        },
+        {
+          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "operation": "modify",
+          "description": "Redesign review cards for mobile-first display. Use single-column layout on mobile with card-based design. Ensure rating filter buttons meet minimum touch target size. Optimize typography for mobile readability."
+        }
+      ]
+    },
+    {
+      "id": "REQ-35",
+      "summary": "Convert chat widget to full-screen modal chat interface that opens from bottom navigation bar",
+      "acceptanceCriteria": [
+        "Chat opens as a full-screen overlay from the bottom nav",
+        "Chat interface follows mobile messaging app patterns",
+        "Back/close button returns to previous page",
+        "Message input is fixed at the bottom of the chat screen"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ChatWidget.tsx",
+          "operation": "modify",
+          "description": "Transform the existing floating ChatWidget into a full-screen modal interface. Add a close/back button in the header. Style the chat messages to follow mobile messaging app patterns (bubbles, timestamps). Fix the message input at the bottom of the screen. Make it open/close based on a prop or context state."
+        },
+        {
+          "path": "frontend/src/components/BottomNav.tsx",
+          "operation": "modify",
+          "description": "Add a Chat navigation item in the BottomNav that opens the full-screen ChatWidget modal when tapped. Use state management (e.g., React state or context) to control the chat modal visibility."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Update Layout to render the ChatWidget as a full-screen modal overlay when active, instead of as a floating widget. Ensure it appears above all other content with proper z-index."
+        }
+      ]
+    },
+    {
+      "id": "REQ-36",
+      "summary": "Add haptic feedback for key user interactions on devices that support the Vibration API",
+      "acceptanceCriteria": [
+        "Button taps trigger subtle haptic feedback",
+        "Form submissions provide haptic confirmation",
+        "Navigation changes include haptic feedback",
+        "Haptic feedback gracefully degrades on unsupported devices"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/haptics.ts",
+          "operation": "create",
+          "description": "Create utility functions for haptic feedback using the Vibration API. Implement different haptic patterns for different interaction types (tap, success, error). Include feature detection to gracefully handle unsupported devices."
+        },
+        {
+          "path": "frontend/src/components/BottomNav.tsx",
+          "operation": "modify",
+          "description": "Add haptic feedback when navigation items are tapped using the haptics utility."
+        },
+        {
+          "path": "frontend/src/components/ChatWidget.tsx",
+          "operation": "modify",
+          "description": "Add haptic feedback when sending messages or opening/closing the chat using the haptics utility."
+        },
+        {
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Add haptic feedback on form submission success using the haptics utility."
+        },
+        {
+          "path": "frontend/src/pages/SubmitReviewPage.tsx",
+          "operation": "modify",
+          "description": "Add haptic feedback on form submission success using the haptics utility."
+        }
+      ]
+    },
+    {
+      "id": "REQ-37",
+      "summary": "Implement native-like loading states and skeleton screens for all data-fetching operations",
+      "acceptanceCriteria": [
+        "Skeleton screens display during initial page loads",
+        "Smooth fade-in animations when content loads",
+        "Shimmer effects on skeleton elements",
+        "Loading states match the layout of loaded content"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/SkeletonCard.tsx",
+          "operation": "create",
+          "description": "Create a reusable skeleton card component with shimmer animation effects. Use gradient animations to create a native-like loading shimmer. Make it configurable for different card layouts (project card, review card, service card)."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add CSS keyframe animations for skeleton shimmer effects and fade-in transitions. Define utility classes for smooth content loading animations."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Replace loading spinners with skeleton screens that match the project card layout. Add fade-in animation when project data loads. Use SkeletonCard component during the loading state."
+        },
+        {
+          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "operation": "modify",
+          "description": "Replace existing skeleton loaders with enhanced SkeletonCard components that match review card layout. Add shimmer effects and fade-in animations when review data loads."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Add skeleton screens for the features and services preview sections during data loading. Use fade-in animations when content appears."
+        },
+        {
+          "path": "frontend/src/pages/MyQuotationsPage.tsx",
+          "operation": "modify",
+          "description": "Add skeleton screens for quotation cards during loading. Use SkeletonCard component and fade-in animations when quotation data loads."
+        }
+      ]
+    },
+    {
+      "id": "REQ-38",
+      "summary": "Update form pages to use mobile-optimized form controls with bottom sheets and touch-friendly inputs",
+      "acceptanceCriteria": [
+        "Select inputs open as bottom sheet drawers",
+        "Date picker uses native mobile date input",
+        "Input fields are large and touch-friendly",
+        "Keyboard types match input context (numeric, email, etc.)"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/BottomSheet.tsx",
+          "operation": "create",
+          "description": "Create a reusable bottom sheet component that slides up from the bottom of the screen. Include backdrop overlay, swipe-to-dismiss gesture, and smooth animations. Make it configurable for different content types (select options, date picker, etc.)."
+        },
+        {
+          "path": "frontend/src/components/BottomSheetSelect.tsx",
+          "operation": "create",
+          "description": "Create a select input component that opens options in a BottomSheet instead of a native select dropdown. Display options as large touch-friendly list items in the bottom sheet."
+        },
+        {
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Replace the service type select input with BottomSheetSelect component. Update the deadline input to use native date input type. Increase input field sizes for touch-friendly interaction. Add appropriate inputMode and type attributes (email for email, tel for phone). Ensure all form controls meet 44x44px minimum touch target size."
+        },
+        {
+          "path": "frontend/src/pages/SubmitReviewPage.tsx",
+          "operation": "modify",
+          "description": "Replace the project type select input with BottomSheetSelect component. Increase input field and textarea sizes for touch-friendly interaction. Add appropriate inputMode attributes. Ensure all form controls including the rating selector meet 44x44px minimum touch target size."
+        },
+        {
+          "path": "frontend/src/components/ProfileSetup.tsx",
+          "operation": "modify",
+          "description": "Update form inputs to be mobile-optimized with larger touch targets. Add appropriate inputMode and type attributes for email and phone inputs. Ensure all form controls meet 44x44px minimum touch target size."
         }
       ]
     }

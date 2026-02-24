@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Star, Upload, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ServiceType } from '../backend';
 import { ExternalBlob } from '../lib/blobStorage';
+import BottomSheetSelect from '../components/BottomSheetSelect';
+import { haptics } from '../utils/haptics';
 
 export default function SubmitReviewPage() {
   const navigate = useNavigate();
@@ -23,6 +24,13 @@ export default function SubmitReviewPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const projectOptions = [
+    { value: 'digital', label: 'Digital Printing' },
+    { value: 'banner', label: 'Flex & Banner Printing' },
+    { value: 'offset', label: 'Offset Printing' },
+    { value: 'design', label: 'Creative Design Services' },
+  ];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,6 +54,7 @@ export default function SubmitReviewPage() {
     e.preventDefault();
 
     if (!customerName.trim() || !reviewText.trim() || !projectType) {
+      haptics.error();
       toast.error('Please fill in all required fields');
       return;
     }
@@ -70,28 +79,30 @@ export default function SubmitReviewPage() {
         projectType: projectType as ServiceType,
       });
 
+      haptics.success();
       toast.success('Review submitted successfully!');
       navigate({ to: '/testimonials' });
     } catch (error) {
+      haptics.error();
       toast.error('Failed to submit review');
       console.error(error);
     }
   };
 
   return (
-    <div className="flex flex-col">
-      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16 md:py-20">
-        <div className="container text-center space-y-4">
+    <div className="flex flex-col min-h-screen">
+      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-12 md:py-16 px-4">
+        <div className="container text-center space-y-4 max-w-3xl mx-auto">
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
             Leave a <span className="text-primary">Review</span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground">
             Share your experience with Nellore Print Hub
           </p>
         </div>
       </section>
 
-      <section className="py-16 md:py-24">
+      <section className="py-8 md:py-12 px-4 flex-1">
         <div className="container max-w-2xl">
           <Card>
             <CardHeader>
@@ -110,6 +121,8 @@ export default function SubmitReviewPage() {
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Enter your name"
                     required
+                    inputMode="text"
+                    className="h-12 text-base"
                   />
                 </div>
 
@@ -120,8 +133,11 @@ export default function SubmitReviewPage() {
                       <button
                         key={star}
                         type="button"
-                        onClick={() => setRating(star)}
-                        className="focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                        onClick={() => {
+                          haptics.tap();
+                          setRating(star);
+                        }}
+                        className="focus:outline-none focus:ring-2 focus:ring-primary rounded min-w-[44px] min-h-[44px] flex items-center justify-center"
                       >
                         <Star
                           className={`w-8 h-8 transition-colors ${
@@ -133,20 +149,14 @@ export default function SubmitReviewPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="project">Project Type *</Label>
-                  <Select value={projectType} onValueChange={(value) => setProjectType(value as ServiceType)}>
-                    <SelectTrigger id="project">
-                      <SelectValue placeholder="Select project type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="digital">Digital Printing</SelectItem>
-                      <SelectItem value="banner">Flex & Banner Printing</SelectItem>
-                      <SelectItem value="offset">Offset Printing</SelectItem>
-                      <SelectItem value="design">Creative Design Services</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <BottomSheetSelect
+                  label="Project Type"
+                  value={projectType}
+                  onValueChange={(value) => setProjectType(value as ServiceType)}
+                  options={projectOptions}
+                  placeholder="Select project type"
+                  required
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="review">Your Review *</Label>
@@ -157,6 +167,7 @@ export default function SubmitReviewPage() {
                     placeholder="Tell us about your experience..."
                     rows={5}
                     required
+                    className="text-base resize-none"
                   />
                 </div>
 
@@ -173,10 +184,10 @@ export default function SubmitReviewPage() {
                         type="button"
                         variant="destructive"
                         size="icon"
-                        className="absolute top-2 right-2"
+                        className="absolute top-2 right-2 min-w-[44px] min-h-[44px]"
                         onClick={removeImage}
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-5 h-5" />
                       </Button>
                       {uploadProgress > 0 && uploadProgress < 100 && (
                         <div className="absolute bottom-2 left-2 right-2 bg-background/90 rounded-full h-2">
@@ -205,10 +216,10 @@ export default function SubmitReviewPage() {
                   )}
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={addReview.isPending}>
+                <Button type="submit" className="w-full min-h-[48px] text-base" size="lg" disabled={addReview.isPending}>
                   {addReview.isPending ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                       Submitting...
                     </>
                   ) : (

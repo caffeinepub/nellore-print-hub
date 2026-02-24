@@ -2,73 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-an-admin-only-login-page-that-is-only-visible-and-accessible-to-admin-users-this-page-should-provide-login-options-for-email-password-authentication-and-biometric-authentication-display-a-login-form-with-email-and-password-fields-and-include-a-biometric-login-button-that-triggers-device-level-biometric-verification",
-      "featureTitle": "Create an admin-only login page that is only visible and accessible to admin users. This page should provide login options for email/password authentication and biometric authentication. Display a login form with email and password fields, and include a biometric login button that triggers device-level biometric verification.",
+      "featureId": "feature-convert-the-existing-website-layout-to-a-mobile-app-like-interface-by-implementing-a-bottom-navigation-bar-for-primary-navigation-instead-of-the-current-header-based-navigation-the-bottom-nav-should-include-icons-and-labels-for-home-services-gallery-testimonials-and-chat-sections",
+      "featureTitle": "Convert the existing website layout to a mobile app-like interface by implementing a bottom navigation bar for primary navigation instead of the current header-based navigation. The bottom nav should include icons and labels for Home, Services, Gallery, Testimonials, and Chat sections.",
       "files": [
-        "frontend/src/hooks/useAdminAuth.ts",
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-26"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-create-an-admin-user-management-interface-page-where-authenticated-admins-can-view-the-list-of-all-admin-users-invite-new-admin-partners-by-email-and-manage-admin-access-display-admin-users-with-their-email-invitation-status-and-invitation-date-provide-a-form-to-send-new-admin-invitations",
-      "featureTitle": "Create an admin user management interface page where authenticated admins can view the list of all admin users, invite new admin partners by email, and manage admin access. Display admin users with their email, invitation status, and invitation date. Provide a form to send new admin invitations.",
-      "files": [
-        "frontend/src/hooks/useAdminInvitations.ts",
-        "frontend/src/pages/admin/AdminUserManagementPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-27"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-frontend-biometric-authentication-flow-using-the-web-authentication-api-webauthn-when-the-biometric-login-button-is-clicked-initiate-device-level-biometric-verification-fingerprint-face-id-touch-id-and-send-verification-results-to-the-backend-for-authentication-handle-browser-compatibility-and-provide-appropriate-error-messages-if-biometric-hardware-is-not-available",
-      "featureTitle": "Implement frontend biometric authentication flow using the Web Authentication API (WebAuthn). When the biometric login button is clicked, initiate device-level biometric verification (fingerprint, Face ID, Touch ID) and send verification results to the backend for authentication. Handle browser compatibility and provide appropriate error messages if biometric hardware is not available.",
-      "files": [
-        "frontend/src/hooks/useBiometricAuth.ts",
-        "frontend/src/utils/webauthn.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-28"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-layout-component-and-admin-navigation-to-hide-the-existing-internet-identity-login-button-from-regular-admin-pages-and-replace-it-with-a-link-to-the-new-admin-only-email-password-biometric-login-page-ensure-the-new-login-option-is-only-visible-on-admin-routes",
-      "featureTitle": "Update the Layout component and admin navigation to hide the existing Internet Identity login button from regular admin pages and replace it with a link to the new admin-only email/password/biometric login page. Ensure the new login option is only visible on admin routes.",
-      "files": [
-        "frontend/src/App.tsx",
+        "frontend/src/components/BottomNav.tsx",
         "frontend/src/components/Layout.tsx"
       ],
       "components": [
@@ -81,7 +18,196 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-29"
+        "REQ-30"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-layout-component-to-use-a-mobile-app-style-header-with-a-minimal-top-bar-showing-only-the-company-logo-and-essential-actions-no-horizontal-navigation-menu-remove-the-current-desktop-style-navigation-menu-from-the-header",
+      "featureTitle": "Update the Layout component to use a mobile app-style header with a minimal top bar showing only the company logo and essential actions (no horizontal navigation menu). Remove the current desktop-style navigation menu from the header.",
+      "files": [
+        "frontend/src/components/Layout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-31"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-swipeable-page-transitions-between-main-sections-to-provide-native-app-like-navigation-gestures-users-should-be-able-to-swipe-left-right-to-navigate-between-home-services-gallery-and-testimonials-pages",
+      "featureTitle": "Implement swipeable page transitions between main sections to provide native app-like navigation gestures. Users should be able to swipe left/right to navigate between Home, Services, Gallery, and Testimonials pages.",
+      "files": [
+        "frontend/src/components/SwipeContainer.tsx",
+        "frontend/src/hooks/useSwipeNavigation.ts",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/ProjectGalleryPage.tsx",
+        "frontend/src/pages/ServicesPage.tsx",
+        "frontend/src/pages/TestimonialsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-32"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-pull-to-refresh-functionality-on-all-customer-facing-pages-home-services-gallery-testimonials-that-reloads-page-data-when-the-user-pulls-down-from-the-top-of-the-page-similar-to-native-mobile-apps",
+      "featureTitle": "Add pull-to-refresh functionality on all customer-facing pages (Home, Services, Gallery, Testimonials) that reloads page data when the user pulls down from the top of the page, similar to native mobile apps.",
+      "files": [
+        "frontend/src/components/PullToRefreshContainer.tsx",
+        "frontend/src/hooks/usePullToRefresh.ts",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/ProjectGalleryPage.tsx",
+        "frontend/src/pages/ServicesPage.tsx",
+        "frontend/src/pages/TestimonialsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-33"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-optimize-all-page-layouts-for-mobile-first-vertical-scrolling-with-card-based-designs-and-increased-touch-target-sizes-minimum-44x44px-redesign-hero-sections-service-cards-project-gallery-items-and-review-cards-to-follow-mobile-app-ui-patterns",
+      "featureTitle": "Optimize all page layouts for mobile-first vertical scrolling with card-based designs and increased touch target sizes (minimum 44x44px). Redesign hero sections, service cards, project gallery items, and review cards to follow mobile app UI patterns.",
+      "files": [
+        "frontend/src/index.css",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/ProjectGalleryPage.tsx",
+        "frontend/src/pages/ServicesPage.tsx",
+        "frontend/src/pages/TestimonialsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-34"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-convert-the-chat-widget-to-a-full-screen-modal-chat-interface-that-opens-from-the-bottom-navigation-bar-similar-to-messaging-apps-the-chat-should-occupy-the-full-screen-when-active-and-include-a-close-back-button",
+      "featureTitle": "Convert the chat widget to a full-screen modal chat interface that opens from the bottom navigation bar, similar to messaging apps. The chat should occupy the full screen when active and include a close/back button.",
+      "files": [
+        "frontend/src/components/BottomNav.tsx",
+        "frontend/src/components/ChatWidget.tsx",
+        "frontend/src/components/Layout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-35"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-haptic-feedback-vibration-for-key-user-interactions-like-button-taps-form-submissions-and-navigation-actions-on-devices-that-support-the-vibration-api-enhancing-the-native-app-feel",
+      "featureTitle": "Add haptic feedback (vibration) for key user interactions like button taps, form submissions, and navigation actions on devices that support the Vibration API, enhancing the native app feel.",
+      "files": [
+        "frontend/src/components/BottomNav.tsx",
+        "frontend/src/components/ChatWidget.tsx",
+        "frontend/src/pages/QuotationRequestPage.tsx",
+        "frontend/src/pages/SubmitReviewPage.tsx",
+        "frontend/src/utils/haptics.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-36"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-native-like-loading-states-and-skeleton-screens-for-all-data-fetching-operations-using-smooth-fade-in-animations-and-shimmer-effects-replacing-traditional-spinners-where-appropriate",
+      "featureTitle": "Implement native-like loading states and skeleton screens for all data-fetching operations using smooth fade-in animations and shimmer effects, replacing traditional spinners where appropriate.",
+      "files": [
+        "frontend/src/components/SkeletonCard.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/MyQuotationsPage.tsx",
+        "frontend/src/pages/ProjectGalleryPage.tsx",
+        "frontend/src/pages/TestimonialsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-37"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-form-pages-quotationrequestpage-submitreviewpage-to-use-mobile-optimized-form-controls-with-bottom-sheets-for-select-inputs-date-pickers-and-large-touch-friendly-input-fields-with-appropriate-keyboard-types",
+      "featureTitle": "Update the form pages (QuotationRequestPage, SubmitReviewPage) to use mobile-optimized form controls with bottom sheets for select inputs, date pickers, and large touch-friendly input fields with appropriate keyboard types.",
+      "files": [
+        "frontend/src/components/BottomSheet.tsx",
+        "frontend/src/components/BottomSheetSelect.tsx",
+        "frontend/src/components/ProfileSetup.tsx",
+        "frontend/src/pages/QuotationRequestPage.tsx",
+        "frontend/src/pages/SubmitReviewPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-38"
       ],
       "confidence": "high"
     }

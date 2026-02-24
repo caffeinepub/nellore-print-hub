@@ -1,15 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSendMessage } from '../hooks/useChat';
 import { toast } from 'sonner';
+import { haptics } from '../utils/haptics';
 
-export default function ChatWidget() {
-  const [isOpen, setIsOpen] = useState(false);
+interface ChatWidgetProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -35,6 +39,17 @@ export default function ChatWidget() {
     }
   }, [chatHistory]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
@@ -57,126 +72,107 @@ export default function ChatWidget() {
 
       setChatHistory([...chatHistory, { sender: name, text: message, timestamp: Date.now() }]);
       setMessage('');
+      haptics.success();
       toast.success('Message sent successfully');
     } catch (error) {
-      console.error('Failed to send message:', error);
+      haptics.error();
       toast.error('Failed to send message');
+      console.error(error);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+  const handleClose = () => {
+    haptics.tap();
+    onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
-    <>
-      {/* Chat Toggle Button */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center"
-          aria-label="Open chat"
-        >
-          <img
-            src="/assets/generated/chat-icon.dim_64x64.png"
-            alt="Chat"
-            className="w-8 h-8"
-          />
-        </button>
-      )}
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 p-4 border-b border-border bg-background/95 backdrop-blur-lg">
+        <Button variant="ghost" size="icon" onClick={handleClose} className="min-w-[44px] min-h-[44px]">
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        <div className="flex-1">
+          <h2 className="font-semibold text-lg">Chat with us</h2>
+          <p className="text-xs text-muted-foreground">We typically reply within minutes</p>
+        </div>
+      </div>
 
-      {/* Chat Panel */}
-      {isOpen && (
-        <Card className="fixed bottom-6 right-6 z-50 w-[380px] h-[500px] shadow-2xl flex flex-col">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b bg-primary text-primary-foreground rounded-t-lg">
-            <CardTitle className="text-lg font-semibold">Chat with Us</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(false)}
-              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col p-4 space-y-4 overflow-hidden">
-            {!hasSetProfile ? (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Please introduce yourself to start chatting
-                </p>
-                <Input
-                  placeholder="Your Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-                <Input
-                  type="email"
-                  placeholder="Your Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col space-y-3 overflow-hidden">
-                <ScrollArea className="flex-1 pr-4" ref={scrollRef}>
-                  <div className="space-y-3">
-                    {chatHistory.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-8">
-                        No messages yet. Start a conversation!
-                      </p>
-                    ) : (
-                      chatHistory.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-accent/50 rounded-lg p-3 space-y-1"
-                        >
-                          <p className="text-xs font-semibold text-primary">{msg.sender}</p>
-                          <p className="text-sm">{msg.text}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(msg.timestamp).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Textarea
-                placeholder="Type your message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                rows={3}
-                className="resize-none"
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={sendMessageMutation.isPending || !message.trim()}
-                className="w-full"
-              >
-                {sendMessageMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
-                  </>
-                )}
-              </Button>
+      {/* Messages */}
+      <ScrollArea className="flex-1 p-4">
+        <div ref={scrollRef} className="space-y-4">
+          {!hasSetProfile && (
+            <div className="bg-primary/10 rounded-2xl p-4 max-w-[85%]">
+              <p className="text-sm">
+                Hi! Welcome to Nellore Print Hub. Please introduce yourself to start chatting.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </>
+          )}
+          {chatHistory.map((msg, idx) => (
+            <div key={idx} className="flex justify-end">
+              <div className="bg-primary text-primary-foreground rounded-2xl rounded-tr-sm p-4 max-w-[85%]">
+                <p className="text-sm">{msg.text}</p>
+                <span className="text-xs opacity-70 mt-1 block">
+                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+
+      {/* Input Area */}
+      <div className="border-t border-border bg-background p-4 space-y-3 safe-area-bottom">
+        {!hasSetProfile ? (
+          <>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              className="h-12 text-base"
+              inputMode="text"
+            />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Your email"
+              className="h-12 text-base"
+              inputMode="email"
+            />
+          </>
+        ) : null}
+        <div className="flex gap-2">
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 resize-none min-h-[48px] text-base"
+            rows={1}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+              }
+            }}
+          />
+          <Button
+            onClick={handleSendMessage}
+            disabled={sendMessageMutation.isPending}
+            size="icon"
+            className="min-w-[48px] min-h-[48px] rounded-full"
+          >
+            {sendMessageMutation.isPending ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

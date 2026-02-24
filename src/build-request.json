@@ -1,163 +1,193 @@
 {
   "kind": "build_request",
-  "title": "Add admin user management and email/password authentication with biometric support",
+  "title": "Convert website to mobile app format with app-like UI/UX",
   "projectName": "Nellore Print Hub",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-23",
-      "text": "Create a new admin user management system in the backend that allows existing admins to invite and share website access with other partners. Store invited admin users with fields for email, hashed password, biometric registration status, invitation status (pending/accepted), invited by (admin principal), and invitation timestamp.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "admin can share the website acsess other partners also"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend stores admin user records with email, password hash, and biometric status",
-        "Existing admins can create invitation records for new admin partners",
-        "Invitation system tracks who invited whom and when",
-        "Admin list is queryable by authenticated admins"
-      ]
-    },
-    {
-      "id": "REQ-24",
-      "text": "Implement email and password authentication for admin users in the backend. Support password hashing for secure storage, password verification on login attempts, and return authentication tokens or principals on successful authentication. This authentication method should work alongside the existing Internet Identity authentication.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "he only can accsess login with email password"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend function to register admin with email and password",
-        "Passwords are hashed before storage",
-        "Backend function to authenticate admin by email and password",
-        "Authentication tokens or principals are returned on successful login",
-        "Email/password auth coexists with Internet Identity auth"
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "text": "Add biometric authentication registration and verification capability in the backend. Store biometric template data or registration status for admin users who enable biometric login. Provide backend functions to register biometric credentials and verify biometric authentication attempts.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "baio metrics",
-          "if have admin can use his face lock"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend stores biometric registration status for each admin",
-        "Backend function to register biometric credentials for an admin",
-        "Backend function to verify biometric authentication attempts",
-        "Biometric auth can be used as an alternative login method"
-      ]
-    },
-    {
-      "id": "REQ-26",
-      "text": "Create an admin-only login page that is only visible and accessible to admin users. This page should provide login options for email/password authentication and biometric authentication. Display a login form with email and password fields, and include a biometric login button that triggers device-level biometric verification.",
+      "id": "REQ-30",
+      "text": "Convert the existing website layout to a mobile app-like interface by implementing a bottom navigation bar for primary navigation instead of the current header-based navigation. The bottom nav should include icons and labels for Home, Services, Gallery, Testimonials, and Chat sections.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-user-current"
         ],
         "quotes": [
-          "make a login option only can visible to admin",
-          "he only can accsess login with email password and baio metrics"
+          "Can you make same website like a app"
         ]
       },
       "acceptanceCriteria": [
-        "Admin login page is created and only accessible via admin routes",
-        "Page displays email and password input fields",
-        "Page includes a biometric login button",
-        "Login form submission calls backend authentication",
-        "Successful login redirects to admin dashboard"
+        "Bottom navigation bar is fixed at the bottom of the viewport on all customer-facing pages",
+        "Navigation items have icons and labels",
+        "Active navigation item is visually highlighted",
+        "Navigation bar is responsive and works on mobile, tablet, and desktop viewports"
       ]
     },
     {
-      "id": "REQ-27",
-      "text": "Create an admin user management interface page where authenticated admins can view the list of all admin users, invite new admin partners by email, and manage admin access. Display admin users with their email, invitation status, and invitation date. Provide a form to send new admin invitations.",
+      "id": "REQ-31",
+      "text": "Update the Layout component to use a mobile app-style header with a minimal top bar showing only the company logo and essential actions (no horizontal navigation menu). Remove the current desktop-style navigation menu from the header.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-user-current"
         ],
         "quotes": [
-          "admin can share the website acsess other partners also"
+          "Can you make same website like a app"
         ]
       },
       "acceptanceCriteria": [
-        "Admin user management page displays all admin users in a table or list",
-        "Each admin entry shows email, status, and invitation details",
-        "Form to invite new admin by email address",
-        "Invitation submission calls backend to create new admin invitation",
-        "Success/error feedback is displayed to the user"
+        "Header displays company logo on the left",
+        "Header is compact and mobile-optimized",
+        "No horizontal navigation links in the header",
+        "Header remains consistent across all pages"
       ]
     },
     {
-      "id": "REQ-28",
-      "text": "Implement frontend biometric authentication flow using the Web Authentication API (WebAuthn). When the biometric login button is clicked, initiate device-level biometric verification (fingerprint, Face ID, Touch ID) and send verification results to the backend for authentication. Handle browser compatibility and provide appropriate error messages if biometric hardware is not available.",
+      "id": "REQ-32",
+      "text": "Implement swipeable page transitions between main sections to provide native app-like navigation gestures. Users should be able to swipe left/right to navigate between Home, Services, Gallery, and Testimonials pages.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-user-current"
         ],
         "quotes": [
-          "baio metrics",
-          "admin can use his face lock"
+          "Can you make same website like a app"
         ]
       },
       "acceptanceCriteria": [
-        "Biometric login button triggers WebAuthn authentication flow",
-        "Device-level biometric prompt is displayed to user",
-        "Authentication result is sent to backend for verification",
-        "Successful biometric auth grants admin access",
-        "Error handling for unsupported browsers or hardware"
+        "Horizontal swipe gestures navigate between adjacent pages",
+        "Smooth animated transitions when swiping",
+        "Visual feedback during swipe gesture",
+        "Swipe navigation works on touch devices"
       ]
     },
     {
-      "id": "REQ-29",
-      "text": "Update the Layout component and admin navigation to hide the existing Internet Identity login button from regular admin pages and replace it with a link to the new admin-only email/password/biometric login page. Ensure the new login option is only visible on admin routes.",
+      "id": "REQ-33",
+      "text": "Add pull-to-refresh functionality on all customer-facing pages (Home, Services, Gallery, Testimonials) that reloads page data when the user pulls down from the top of the page, similar to native mobile apps.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-user-current"
         ],
         "quotes": [
-          "make a login option only can visible to admin"
+          "Can you make same website like a app"
         ]
       },
       "acceptanceCriteria": [
-        "Internet Identity login button is hidden on admin pages",
-        "New admin login link is displayed only on admin routes",
-        "Login link navigates to the new admin login page",
-        "Regular customer pages remain unaffected"
+        "Pull-down gesture triggers refresh animation",
+        "Data is refetched after pull-to-refresh",
+        "Loading indicator shows during refresh",
+        "Works on touch-enabled devices"
+      ]
+    },
+    {
+      "id": "REQ-34",
+      "text": "Optimize all page layouts for mobile-first vertical scrolling with card-based designs and increased touch target sizes (minimum 44x44px). Redesign hero sections, service cards, project gallery items, and review cards to follow mobile app UI patterns.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-current"
+        ],
+        "quotes": [
+          "Can you make same website like a app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All interactive elements meet minimum 44x44px touch target size",
+        "Content is organized in scrollable card-based layouts",
+        "Spacing and typography are optimized for mobile readability",
+        "Single-column layouts are prioritized for mobile viewports"
+      ]
+    },
+    {
+      "id": "REQ-35",
+      "text": "Convert the chat widget to a full-screen modal chat interface that opens from the bottom navigation bar, similar to messaging apps. The chat should occupy the full screen when active and include a close/back button.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-current"
+        ],
+        "quotes": [
+          "Can you make same website like a app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Chat opens as a full-screen overlay from the bottom nav",
+        "Chat interface follows mobile messaging app patterns",
+        "Back/close button returns to previous page",
+        "Message input is fixed at the bottom of the chat screen"
+      ]
+    },
+    {
+      "id": "REQ-36",
+      "text": "Add haptic feedback (vibration) for key user interactions like button taps, form submissions, and navigation actions on devices that support the Vibration API, enhancing the native app feel.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-current"
+        ],
+        "quotes": [
+          "Can you make same website like a app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Button taps trigger subtle haptic feedback",
+        "Form submissions provide haptic confirmation",
+        "Navigation changes include haptic feedback",
+        "Haptic feedback gracefully degrades on unsupported devices"
+      ]
+    },
+    {
+      "id": "REQ-37",
+      "text": "Implement native-like loading states and skeleton screens for all data-fetching operations using smooth fade-in animations and shimmer effects, replacing traditional spinners where appropriate.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-current"
+        ],
+        "quotes": [
+          "Can you make same website like a app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Skeleton screens display during initial page loads",
+        "Smooth fade-in animations when content loads",
+        "Shimmer effects on skeleton elements",
+        "Loading states match the layout of loaded content"
+      ]
+    },
+    {
+      "id": "REQ-38",
+      "text": "Update the form pages (QuotationRequestPage, SubmitReviewPage) to use mobile-optimized form controls with bottom sheets for select inputs, date pickers, and large touch-friendly input fields with appropriate keyboard types.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-user-current"
+        ],
+        "quotes": [
+          "Can you make same website like a app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Select inputs open as bottom sheet drawers",
+        "Date picker uses native mobile date input",
+        "Input fields are large and touch-friendly",
+        "Keyboard types match input context (numeric, email, etc.)"
       ]
     }
   ],
   "constraints": [
-    "Do not remove or disable the existing Internet Identity authentication system",
-    "Email/password authentication must coexist with Internet Identity authentication",
-    "Biometric authentication must use device-level hardware (Face ID, Touch ID, fingerprint sensors)",
-    "Password storage must use secure hashing algorithms",
-    "Admin user management must be protected and only accessible to authenticated admins"
+    "Do not modify the backend actor structure or data models",
+    "Maintain compatibility with existing authentication flows (Internet Identity and admin login)",
+    "Preserve all existing functionality while converting UI to app-like format",
+    "Do not change any immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Implementing two-factor authentication (2FA) or OTP verification",
-    "Creating a password reset flow via email",
-    "Building a complete identity provider or SSO system",
-    "Adding customer-facing email/password registration",
-    "Implementing role-based permissions beyond admin/non-admin distinction"
+    "Building an actual native iOS or Android app",
+    "Adding offline functionality or service workers",
+    "Implementing push notifications",
+    "Adding app store deployment capabilities",
+    "Creating a Progressive Web App (PWA) manifest"
   ],
   "imageRequirements": {
     "required": [],

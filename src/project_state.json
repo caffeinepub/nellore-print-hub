@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 9,
+  "projectStateVersion": 11,
   "summary": "Business website for Nellore Print Hub (Magic Advertising) - a printing and design services company offering digital printing, flex/banner printing, offset printing, and creative design services with manual quotation system, flexible payment options, and local delivery.",
   "architectural_notes": [
     "Manual quotation workflow requiring admin review before customer notification",
@@ -216,6 +216,78 @@
         "REQ-29"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-convert-the-existing-website-layout-to-a-mobile-app-like-interface-by-implementing-a-bottom-navigation-bar-for-primary-navigation-instead-of-the-current-header-based-navigation-the-bottom-nav-should-include-icons-and-labels-for-home-services-gallery-testimonials-and-chat-sections",
+      "title": "Convert the existing website layout to a mobile app-like interface by implementing a bottom navigation bar for primary navigation instead of the current header-based navigation. The bottom nav should include icons and labels for Home, Services, Gallery, Testimonials, and Chat sections.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-layout-component-to-use-a-mobile-app-style-header-with-a-minimal-top-bar-showing-only-the-company-logo-and-essential-actions-no-horizontal-navigation-menu-remove-the-current-desktop-style-navigation-menu-from-the-header",
+      "title": "Update the Layout component to use a mobile app-style header with a minimal top bar showing only the company logo and essential actions (no horizontal navigation menu). Remove the current desktop-style navigation menu from the header.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-swipeable-page-transitions-between-main-sections-to-provide-native-app-like-navigation-gestures-users-should-be-able-to-swipe-left-right-to-navigate-between-home-services-gallery-and-testimonials-pages",
+      "title": "Implement swipeable page transitions between main sections to provide native app-like navigation gestures. Users should be able to swipe left/right to navigate between Home, Services, Gallery, and Testimonials pages.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-pull-to-refresh-functionality-on-all-customer-facing-pages-home-services-gallery-testimonials-that-reloads-page-data-when-the-user-pulls-down-from-the-top-of-the-page-similar-to-native-mobile-apps",
+      "title": "Add pull-to-refresh functionality on all customer-facing pages (Home, Services, Gallery, Testimonials) that reloads page data when the user pulls down from the top of the page, similar to native mobile apps.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-optimize-all-page-layouts-for-mobile-first-vertical-scrolling-with-card-based-designs-and-increased-touch-target-sizes-minimum-44x44px-redesign-hero-sections-service-cards-project-gallery-items-and-review-cards-to-follow-mobile-app-ui-patterns",
+      "title": "Optimize all page layouts for mobile-first vertical scrolling with card-based designs and increased touch target sizes (minimum 44x44px). Redesign hero sections, service cards, project gallery items, and review cards to follow mobile app UI patterns.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-convert-the-chat-widget-to-a-full-screen-modal-chat-interface-that-opens-from-the-bottom-navigation-bar-similar-to-messaging-apps-the-chat-should-occupy-the-full-screen-when-active-and-include-a-close-back-button",
+      "title": "Convert the chat widget to a full-screen modal chat interface that opens from the bottom navigation bar, similar to messaging apps. The chat should occupy the full screen when active and include a close/back button.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-haptic-feedback-vibration-for-key-user-interactions-like-button-taps-form-submissions-and-navigation-actions-on-devices-that-support-the-vibration-api-enhancing-the-native-app-feel",
+      "title": "Add haptic feedback (vibration) for key user interactions like button taps, form submissions, and navigation actions on devices that support the Vibration API, enhancing the native app feel.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-native-like-loading-states-and-skeleton-screens-for-all-data-fetching-operations-using-smooth-fade-in-animations-and-shimmer-effects-replacing-traditional-spinners-where-appropriate",
+      "title": "Implement native-like loading states and skeleton screens for all data-fetching operations using smooth fade-in animations and shimmer effects, replacing traditional spinners where appropriate.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-form-pages-quotationrequestpage-submitreviewpage-to-use-mobile-optimized-form-controls-with-bottom-sheets-for-select-inputs-date-pickers-and-large-touch-friendly-input-fields-with-appropriate-keyboard-types",
+      "title": "Update the form pages (QuotationRequestPage, SubmitReviewPage) to use mobile-optimized form controls with bottom sheets for select inputs, date pickers, and large touch-friendly input fields with appropriate keyboard types.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -351,6 +423,12 @@
       "reqIds": [
         "REQ-25"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Convert website to mobile app format with app-like UI/UX",
+      "reqIds": [],
       "status": "pending"
     }
   ],

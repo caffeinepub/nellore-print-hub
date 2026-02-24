@@ -90,4 +90,52 @@
     .text-balance {
         text-wrap: balance;
     }
+
+    /* Mobile app utilities */
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Shimmer effect for skeleton loaders */
+    .shimmer {
+        background: linear-gradient(
+            90deg,
+            oklch(var(--muted)) 0%,
+            oklch(var(--muted) / 0.5) 50%,
+            oklch(var(--muted)) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    @keyframes slide-up {
+        from {
+            transform: translateY(100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+
+    .animate-slide-up {
+        animation: slide-up 0.3s ease-out;
+    }
 }

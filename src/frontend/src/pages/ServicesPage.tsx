@@ -1,127 +1,113 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Printer, Image, BookOpen, Palette } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from '@tanstack/react-router';
+import { Printer, Image as ImageIcon, FileText, Palette } from 'lucide-react';
+import SwipeContainer from '../components/SwipeContainer';
+import PullToRefreshContainer from '../components/PullToRefreshContainer';
 
 export default function ServicesPage() {
+  const handleRefresh = async () => {
+    // Services page is mostly static, minimal refresh needed
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  };
+
   const services = [
     {
-      icon: '/assets/generated/digital-icon.dim_256x256.png',
+      icon: Printer,
       title: 'Digital Printing',
-      tagline: 'Bring your small-scale projects to life with vibrant colors.',
-      items: [
-        'High-quality Flyers & Leaflets',
-        'Professional Business Cards',
-        'Custom Books & Magazines',
-        'Official Letterheads & Envelopes',
-      ],
-      color: 'primary',
+      description: 'High-quality digital printing for business cards, flyers, brochures, and promotional materials.',
+      features: ['Business Cards', 'Flyers & Brochures', 'Posters', 'Letterheads', 'Envelopes'],
+      image: '/assets/generated/digital-icon.dim_256x256.png',
     },
     {
-      icon: '/assets/generated/flex-icon.dim_256x256.png',
+      icon: ImageIcon,
       title: 'Flex & Banner Printing',
-      tagline: 'Go big and get noticed with our durable outdoor solutions.',
-      items: [
-        'Normal & Star Banners',
-        'Premium Flex Printing',
-        'Canvas Prints',
-        'Vinyl (Black/Grey Backing)',
-        'Custom Die-cut Stickers',
-      ],
-      color: 'secondary',
+      description: 'Large format printing for outdoor advertising, events, and promotional displays.',
+      features: ['Flex Banners', 'Vinyl Banners', 'Mesh Banners', 'Backlit Displays', 'Event Signage'],
+      image: '/assets/generated/flex-icon.dim_256x256.png',
     },
     {
-      icon: '/assets/generated/offset-icon.dim_256x256.png',
+      icon: FileText,
       title: 'Offset Printing',
-      tagline: 'The most cost-effective solution for high-volume orders.',
-      items: [
-        'Bulk Flyers & Magazines',
-        '1, 2, and 4 Color Printing',
-        'Newspaper Printing & Books',
-      ],
-      color: 'chart-3',
+      description: 'Cost-effective bulk printing with consistent quality for large volume orders.',
+      features: ['Magazines', 'Catalogs', 'Books', 'Packaging', 'Large Volume Orders'],
+      image: '/assets/generated/offset-icon.dim_256x256.png',
     },
     {
-      icon: '/assets/generated/design-icon.dim_256x256.png',
+      icon: Palette,
       title: 'Creative Design Services',
-      tagline: 'Our designers make sure your brand stands out in the crowd.',
-      items: [
-        'Professional Logo Design',
-        'Company Digital Product Design',
-        'Social Media Graphics',
-        'Custom Templates',
-      ],
-      color: 'chart-4',
+      description: 'Professional graphic design and branding services to make your business stand out.',
+      features: ['Logo Design', 'Brand Identity', 'Marketing Materials', 'Social Media Graphics', 'Packaging Design'],
+      image: '/assets/generated/design-icon.dim_256x256.png',
     },
   ];
 
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-20 md:py-28">
-        <div className="container text-center space-y-6">
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Our <span className="text-primary">Services</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive printing and design solutions tailored to your business needs
-          </p>
-        </div>
-      </section>
+    <PullToRefreshContainer onRefresh={handleRefresh}>
+      <SwipeContainer>
+        <div className="flex flex-col">
+          {/* Hero Section */}
+          <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-12 md:py-16 px-4">
+            <div className="container text-center space-y-4 max-w-3xl mx-auto">
+              <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
+                Our <span className="text-primary">Services</span>
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Comprehensive printing and design solutions tailored to your business needs
+              </p>
+            </div>
+          </section>
 
-      {/* Services Grid */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-8">
-            {services.map((service, index) => (
-              <Card key={index} className="border-2 hover:shadow-print transition-all">
-                <CardHeader>
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      <img src={service.icon} alt={service.title} className="w-full h-full object-cover" />
+          {/* Services Grid */}
+          <section className="py-12 md:py-16 px-4">
+            <div className="container space-y-8 md:space-y-12">
+              {services.map((service, idx) => (
+                <Card key={idx} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center gap-4 mb-3">
+                      <img src={service.image} alt={service.title} className="w-16 h-16 rounded-lg object-cover" />
+                      <CardTitle className="text-2xl">{service.title}</CardTitle>
                     </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-2xl mb-2">{service.title}</CardTitle>
-                      <p className="text-muted-foreground">{service.tagline}</p>
+                    <p className="text-muted-foreground leading-relaxed">{service.description}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
+                        What We Offer
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {service.features.map((feature, featureIdx) => (
+                          <div key={featureIdx} className="flex items-center gap-2 text-sm">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3">
-                    {service.items.map((item, itemIndex) => (
-                      <li key={itemIndex} className="flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                        <span className="text-foreground/90">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
 
-      {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-muted/30">
-        <div className="container text-center space-y-6">
-          <h2 className="font-display text-3xl md:text-4xl font-bold">Ready to Get Started?</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Request a custom quotation for your project and let us bring your vision to life.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/request-quote">
-              <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 py-2">
-                Request Quote
-              </button>
-            </a>
-            <a href="/gallery">
-              <button className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-6 py-2">
-                View Portfolio
-              </button>
-            </a>
-          </div>
+          {/* CTA Section */}
+          <section className="py-12 md:py-16 px-4 bg-muted/30">
+            <div className="container text-center space-y-6 max-w-2xl mx-auto">
+              <h2 className="font-display text-3xl md:text-4xl font-bold">
+                Need a Custom Solution?
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Contact us for a personalized quote tailored to your specific requirements
+              </p>
+              <Link to="/request-quote">
+                <Button size="lg" className="font-semibold text-base min-h-[48px] px-8">
+                  Get Free Quote
+                </Button>
+              </Link>
+            </div>
+          </section>
         </div>
-      </section>
-    </div>
+      </SwipeContainer>
+    </PullToRefreshContainer>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCallerUserProfile, useSaveCallerUserProfile } from '../hooks/useUserProfile';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { haptics } from '../utils/haptics';
 
 export default function ProfileSetup() {
   const { identity } = useInternetIdentity();
@@ -24,14 +25,17 @@ export default function ProfileSetup() {
     e.preventDefault();
 
     if (!name.trim() || !email.trim() || !mobileNumber.trim()) {
+      haptics.error();
       toast.error('Please fill in all fields');
       return;
     }
 
     try {
       await saveProfile.mutateAsync({ name, email, mobileNumber });
+      haptics.success();
       toast.success('Profile created successfully!');
     } catch (error) {
+      haptics.error();
       toast.error('Failed to create profile');
       console.error(error);
     }
@@ -55,6 +59,8 @@ export default function ProfileSetup() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter your full name"
               required
+              inputMode="text"
+              className="h-12 text-base"
             />
           </div>
           <div className="space-y-2">
@@ -66,6 +72,8 @@ export default function ProfileSetup() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your.email@example.com"
               required
+              inputMode="email"
+              className="h-12 text-base"
             />
           </div>
           <div className="space-y-2">
@@ -77,16 +85,18 @@ export default function ProfileSetup() {
               onChange={(e) => setMobileNumber(e.target.value)}
               placeholder="+91 XXXXX XXXXX"
               required
+              inputMode="tel"
+              className="h-12 text-base"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={saveProfile.isPending}>
+          <Button type="submit" className="w-full min-h-[48px] text-base" disabled={saveProfile.isPending}>
             {saveProfile.isPending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Creating Profile...
               </>
             ) : (
-              'Complete Setup'
+              'Continue'
             )}
           </Button>
         </form>
