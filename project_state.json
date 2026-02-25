@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-contact-us-page-displaying-the-company-s-email-address-phone-number-and-physical-location-address-the-page-should-be-accessible-from-the-main-navigation-and-styled-consistently-with-the-existing-site-theme",
+      "title": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-project-gallery-page-to-allow-admin-users-to-upload-new-photos-directly-from-the-gallery-page-the-upload-button-must-only-be-visible-to-authenticated-admin-users-non-admin-users-continue-to-browse-gallery-photos-as-before",
+      "title": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-services-page-to-reflect-the-current-and-correct-list-of-services-offered-by-nellore-print-hub-ensure-all-four-service-categories-digital-printing-flex-banner-offset-printing-creative-design-are-accurately-described-with-relevant-features-and-call-to-action-buttons",
+      "title": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-2",
+      "summary": "Add a route and backend endpoint for the Contact Us page data (email, phone, location) so admins can manage contact details. Store contact info in the backend and expose a public read endpoint.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Nellore Print Hub",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

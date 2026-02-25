@@ -1,0 +1,99 @@
+{
+  "kind": "build_request",
+  "title": "Add Contact Us page, Gallery with admin photo upload, and updated Services list",
+  "projectName": "Nellore Print Hub",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Contact Us page (with your email, phone, location)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A Contact Us page is accessible via navigation",
+        "The page displays email, phone number, and location/address",
+        "The page is styled consistently with the rest of the site",
+        "The page is reachable from the bottom navigation or header"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add a route and backend endpoint for the Contact Us page data (email, phone, location) so admins can manage contact details. Store contact info in the backend and expose a public read endpoint.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Contact Us page (with your email, phone, location)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend stores contact details (email, phone, address)",
+        "A public query function returns current contact details",
+        "An admin-only update function allows changing contact details"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Gallery with admin-only photo upload"
+        ]
+      },
+      "acceptanceCriteria": [
+        "An 'Upload Photo' button is visible only to authenticated admins on the gallery page",
+        "Admins can select and upload an image file which then appears in the gallery",
+        "Non-admin users do not see the upload button",
+        "Upload progress is shown during photo upload",
+        "Newly uploaded photos appear in the gallery without a full page reload"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Updated Services list"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Services page lists all relevant service categories with accurate descriptions",
+        "Each service card includes a title, description, feature list, and a call-to-action button",
+        "The page is styled consistently with the site theme"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "All Motoko logic must remain in the single backend/main.mo actor",
+    "Admin-only features must be protected by AdminGuard or equivalent admin auth checks"
+  ],
+  "nonGoals": [
+    "Payment integration",
+    "Real-time chat changes",
+    "Quotation workflow changes",
+    "Admin user management changes",
+    "Any features beyond Contact Us page, Gallery photo upload, and Services list update"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

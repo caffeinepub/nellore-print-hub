@@ -1,0 +1,69 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-create-a-contact-us-page-displaying-the-company-s-email-address-phone-number-and-physical-location-address-the-page-should-be-accessible-from-the-main-navigation-and-styled-consistently-with-the-existing-site-theme",
+      "featureTitle": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/BottomNav.tsx",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/hooks/useContactInfo.ts",
+        "frontend/src/pages/ContactUsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-project-gallery-page-to-allow-admin-users-to-upload-new-photos-directly-from-the-gallery-page-the-upload-button-must-only-be-visible-to-authenticated-admin-users-non-admin-users-continue-to-browse-gallery-photos-as-before",
+      "featureTitle": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+      "files": [
+        "frontend/src/pages/ProjectGalleryPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-services-page-to-reflect-the-current-and-correct-list-of-services-offered-by-nellore-print-hub-ensure-all-four-service-categories-digital-printing-flex-banner-offset-printing-creative-design-are-accurately-described-with-relevant-features-and-call-to-action-buttons",
+      "featureTitle": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+      "files": [
+        "frontend/src/pages/ServicesPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
