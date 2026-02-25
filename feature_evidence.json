@@ -2,14 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-a-contact-us-page-displaying-the-company-s-email-address-phone-number-and-physical-location-address-the-page-should-be-accessible-from-the-main-navigation-and-styled-consistently-with-the-existing-site-theme",
-      "featureTitle": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+      "featureId": "feature-ensure-the-contact-us-page-admin-editing-capability-is-accessible-from-the-admin-dashboard-at-any-time-the-contactinfomanagementpage-must-be-linked-from-the-admin-dashboard-quick-link-cards-so-admins-can-navigate-to-it-directly-to-update-email-phone-address-and-google-maps-link-the-link-should-be-clearly-labeled-edit-contact-info-and-protected-by-adminguard",
+      "featureTitle": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/BottomNav.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/hooks/useContactInfo.ts",
-        "frontend/src/pages/ContactUsPage.tsx"
+        "frontend/src/pages/admin/AdminDashboardPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -26,9 +22,30 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-project-gallery-page-to-allow-admin-users-to-upload-new-photos-directly-from-the-gallery-page-the-upload-button-must-only-be-visible-to-authenticated-admin-users-non-admin-users-continue-to-browse-gallery-photos-as-before",
-      "featureTitle": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+      "featureId": "feature-make-the-project-gallery-page-fully-public-and-customer-facing-remove-any-admin-only-gate-or-authentication-requirement-for-viewing-projects-the-gallery-must-display-project-images-titles-descriptions-and-categories-for-all-visitors-logged-in-or-not-the-add-edit-delete-project-controls-must-remain-visible-only-to-authenticated-admins",
+      "featureTitle": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
       "files": [
+        "frontend/src/pages/ProjectGalleryPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-project-detail-modal-or-expanded-view-on-the-projectgallerypage-so-that-when-a-customer-clicks-a-project-card-a-full-screen-or-overlay-dialog-opens-showing-the-project-image-at-larger-size-title-full-description-and-category-label",
+      "featureTitle": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
+      "files": [
+        "frontend/src/components/ProjectDetailModal.tsx",
         "frontend/src/pages/ProjectGalleryPage.tsx"
       ],
       "components": [
@@ -46,10 +63,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-the-services-page-to-reflect-the-current-and-correct-list-of-services-offered-by-nellore-print-hub-ensure-all-four-service-categories-digital-printing-flex-banner-offset-printing-creative-design-are-accurately-described-with-relevant-features-and-call-to-action-buttons",
-      "featureTitle": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+      "featureId": "feature-add-an-admin-icon-e-g-a-shield-or-user-cog-icon-to-the-app-header-or-bottom-navigation-bar-when-clicked-unauthenticated-users-are-navigated-to-the-adminloginpage-when-an-admin-is-already-logged-in-clicking-the-icon-navigates-directly-to-the-admindashboardpage-bypassing-the-login-page",
+      "featureTitle": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
       "files": [
-        "frontend/src/pages/ServicesPage.tsx"
+        "frontend/src/components/Layout.tsx"
       ],
       "components": [
         "authorization@4.0.0",

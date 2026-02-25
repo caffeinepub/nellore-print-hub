@@ -1,98 +1,66 @@
-import { useState } from 'react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useGetMyQuotations, useGetQuotationDetails } from '../hooks/useQuotations';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, MessageSquare, Download, Loader2, LogIn } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
+import { Badge } from '../components/ui/badge';
+import { Skeleton } from '../components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { useGetMyQuotations } from '../hooks/useQuotations';
 import { useQuotationResponse } from '../hooks/useQuotationResponse';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { FileText, CheckCircle, XCircle, MessageSquare, LogIn, Loader2, Download } from 'lucide-react';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useActor } from '../hooks/useActor';
+import { QuotationStatus, QuotationDetails, QuotationRequest } from '../backend';
 import { toast } from 'sonner';
-import { QuotationStatus, QuotationDetails } from '../backend';
+import { haptics } from '../utils/haptics';
 import NegotiationHistory from '../components/NegotiationHistory';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslations } from '../translations';
 
-export default function QuotationResponsePage() {
-  const { identity, login, loginStatus } = useInternetIdentity();
-  const { data: quotations, isLoading } = useGetMyQuotations();
-  const getDetails = useGetQuotationDetails();
-  const respondToQuotation = useQuotationResponse();
+// Sub-component that fetches and displays details for a single quotation
+function QuotationCard({
+  quotation,
+  onAccept,
+  onReject,
+  onNegotiate,
+  isPending,
+}: {
+  quotation: QuotationRequest;
+  onAccept: (id: string) => void;
+  onReject: (id: string) => void;
+  onNegotiate: (id: string, message: string) => void;
+  isPending: boolean;
+}) {
+  const { actor } = useActor();
+  const { language } = useLanguage();
+  const t = getTranslations(language);
 
-  const [quotationDetails, setQuotationDetails] = useState<Record<string, QuotationDetails | null>>({});
-  const [negotiateDialogOpen, setNegotiateDialogOpen] = useState(false);
-  const [selectedQuotationId, setSelectedQuotationId] = useState<string | null>(null);
+  const [details, setDetails] = useState<QuotationDetails | null | undefined>(undefined);
+  const [negotiateOpen, setNegotiateOpen] = useState(false);
   const [negotiationMessage, setNegotiationMessage] = useState('');
 
-  const isAuthenticated = !!identity;
+  useEffect(() => {
+    if (!actor) return;
+    actor.getQuotationDetails(quotation.id).then((d) => {
+      setDetails(d ?? null);
+    }).catch(() => {
+      setDetails(null);
+    });
+  }, [actor, quotation.id]);
 
-  const loadQuotationDetails = async (quotationId: string) => {
-    if (!quotationDetails[quotationId]) {
-      try {
-        const details = await getDetails.mutateAsync(quotationId);
-        setQuotationDetails((prev) => ({ ...prev, [quotationId]: details }));
-      } catch (error) {
-        console.error('Failed to fetch quotation details:', error);
-      }
-    }
+  const statusKey = typeof quotation.status === 'object'
+    ? Object.keys(quotation.status)[0]
+    : String(quotation.status);
+
+  const statusLabels: Record<string, string> = {
+    pendingCustomerResponse: t.quotationResponse.pending,
+    accepted: t.quotationResponse.accepted,
+    rejected: t.quotationResponse.rejected,
+    negotiating: t.quotationResponse.negotiating,
   };
 
-  const handleAccept = async (quotationId: string) => {
-    try {
-      await respondToQuotation.mutateAsync({
-        quotationId,
-        status: QuotationStatus.accepted,
-      });
-      toast.success('Quotation accepted successfully!');
-    } catch (error) {
-      toast.error('Failed to accept quotation');
-      console.error(error);
-    }
-  };
-
-  const handleReject = async (quotationId: string) => {
-    try {
-      await respondToQuotation.mutateAsync({
-        quotationId,
-        status: QuotationStatus.rejected,
-      });
-      toast.success('Quotation rejected');
-    } catch (error) {
-      toast.error('Failed to reject quotation');
-      console.error(error);
-    }
-  };
-
-  const handleNegotiate = async () => {
-    if (!selectedQuotationId || !negotiationMessage.trim()) {
-      toast.error('Please enter a message');
-      return;
-    }
-
-    try {
-      await respondToQuotation.mutateAsync({
-        quotationId: selectedQuotationId,
-        status: QuotationStatus.negotiating,
-        message: negotiationMessage,
-      });
-      toast.success('Negotiation message sent!');
-      setNegotiateDialogOpen(false);
-      setNegotiationMessage('');
-      setSelectedQuotationId(null);
-    } catch (error) {
-      toast.error('Failed to send negotiation message');
-      console.error(error);
-    }
-  };
-
-  const openNegotiateDialog = (quotationId: string) => {
-    setSelectedQuotationId(quotationId);
-    setNegotiateDialogOpen(true);
-  };
-
-  const handleDownload = (quotation: any) => {
+  const handleDownload = () => {
     if (quotation.quotationFileBlob) {
       const url = quotation.quotationFileBlob.getDirectURL();
       const link = document.createElement('a');
@@ -104,17 +72,200 @@ export default function QuotationResponsePage() {
     }
   };
 
+  const handleNegotiateSubmit = () => {
+    if (!negotiationMessage.trim()) {
+      toast.error('Please enter a message.');
+      return;
+    }
+    onNegotiate(quotation.id, negotiationMessage.trim());
+    setNegotiationMessage('');
+    setNegotiateOpen(false);
+  };
+
+  return (
+    <div className="bg-card rounded-2xl border border-border p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="font-semibold text-lg text-foreground capitalize">
+            {quotation.serviceType} Service
+          </h3>
+          <p className="text-sm text-muted-foreground">ID: {quotation.id}</p>
+        </div>
+        <Badge
+          variant={
+            statusKey === 'accepted' ? 'default' :
+            statusKey === 'rejected' ? 'destructive' : 'secondary'
+          }
+        >
+          {statusLabels[statusKey] || statusKey}
+        </Badge>
+      </div>
+
+      {details === undefined ? (
+        <Skeleton className="h-20 w-full mb-4" />
+      ) : details !== null ? (
+        <div className="space-y-3 mb-4">
+          <div>
+            <p className="text-xs text-muted-foreground">{t.quotationResponse.price}</p>
+            <p className="text-xl font-bold text-primary">₹{Number(details.price).toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">{t.quotationResponse.description}</p>
+            <p className="text-sm text-foreground">{details.description}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">{t.quotationResponse.terms}</p>
+            <p className="text-sm text-foreground">{details.terms}</p>
+          </div>
+          {details.replyFile && (
+            <div className="pt-2">
+              <a
+                href={details.replyFile.getDirectURL()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+              >
+                <Download className="w-4 h-4" />
+                {t.quotationResponse.downloadFile}
+              </a>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground mb-4">{t.quotationResponse.noDetails}</p>
+      )}
+
+      {quotation.quotationFileBlob && (
+        <div className="mb-4">
+          <Button variant="outline" size="sm" onClick={handleDownload} className="gap-2">
+            <Download className="w-4 h-4" />
+            {t.quotationResponse.downloadFile}
+          </Button>
+        </div>
+      )}
+
+      {quotation.negotiationHistory.length > 0 && (
+        <div className="mb-4 pt-4 border-t border-border">
+          <NegotiationHistory negotiationHistory={quotation.negotiationHistory} />
+        </div>
+      )}
+
+      {statusKey === 'pendingCustomerResponse' && (
+        <div className="flex gap-3 pt-4 border-t border-border">
+          <Button
+            onClick={() => onAccept(quotation.id)}
+            disabled={isPending}
+            className="flex-1 gap-2"
+          >
+            <CheckCircle className="w-4 h-4" />
+            {t.quotationResponse.accept}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => onReject(quotation.id)}
+            disabled={isPending}
+            className="flex-1 gap-2"
+          >
+            <XCircle className="w-4 h-4" />
+            {t.quotationResponse.reject}
+          </Button>
+          <Dialog open={negotiateOpen} onOpenChange={setNegotiateOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={isPending}
+                className="flex-1 gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                {t.quotationResponse.negotiate}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t.quotationResponse.negotiate}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-1.5">
+                  <Label>{t.quotationResponse.negotiationMessage}</Label>
+                  <Textarea
+                    value={negotiationMessage}
+                    onChange={(e) => setNegotiationMessage(e.target.value)}
+                    placeholder={t.quotationResponse.negotiationPlaceholder}
+                    rows={4}
+                  />
+                </div>
+                <Button onClick={handleNegotiateSubmit} disabled={isPending} className="w-full">
+                  {isPending ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                  ) : (
+                    t.quotationResponse.sendMessage
+                  )}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function QuotationResponsePage() {
+  const { identity, login, loginStatus } = useInternetIdentity();
+  const { language } = useLanguage();
+  const t = getTranslations(language);
+
+  const isAuthenticated = !!identity;
+  const { data: quotations = [], isLoading } = useGetMyQuotations();
+  const { mutateAsync: respond, isPending } = useQuotationResponse();
+
+  const handleAccept = async (quotationId: string) => {
+    try {
+      haptics.success();
+      await respond({ quotationId, status: QuotationStatus.accepted });
+      toast.success('Quotation accepted!');
+    } catch {
+      haptics.error();
+      toast.error('Failed to accept quotation.');
+    }
+  };
+
+  const handleReject = async (quotationId: string) => {
+    try {
+      haptics.tap();
+      await respond({ quotationId, status: QuotationStatus.rejected });
+      toast.success('Quotation rejected.');
+    } catch {
+      haptics.error();
+      toast.error('Failed to reject quotation.');
+    }
+  };
+
+  const handleNegotiate = async (quotationId: string, message: string) => {
+    try {
+      haptics.tap();
+      await respond({
+        quotationId,
+        status: QuotationStatus.negotiating,
+        message,
+      });
+      toast.success('Negotiation message sent!');
+    } catch {
+      haptics.error();
+      toast.error('Failed to send negotiation message.');
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col">
         <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16 md:py-20">
           <div className="container text-center">
             <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-              Respond to <span className="text-primary">Quotations</span>
+              {t.quotationResponse.title}
             </h1>
           </div>
         </section>
-
         <section className="py-16">
           <div className="container max-w-2xl">
             <Alert>
@@ -124,14 +275,14 @@ export default function QuotationResponsePage() {
                 Please log in to respond to your quotations.
               </AlertDescription>
               <div className="mt-4">
-                <Button onClick={login} disabled={loginStatus === 'logging-in'}>
+                <Button onClick={() => login()} disabled={loginStatus === 'logging-in'}>
                   {loginStatus === 'logging-in' ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
+                      {t.common.loggingIn}
                     </>
                   ) : (
-                    'Login'
+                    t.common.login
                   )}
                 </Button>
               </div>
@@ -142,17 +293,12 @@ export default function QuotationResponsePage() {
     );
   }
 
-  const approvedQuotations = quotations?.filter((q) => {
-    const details = quotationDetails[q.id];
-    return details?.approved || q.status === 'pendingCustomerResponse';
-  }) || [];
-
   return (
     <div className="flex flex-col">
       <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16 md:py-20">
         <div className="container">
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Respond to <span className="text-primary">Quotations</span>
+            {t.quotationResponse.title}
           </h1>
           <p className="text-lg text-muted-foreground mt-2">
             Review and respond to your approved quotations
@@ -168,157 +314,23 @@ export default function QuotationResponsePage() {
                 <Skeleton key={i} className="h-64 w-full" />
               ))}
             </div>
-          ) : approvedQuotations.length > 0 ? (
-            <div className="space-y-6">
-              {approvedQuotations.map((quotation) => {
-                const details = quotationDetails[quotation.id];
-                if (!details) {
-                  loadQuotationDetails(quotation.id);
-                }
-
-                return (
-                  <Card key={quotation.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-xl">
-                          {quotation.serviceType.charAt(0).toUpperCase() + quotation.serviceType.slice(1)} Service
-                        </CardTitle>
-                        <Badge
-                          variant={
-                            quotation.status === 'accepted'
-                              ? 'default'
-                              : quotation.status === 'rejected'
-                              ? 'destructive'
-                              : 'secondary'
-                          }
-                        >
-                          {quotation.status === 'pendingCustomerResponse' ? 'Pending' : quotation.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {details ? (
-                        <>
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium">Price:</span>
-                              <span className="text-2xl font-bold">₹{(Number(details.price) / 100).toFixed(2)}</span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium">Description:</span>
-                              <p className="text-sm text-muted-foreground mt-1">{details.description}</p>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium">Terms & Conditions:</span>
-                              <p className="text-sm text-muted-foreground mt-1">{details.terms}</p>
-                            </div>
-                          </div>
-
-                          {quotation.quotationFileBlob && (
-                            <div className="pt-4 border-t">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownload(quotation)}
-                                className="w-full sm:w-auto"
-                              >
-                                <Download className="mr-2 h-4 w-4" />
-                                Download Quotation File
-                              </Button>
-                            </div>
-                          )}
-
-                          {quotation.negotiationHistory.length > 0 && (
-                            <div className="pt-4 border-t">
-                              <NegotiationHistory negotiationHistory={quotation.negotiationHistory} />
-                            </div>
-                          )}
-
-                          {quotation.status === 'pendingCustomerResponse' && (
-                            <div className="flex gap-3 pt-4">
-                              <Button
-                                onClick={() => handleAccept(quotation.id)}
-                                disabled={respondToQuotation.isPending}
-                                className="flex-1"
-                              >
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Accept
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleReject(quotation.id)}
-                                disabled={respondToQuotation.isPending}
-                                className="flex-1"
-                              >
-                                <XCircle className="mr-2 h-4 w-4" />
-                                Reject
-                              </Button>
-                              <Dialog open={negotiateDialogOpen && selectedQuotationId === quotation.id} onOpenChange={setNegotiateDialogOpen}>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => openNegotiateDialog(quotation.id)}
-                                    className="flex-1"
-                                  >
-                                    <MessageSquare className="mr-2 h-4 w-4" />
-                                    Negotiate
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Negotiate Quotation</DialogTitle>
-                                  </DialogHeader>
-                                  <div className="space-y-4">
-                                    <div className="space-y-2">
-                                      <Label htmlFor="negotiation-message">Your Message</Label>
-                                      <Textarea
-                                        id="negotiation-message"
-                                        value={negotiationMessage}
-                                        onChange={(e) => setNegotiationMessage(e.target.value)}
-                                        placeholder="Enter your negotiation message..."
-                                        rows={4}
-                                      />
-                                    </div>
-                                    <Button
-                                      onClick={handleNegotiate}
-                                      disabled={respondToQuotation.isPending || !negotiationMessage.trim()}
-                                      className="w-full"
-                                    >
-                                      {respondToQuotation.isPending ? (
-                                        <>
-                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                          Sending...
-                                        </>
-                                      ) : (
-                                        'Send Message'
-                                      )}
-                                    </Button>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+          ) : quotations.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              No quotations found.
             </div>
           ) : (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No Approved Quotations</h3>
-                <p className="text-muted-foreground">
-                  You don't have any approved quotations to respond to yet.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              {quotations.map((quotation) => (
+                <QuotationCard
+                  key={quotation.id}
+                  quotation={quotation}
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                  onNegotiate={handleNegotiate}
+                  isPending={isPending}
+                />
+              ))}
+            </div>
           )}
         </div>
       </section>

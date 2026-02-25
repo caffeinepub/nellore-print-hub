@@ -1,422 +1,430 @@
 import { useState } from 'react';
-import { useGetAllQuotations, useAddQuotationDetails, useApproveQuotation } from '../../hooks/useQuotations';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useGetAllQuotations, useAddQuotationDetails, useApproveQuotation, useGetOverdueQuotations } from '../../hooks/useQuotations';
 import { useRespondToNegotiation } from '../../hooks/useNegotiation';
-import { useUploadQuotationFile } from '../../hooks/useQuotationFile';
 import AdminGuard from '../../components/AdminGuard';
 import NegotiationHistory from '../../components/NegotiationHistory';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, CheckCircle, FileText, MessageSquare, Upload } from 'lucide-react';
-import { toast } from 'sonner';
-import { QuotationRequest } from '../../backend';
+import { QuotationRequest, ExternalBlob } from '../../backend';
+import { useActor } from '../../hooks/useActor';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  MessageSquare,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  Download,
+  Upload,
+  Paperclip,
+} from 'lucide-react';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+function QuotationCard({
+  quotation,
+  isOverdue,
+}: {
+  quotation: QuotationRequest;
+  isOverdue: boolean;
+}) {
+  const { language } = useLanguage();
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  const addDetails = useAddQuotationDetails();
+  const approveQuotation = useApproveQuotation();
+  const respondToNegotiation = useRespondToNegotiation();
+
+  const [expanded, setExpanded] = useState(false);
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [terms, setTerms] = useState('');
+  const [negotiationReply, setNegotiationReply] = useState('');
+  const [replyFile, setReplyFile] = useState<File | null>(null);
+  const [replyFileError, setReplyFileError] = useState('');
+  const [uploadingReply, setUploadingReply] = useState(false);
+  const [replyUploadProgress, setReplyUploadProgress] = useState(0);
+
+  const statusConfig = {
+    pendingCustomerResponse: {
+      label: language === 'te' ? 'పెండింగ్' : 'Pending',
+      icon: Clock,
+      color: 'text-yellow-500',
+      bg: 'bg-yellow-50 dark:bg-yellow-950/30',
+    },
+    accepted: {
+      label: language === 'te' ? 'ఆమోదించబడింది' : 'Accepted',
+      icon: CheckCircle,
+      color: 'text-green-500',
+      bg: 'bg-green-50 dark:bg-green-950/30',
+    },
+    rejected: {
+      label: language === 'te' ? 'తిరస్కరించబడింది' : 'Rejected',
+      icon: XCircle,
+      color: 'text-red-500',
+      bg: 'bg-red-50 dark:bg-red-950/30',
+    },
+    negotiating: {
+      label: language === 'te' ? 'చర్చలో' : 'Negotiating',
+      icon: MessageSquare,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/30',
+    },
+  };
+
+  const status = statusConfig[quotation.status as keyof typeof statusConfig];
+  const StatusIcon = status?.icon ?? Clock;
+
+  const handleAddDetails = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await addDetails.mutateAsync({
+      quotationId: quotation.id,
+      price: BigInt(Math.round(parseFloat(price) * 100)),
+      description,
+      terms,
+    });
+    setPrice('');
+    setDescription('');
+    setTerms('');
+  };
+
+  const handleNegotiationReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await respondToNegotiation.mutateAsync({
+      quotationId: quotation.id,
+      message: negotiationReply,
+    });
+    setNegotiationReply('');
+  };
+
+  const handleReplyFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setReplyFileError('');
+    if (!file) { setReplyFile(null); return; }
+    if (file.size > MAX_FILE_SIZE) {
+      setReplyFileError(language === 'te' ? 'ఫైల్ పరిమాణం 10MB కంటే తక్కువగా ఉండాలి' : 'File size must be less than 10MB');
+      setReplyFile(null);
+      return;
+    }
+    setReplyFile(file);
+  };
+
+  const handleUploadReplyFile = async () => {
+    if (!replyFile || !actor) return;
+    setUploadingReply(true);
+    setReplyUploadProgress(0);
+    try {
+      const bytes = new Uint8Array(await replyFile.arrayBuffer());
+      const blob = ExternalBlob.fromBytes(bytes).withUploadProgress((pct) => {
+        setReplyUploadProgress(pct);
+      });
+      await actor.addReplyFile(quotation.id, blob);
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
+      queryClient.invalidateQueries({ queryKey: ['quotationDetails', quotation.id] });
+      setReplyFile(null);
+    } catch {
+      setReplyFileError(language === 'te' ? 'ఫైల్ అప్‌లోడ్ విఫలమైంది' : 'File upload failed');
+    } finally {
+      setUploadingReply(false);
+    }
+  };
+
+  const serviceLabel = {
+    design: language === 'te' ? 'డిజైన్ సేవలు' : 'Design Services',
+    digital: language === 'te' ? 'డిజిటల్ ప్రింటింగ్' : 'Digital Printing',
+    banner: language === 'te' ? 'అవుట్‌డోర్ ప్రింటింగ్' : 'Outdoor/Indoor Printing',
+    offset: language === 'te' ? 'ఆఫ్‌సెట్ ప్రింటింగ్' : 'Offset Printing',
+  }[quotation.serviceType as string] ?? quotation.serviceType;
+
+  return (
+    <div className={`bg-card border rounded-2xl overflow-hidden transition-all ${
+      isOverdue ? 'border-red-400 dark:border-red-600' : 'border-border'
+    }`}>
+      {/* Overdue Badge */}
+      {isOverdue && (
+        <div className="bg-red-50 dark:bg-red-950/40 border-b border-red-200 dark:border-red-800 px-4 py-2 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-500 animate-pulse flex-shrink-0" />
+          <span className="text-xs font-semibold text-red-600 dark:text-red-400">
+            {language === 'te' ? 'అత్యవసరం: 1 గంట కంటే ఎక్కువ పెండింగ్‌లో ఉంది' : 'Urgent: Pending for more than 1 hour'}
+          </span>
+        </div>
+      )}
+
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-3 p-4 text-left"
+      >
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${status?.bg}`}>
+          <StatusIcon className={`w-4 h-4 ${status?.color}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-foreground">#{quotation.id}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status?.bg} ${status?.color}`}>
+              {status?.label}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            {serviceLabel} · {quotation.email}
+          </p>
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-4 border-t border-border pt-4">
+          {/* Details */}
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{language === 'te' ? 'సేవ' : 'Service'}</span>
+              <span className="font-medium text-foreground">{serviceLabel}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{language === 'te' ? 'మొబైల్' : 'Mobile'}</span>
+              <span className="font-medium text-foreground">{quotation.mobileNumber}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{language === 'te' ? 'గడువు' : 'Deadline'}</span>
+              <span className="font-medium text-foreground">
+                {new Date(Number(quotation.deadline) / 1_000_000).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-muted/30 rounded-xl p-3">
+            <p className="text-xs text-muted-foreground mb-1">{language === 'te' ? 'ప్రాజెక్ట్ వివరాలు' : 'Project Details'}</p>
+            <p className="text-sm text-foreground">{quotation.projectDetails}</p>
+          </div>
+
+          {/* Customer File */}
+          {quotation.quotationFileBlob && (
+            <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/30 rounded-xl p-3">
+              <Paperclip className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <span className="text-xs text-blue-700 dark:text-blue-300 flex-1">
+                {language === 'te' ? 'కస్టమర్ ఫైల్ జోడించబడింది' : 'Customer file attached'}
+              </span>
+              <a
+                href={quotation.quotationFileBlob.getDirectURL()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                <Download className="w-3 h-3" />
+                {language === 'te' ? 'డౌన్‌లోడ్' : 'Download'}
+              </a>
+            </div>
+          )}
+
+          {/* Negotiation History */}
+          {quotation.negotiationHistory.length > 0 && (
+            <NegotiationHistory negotiationHistory={quotation.negotiationHistory} />
+          )}
+
+          {/* Negotiation Reply */}
+          {quotation.status === 'negotiating' && (
+            <form onSubmit={handleNegotiationReply} className="space-y-2">
+              <textarea
+                value={negotiationReply}
+                onChange={e => setNegotiationReply(e.target.value)}
+                placeholder={language === 'te' ? 'చర్చ సందేశం...' : 'Negotiation reply...'}
+                rows={2}
+                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              />
+              <button
+                type="submit"
+                disabled={respondToNegotiation.isPending || !negotiationReply.trim()}
+                className="w-full py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors disabled:opacity-60"
+              >
+                {respondToNegotiation.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto" />
+                ) : (language === 'te' ? 'సమాధానం పంపండి' : 'Send Reply')}
+              </button>
+            </form>
+          )}
+
+          {/* Add Quotation Details */}
+          <form onSubmit={handleAddDetails} className="space-y-3 border-t border-border pt-3">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {language === 'te' ? 'కోటేషన్ వివరాలు జోడించండి' : 'Add Quotation Details'}
+            </p>
+            <input
+              type="number"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              placeholder={language === 'te' ? 'ధర (₹)' : 'Price (₹)'}
+              min="0"
+              step="0.01"
+              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder={language === 'te' ? 'వివరణ' : 'Description'}
+              rows={2}
+              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+            />
+            <textarea
+              value={terms}
+              onChange={e => setTerms(e.target.value)}
+              placeholder={language === 'te' ? 'నిబంధనలు' : 'Terms & Conditions'}
+              rows={2}
+              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+            />
+            <button
+              type="submit"
+              disabled={addDetails.isPending || !price || !description || !terms}
+              className="w-full py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
+            >
+              {addDetails.isPending ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mx-auto" />
+              ) : (language === 'te' ? 'వివరాలు జోడించండి' : 'Add Details')}
+            </button>
+          </form>
+
+          {/* Reply File Upload */}
+          <div className="border-t border-border pt-3 space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {language === 'te' ? 'రిప్లై ఫైల్ అప్‌లోడ్' : 'Upload Reply File'}
+            </p>
+            <div className="flex items-center gap-2">
+              <label className="flex-1 flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors">
+                <Upload className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground truncate">
+                  {replyFile ? replyFile.name : (language === 'te' ? 'ఫైల్ ఎంచుకోండి' : 'Choose file')}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf,.doc,.docx"
+                  onChange={handleReplyFileChange}
+                  className="hidden"
+                />
+              </label>
+              {replyFile && (
+                <button
+                  onClick={handleUploadReplyFile}
+                  disabled={uploadingReply}
+                  className="px-3 py-2 bg-primary text-primary-foreground rounded-xl text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center gap-1"
+                >
+                  {uploadingReply ? (
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-foreground" />
+                  ) : (
+                    <Upload className="w-3 h-3" />
+                  )}
+                  {language === 'te' ? 'అప్‌లోడ్' : 'Upload'}
+                </button>
+              )}
+            </div>
+            {uploadingReply && replyUploadProgress > 0 && replyUploadProgress < 100 && (
+              <div className="bg-muted rounded-full h-1.5">
+                <div
+                  className="bg-primary h-1.5 rounded-full transition-all"
+                  style={{ width: `${replyUploadProgress}%` }}
+                />
+              </div>
+            )}
+            {replyFileError && (
+              <p className="text-xs text-destructive">{replyFileError}</p>
+            )}
+          </div>
+
+          {/* Approve */}
+          <button
+            onClick={() => approveQuotation.mutate(quotation.id)}
+            disabled={approveQuotation.isPending}
+            className="w-full py-2 bg-green-500 text-white rounded-xl text-sm font-semibold hover:bg-green-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {approveQuotation.isPending ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+            ) : (
+              <CheckCircle className="w-4 h-4" />
+            )}
+            {language === 'te' ? 'ఆమోదించండి' : 'Approve Quotation'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QuotationManagementContent() {
+  const { language } = useLanguage();
+  const { data: quotations, isLoading } = useGetAllQuotations();
+  const { data: overdueIds } = useGetOverdueQuotations();
+
+  const overdueSet = new Set(overdueIds ?? []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-24">
+        <div className="bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4 pt-8 pb-6">
+          <h1 className="text-xl font-bold text-foreground">
+            {language === 'te' ? 'కోటేషన్ నిర్వహణ' : 'Quotation Management'}
+          </h1>
+        </div>
+        <div className="px-4 py-4 space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-2xl p-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-1/2 mb-2" />
+              <div className="h-3 bg-muted rounded w-3/4" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const sorted = [...(quotations ?? [])].sort((a, b) => {
+    const aOverdue = overdueSet.has(a.id) ? 0 : 1;
+    const bOverdue = overdueSet.has(b.id) ? 0 : 1;
+    if (aOverdue !== bOverdue) return aOverdue - bOverdue;
+    return Number(b.timestamp) - Number(a.timestamp);
+  });
+
+  return (
+    <div className="min-h-screen bg-background pb-24">
+      <div className="bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4 pt-8 pb-6">
+        <h1 className="text-xl font-bold text-foreground">
+          {language === 'te' ? 'కోటేషన్ నిర్వహణ' : 'Quotation Management'}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {quotations?.length ?? 0} {language === 'te' ? 'కోటేషన్లు' : 'quotations'}
+          {overdueSet.size > 0 && (
+            <span className="ml-2 text-red-500 font-medium">
+              · {overdueSet.size} {language === 'te' ? 'అత్యవసరం' : 'overdue'}
+            </span>
+          )}
+        </p>
+      </div>
+      <div className="px-4 py-4 space-y-3 max-w-2xl mx-auto">
+        {sorted.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
+            <p>{language === 'te' ? 'కోటేషన్లు లేవు' : 'No quotations yet'}</p>
+          </div>
+        ) : (
+          sorted.map(q => (
+            <QuotationCard
+              key={q.id}
+              quotation={q}
+              isOverdue={overdueSet.has(q.id)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function QuotationManagementPage() {
   return (
     <AdminGuard>
       <QuotationManagementContent />
     </AdminGuard>
-  );
-}
-
-function QuotationManagementContent() {
-  const { data: quotations, isLoading } = useGetAllQuotations();
-  const addDetails = useAddQuotationDetails();
-  const approveQuotation = useApproveQuotation();
-  const respondToNegotiation = useRespondToNegotiation();
-  const uploadFile = useUploadQuotationFile();
-
-  const [selectedQuotation, setSelectedQuotation] = useState<QuotationRequest | null>(null);
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [terms, setTerms] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [negotiateDialogOpen, setNegotiateDialogOpen] = useState(false);
-  const [negotiationMessage, setNegotiationMessage] = useState('');
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
-
-  const handleAddDetails = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedQuotation) return;
-
-    try {
-      await addDetails.mutateAsync({
-        quotationId: selectedQuotation.id,
-        price: BigInt(Math.floor(parseFloat(price) * 100)),
-        description,
-        terms,
-      });
-      toast.success('Quotation details added successfully');
-      setDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      toast.error('Failed to add quotation details');
-      console.error(error);
-    }
-  };
-
-  const handleApprove = async (quotationId: string) => {
-    try {
-      await approveQuotation.mutateAsync(quotationId);
-      toast.success('Quotation approved successfully');
-    } catch (error) {
-      toast.error('Failed to approve quotation');
-      console.error(error);
-    }
-  };
-
-  const handleRespondToNegotiation = async () => {
-    if (!selectedQuotation || !negotiationMessage.trim()) {
-      toast.error('Please enter a message');
-      return;
-    }
-
-    try {
-      await respondToNegotiation.mutateAsync({
-        quotationId: selectedQuotation.id,
-        message: negotiationMessage,
-      });
-      toast.success('Response sent successfully');
-      setNegotiateDialogOpen(false);
-      setNegotiationMessage('');
-      setSelectedQuotation(null);
-    } catch (error) {
-      toast.error('Failed to send response');
-      console.error(error);
-    }
-  };
-
-  const handleFileUpload = async (quotationId: string, file: File) => {
-    // Validate file type
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/png', 'image/jpeg', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Invalid file type. Please upload PDF, DOC, DOCX, PNG, JPG, or JPEG files.');
-      return;
-    }
-
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
-      toast.error('File size exceeds 10MB limit');
-      return;
-    }
-
-    try {
-      setUploadProgress({ ...uploadProgress, [quotationId]: 0 });
-      await uploadFile.mutateAsync({ quotationId, file });
-      setUploadProgress({ ...uploadProgress, [quotationId]: 100 });
-      toast.success('File uploaded successfully');
-      setTimeout(() => {
-        setUploadProgress((prev) => {
-          const newProgress = { ...prev };
-          delete newProgress[quotationId];
-          return newProgress;
-        });
-      }, 2000);
-    } catch (error) {
-      toast.error('Failed to upload file');
-      console.error(error);
-      setUploadProgress((prev) => {
-        const newProgress = { ...prev };
-        delete newProgress[quotationId];
-        return newProgress;
-      });
-    }
-  };
-
-  const resetForm = () => {
-    setPrice('');
-    setDescription('');
-    setTerms('');
-    setSelectedQuotation(null);
-  };
-
-  const openDialog = (quotation: QuotationRequest) => {
-    setSelectedQuotation(quotation);
-    setDialogOpen(true);
-  };
-
-  const openNegotiateDialog = (quotation: QuotationRequest) => {
-    setSelectedQuotation(quotation);
-    setNegotiateDialogOpen(true);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'accepted':
-        return 'default';
-      case 'rejected':
-        return 'destructive';
-      case 'negotiating':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
-
-  return (
-    <div className="flex flex-col">
-      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16 md:py-20">
-        <div className="container">
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Quotation <span className="text-primary">Management</span>
-          </h1>
-          <p className="text-lg text-muted-foreground mt-2">
-            Review and manage customer quotation requests
-          </p>
-        </div>
-      </section>
-
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Quotation Requests
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="space-y-4">
-                  {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="h-20 w-full" />
-                  ))}
-                </div>
-              ) : quotations && quotations.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead>Deadline</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>File</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {quotations.map((quotation) => (
-                        <TableRow key={quotation.id}>
-                          <TableCell className="font-mono text-sm">{quotation.id}</TableCell>
-                          <TableCell className="capitalize">{quotation.serviceType}</TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div>{quotation.email}</div>
-                              <div className="text-muted-foreground">{quotation.mobileNumber}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(Number(quotation.deadline) / 1000000).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={getStatusColor(quotation.status)}>
-                              {quotation.status === 'pendingCustomerResponse' ? 'Pending' : quotation.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-2">
-                              {quotation.quotationFileBlob ? (
-                                <Badge variant="outline" className="text-xs">
-                                  File attached
-                                </Badge>
-                              ) : (
-                                <Label htmlFor={`file-${quotation.id}`} className="cursor-pointer">
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-                                    <Upload className="h-3 w-3" />
-                                    Upload
-                                  </div>
-                                  <Input
-                                    id={`file-${quotation.id}`}
-                                    type="file"
-                                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                                    className="hidden"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) handleFileUpload(quotation.id, file);
-                                    }}
-                                  />
-                                </Label>
-                              )}
-                              {uploadProgress[quotation.id] !== undefined && (
-                                <div className="text-xs text-muted-foreground">
-                                  {uploadProgress[quotation.id]}%
-                                </div>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2 flex-wrap">
-                              <Dialog open={dialogOpen && selectedQuotation?.id === quotation.id} onOpenChange={(open) => {
-                                setDialogOpen(open);
-                                if (!open) resetForm();
-                              }}>
-                                <DialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => openDialog(quotation)}
-                                  >
-                                    Add Details
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                                  <DialogHeader>
-                                    <DialogTitle>Add Quotation Details</DialogTitle>
-                                  </DialogHeader>
-                                  <form onSubmit={handleAddDetails} className="space-y-4">
-                                    <div className="space-y-2">
-                                      <Label>Project Details</Label>
-                                      <p className="text-sm text-muted-foreground bg-muted p-3 rounded">
-                                        {quotation.projectDetails}
-                                      </p>
-                                    </div>
-                                    {quotation.negotiationHistory.length > 0 && (
-                                      <div className="space-y-2">
-                                        <NegotiationHistory negotiationHistory={quotation.negotiationHistory} />
-                                      </div>
-                                    )}
-                                    <div className="space-y-2">
-                                      <Label htmlFor="price">Price (₹) *</Label>
-                                      <Input
-                                        id="price"
-                                        type="number"
-                                        step="0.01"
-                                        value={price}
-                                        onChange={(e) => setPrice(e.target.value)}
-                                        placeholder="Enter price"
-                                        required
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="description">Description *</Label>
-                                      <Textarea
-                                        id="description"
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="Describe what's included..."
-                                        rows={3}
-                                        required
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="terms">Terms & Conditions *</Label>
-                                      <Textarea
-                                        id="terms"
-                                        value={terms}
-                                        onChange={(e) => setTerms(e.target.value)}
-                                        placeholder="Payment terms, delivery timeline, etc."
-                                        rows={3}
-                                        required
-                                      />
-                                    </div>
-                                    <Button type="submit" className="w-full" disabled={addDetails.isPending}>
-                                      {addDetails.isPending ? (
-                                        <>
-                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                          Saving...
-                                        </>
-                                      ) : (
-                                        'Save Details'
-                                      )}
-                                    </Button>
-                                  </form>
-                                </DialogContent>
-                              </Dialog>
-                              <Button
-                                size="sm"
-                                onClick={() => handleApprove(quotation.id)}
-                                disabled={approveQuotation.isPending}
-                              >
-                                {approveQuotation.isPending ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    <CheckCircle className="mr-1 h-4 w-4" />
-                                    Approve
-                                  </>
-                                )}
-                              </Button>
-                              {quotation.status === 'negotiating' && (
-                                <Dialog open={negotiateDialogOpen && selectedQuotation?.id === quotation.id} onOpenChange={(open) => {
-                                  setNegotiateDialogOpen(open);
-                                  if (!open) {
-                                    setNegotiationMessage('');
-                                    setSelectedQuotation(null);
-                                  }
-                                }}>
-                                  <DialogTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      onClick={() => openNegotiateDialog(quotation)}
-                                    >
-                                      <MessageSquare className="mr-1 h-4 w-4" />
-                                      Respond
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-2xl">
-                                    <DialogHeader>
-                                      <DialogTitle>Respond to Negotiation</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                      <NegotiationHistory negotiationHistory={quotation.negotiationHistory} />
-                                      <div className="space-y-2">
-                                        <Label htmlFor="admin-response">Your Response</Label>
-                                        <Textarea
-                                          id="admin-response"
-                                          value={negotiationMessage}
-                                          onChange={(e) => setNegotiationMessage(e.target.value)}
-                                          placeholder="Enter your response to the customer..."
-                                          rows={4}
-                                        />
-                                      </div>
-                                      <Button
-                                        onClick={handleRespondToNegotiation}
-                                        disabled={respondToNegotiation.isPending || !negotiationMessage.trim()}
-                                        className="w-full"
-                                      >
-                                        {respondToNegotiation.isPending ? (
-                                          <>
-                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            Sending...
-                                          </>
-                                        ) : (
-                                          'Send Response'
-                                        )}
-                                      </Button>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No Quotation Requests</h3>
-                  <p className="text-muted-foreground">
-                    Quotation requests will appear here when customers submit them.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    </div>
   );
 }

@@ -18,6 +18,7 @@ export function useSendMessage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chatMessages'] });
       queryClient.invalidateQueries({ queryKey: ['customerChatHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['chatsForCustomer'] });
     },
   });
 }
@@ -62,6 +63,20 @@ export function useCustomerChatHistory(senderEmail: string) {
       return actor.getCustomerChatHistory(senderEmail);
     },
     enabled: !!actor && !isFetching && !!senderEmail,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+}
+
+export function useGetChatsForCustomer(senderEmail: string, enabled: boolean = true) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<ChatMessage[]>({
+    queryKey: ['chatsForCustomer', senderEmail],
+    queryFn: async () => {
+      if (!actor || !senderEmail) return [];
+      return actor.getChatsForCustomer(senderEmail);
+    },
+    enabled: !!actor && !isFetching && !!senderEmail && enabled,
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 }

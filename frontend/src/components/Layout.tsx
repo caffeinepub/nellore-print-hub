@@ -1,152 +1,142 @@
-import { useState } from 'react';
-import { Link, useLocation } from '@tanstack/react-router';
-import { Printer, ShieldCheck } from 'lucide-react';
-import LoginButton from './LoginButton';
-import ChatWidget from './ChatWidget';
+import { ReactNode, useState } from 'react';
+import { Link, useLocation, useNavigate } from '@tanstack/react-router';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useGetCompanyLogo } from '../hooks/useCompanyLogo';
 import BottomNav from './BottomNav';
+import ChatWidget from './ChatWidget';
+import LanguageToggle from './LanguageToggle';
+import ShareAppButton from './ShareAppButton';
+import { SiWhatsapp } from 'react-icons/si';
+import { PhoneCall, ShieldCheck } from 'lucide-react';
+import { useGetContactInfo } from '../hooks/useContactInfo';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useIsCallerAdmin } from '../hooks/useAdmin';
-import { useGetCompanyLogo } from '../hooks/useCompanyLogo';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const [chatOpen, setChatOpen] = useState(false);
+interface LayoutProps {
+  children: ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const { language } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { data: logoBlob } = useGetCompanyLogo();
+  const { data: contactInfo } = useGetContactInfo();
   const { identity } = useInternetIdentity();
   const { data: isAdmin } = useIsCallerAdmin();
-  const { data: logo } = useGetCompanyLogo();
+  const [chatOpen, setChatOpen] = useState(false);
 
-  const isAdminPage = location.pathname.startsWith('/admin');
-  const showBottomNav = !isAdminPage;
+  const logoUrl = logoBlob ? logoBlob.getDirectURL() : null;
+  const phone = contactInfo?.phone ?? '+919390535070';
+  const phoneDigits = phone.replace(/\D/g, '');
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  const handleAdminIconClick = () => {
+    if (identity && isAdmin) {
+      navigate({ to: '/admin/dashboard' });
+    } else {
+      navigate({ to: '/admin/login' });
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Compact Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4">
-          <Link to="/" className="flex items-center space-x-2">
-            {logo ? (
-              <img
-                src={logo.getDirectURL()}
-                alt="Company Logo"
-                className="w-8 h-8 rounded-lg object-cover"
-              />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 h-14 max-w-2xl mx-auto w-full">
+          <Link to="/" className="flex items-center gap-2">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
             ) : (
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
-                <Printer className="w-5 h-5" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">M</span>
+                </div>
+                <span className="font-bold text-foreground text-sm">
+                  {language === 'te' ? 'మేజిక్ హబ్' : 'Magic Hub'}
+                </span>
               </div>
             )}
-            <div className="flex flex-col">
-              <span className="font-display font-bold text-sm leading-none">Nellore Print Hub</span>
-            </div>
           </Link>
-
-          {isAdminPage && <LoginButton />}
+          <div className="flex items-center gap-1">
+            <ShareAppButton />
+            <LanguageToggle />
+            {/* Admin Icon */}
+            <button
+              onClick={handleAdminIconClick}
+              aria-label="Admin Access"
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+                identity && isAdmin
+                  ? 'text-primary bg-primary/10 hover:bg-primary/20'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+              title={
+                identity && isAdmin
+                  ? (language === 'te' ? 'అడ్మిన్ డాష్‌బోర్డ్' : 'Admin Dashboard')
+                  : (language === 'te' ? 'అడ్మిన్ లాగిన్' : 'Admin Login')
+              }
+            >
+              <ShieldCheck className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main Content with bottom padding for nav and admin button */}
-      <main className={`flex-1 ${showBottomNav ? 'pb-28' : ''}`}>{children}</main>
+      {/* Main Content */}
+      <main className="flex-1">
+        {children}
+      </main>
 
-      {/* Admin Login Button - visible on mobile above bottom nav */}
-      {showBottomNav && (
-        <div className="fixed bottom-16 left-0 right-0 z-30 md:hidden border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container px-4 py-3">
-            <Link
-              to="/admin/login"
-              className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-500 font-medium transition-colors border border-amber-500/20"
+      {/* Footer */}
+      {!isAdminRoute && (
+        <footer className="bg-card border-t border-border px-4 py-6 pb-28 text-center">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Magic Hub Nellore.{' '}
+            {language === 'te' ? 'అన్ని హక్కులు రిజర్వ్ చేయబడ్డాయి.' : 'All rights reserved.'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Built with{' '}
+            <span className="text-red-500">♥</span>{' '}
+            using{' '}
+            <a
+              href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== 'undefined' ? window.location.hostname : 'magic-hub-nellore')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
             >
-              <ShieldCheck className="w-4 h-4" />
-              Admin Login
-            </Link>
-          </div>
+              caffeine.ai
+            </a>
+          </p>
+        </footer>
+      )}
+
+      {/* Floating WhatsApp & Call Buttons */}
+      {!isAdminRoute && (
+        <div className="fixed bottom-20 right-4 z-50 flex flex-col gap-2">
+          <a
+            href={`https://wa.me/${phoneDigits}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-12 h-12 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-lg transition-colors"
+            aria-label="Chat on WhatsApp"
+          >
+            <SiWhatsapp className="w-6 h-6" />
+          </a>
+          <a
+            href={`tel:${phone}`}
+            className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center shadow-lg transition-colors"
+            aria-label="Call Us"
+          >
+            <PhoneCall className="w-5 h-5" />
+          </a>
         </div>
       )}
 
-      {/* Bottom Navigation - only on customer pages */}
-      {showBottomNav && <BottomNav onChatOpen={() => setChatOpen(true)} />}
+      <BottomNav onChatOpen={() => setChatOpen(true)} />
 
-      {/* Full-screen Chat Modal */}
-      <ChatWidget isOpen={chatOpen} onClose={() => setChatOpen(false)} />
-
-      {/* Footer - hidden on mobile when bottom nav is shown */}
-      <footer className={`border-t bg-muted/30 ${showBottomNav ? 'hidden md:block' : ''}`}>
-        <div className="container py-8 px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                {logo ? (
-                  <img
-                    src={logo.getDirectURL()}
-                    alt="Company Logo"
-                    className="w-8 h-8 rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
-                    <Printer className="w-5 h-5" />
-                  </div>
-                )}
-                <span className="font-display font-bold">Nellore Print Hub</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Quality printing and design solutions for your brand.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-3">Services</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/services" className="hover:text-foreground transition-colors">Digital Printing</Link></li>
-                <li><Link to="/services" className="hover:text-foreground transition-colors">Flex & Banners</Link></li>
-                <li><Link to="/services" className="hover:text-foreground transition-colors">Offset Printing</Link></li>
-                <li><Link to="/services" className="hover:text-foreground transition-colors">Design Services</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-3">Company</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
-                <li><Link to="/gallery" className="hover:text-foreground transition-colors">Portfolio</Link></li>
-                <li><Link to="/testimonials" className="hover:text-foreground transition-colors">Testimonials</Link></li>
-                <li><Link to="/contact" className="hover:text-foreground transition-colors">Contact Us</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-3">Get Started</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/request-quote" className="hover:text-foreground transition-colors">Request Quote</Link></li>
-                <li><Link to="/submit-review" className="hover:text-foreground transition-colors">Leave Review</Link></li>
-                <li>
-                  <Link
-                    to="/admin/login"
-                    className="flex items-center gap-1.5 hover:text-foreground transition-colors text-amber-600 dark:text-amber-500 font-medium"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    Admin Login
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Nellore Print Hub. Built with ❤️ using{' '}
-              <a
-                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(
-                  typeof window !== 'undefined' ? window.location.hostname : 'nellore-print-hub'
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                caffeine.ai
-              </a>
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Chat Widget — only mount when open */}
+      {chatOpen && <ChatWidget onClose={() => setChatOpen(false)} />}
     </div>
   );
 }

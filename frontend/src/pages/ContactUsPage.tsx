@@ -1,158 +1,151 @@
-import { Mail, Phone, MapPin, Clock, MessageSquare } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Link } from '@tanstack/react-router';
-import PullToRefreshContainer from '../components/PullToRefreshContainer';
-import SwipeContainer from '../components/SwipeContainer';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useGetContactInfo } from '../hooks/useContactInfo';
+import { Mail, Phone, MapPin, ExternalLink, MessageCircle, PhoneCall, Navigation } from 'lucide-react';
+import { SiWhatsapp } from 'react-icons/si';
 
 export default function ContactUsPage() {
-  const { data: contactInfo, isLoading, refetch } = useGetContactInfo();
+  const { language } = useLanguage();
+  const { data: contactInfo, isLoading } = useGetContactInfo();
 
-  const handleRefresh = async () => {
-    await refetch();
-  };
+  const phone = contactInfo?.phone ?? '+919390535070';
+  const email = contactInfo?.email ?? 'magic.nellorehub@gmail.com';
+  const address = contactInfo?.physicalAddress ?? 'Dargamitta, Podalakur Road, Nellore';
+  const mapsLink = contactInfo?.mapsLink ?? 'https://maps.app.goo.gl/TTjDJUpiKHcE6RHX9?g_st=ic2';
 
-  const defaultContact = {
-    email: 'nelloreprinthubb@gmail.com',
-    phone: '+91 98765 43210',
-    location: 'Nellore, Andhra Pradesh, India',
-  };
+  // Strip non-digits for wa.me link
+  const phoneDigits = phone.replace(/\D/g, '');
 
-  const email = contactInfo?.email || defaultContact.email;
-  const phone = contactInfo?.phone || defaultContact.phone;
-  const location = contactInfo?.location || defaultContact.location;
-
-  const contactCards = [
-    {
-      icon: Mail,
-      title: 'Email Us',
-      value: email,
-      description: 'Send us an email anytime',
-      action: `mailto:${email}`,
-      actionLabel: 'Send Email',
-      color: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
-    },
-    {
-      icon: Phone,
-      title: 'Call Us',
-      value: phone,
-      description: 'Mon–Sat, 9 AM – 7 PM',
-      action: `tel:${phone.replace(/\s/g, '')}`,
-      actionLabel: 'Call Now',
-      color: 'text-green-600 dark:text-green-400',
-      bg: 'bg-green-50 dark:bg-green-950/30',
-    },
-    {
-      icon: MapPin,
-      title: 'Visit Us',
-      value: location,
-      description: 'Come see us in person',
-      action: `https://maps.google.com/?q=${encodeURIComponent(location)}`,
-      actionLabel: 'Get Directions',
-      color: 'text-red-600 dark:text-red-400',
-      bg: 'bg-red-50 dark:bg-red-950/30',
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
-    <PullToRefreshContainer onRefresh={handleRefresh}>
-      <SwipeContainer>
-        <div className="flex flex-col">
-          {/* Hero Section */}
-          <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-12 md:py-16 px-4">
-            <div className="container text-center space-y-4 max-w-3xl mx-auto">
-              <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-                Contact <span className="text-primary">Us</span>
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                We'd love to hear from you. Reach out for quotes, questions, or just to say hello!
-              </p>
-            </div>
-          </section>
+    <div className="min-h-screen bg-background pb-24">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4 pt-8 pb-6 text-center">
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          {language === 'te' ? 'మమ్మల్ని సంప్రదించండి' : 'Contact Us'}
+        </h1>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto">
+          {language === 'te'
+            ? 'మేము మీకు సహాయం చేయడానికి సిద్ధంగా ఉన్నాము'
+            : "We're here to help you with all your printing needs"}
+        </p>
+      </div>
 
-          {/* Contact Cards */}
-          <section className="py-10 md:py-14 px-4">
-            <div className="container max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {contactCards.map((card, idx) => (
-                  <Card key={idx} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6 flex flex-col items-center text-center space-y-4">
-                      <div className={`w-14 h-14 rounded-2xl ${card.bg} flex items-center justify-center`}>
-                        <card.icon className={`w-7 h-7 ${card.color}`} />
-                      </div>
-                      <div className="space-y-1">
-                        <h3 className="font-semibold text-lg">{card.title}</h3>
-                        <p className="text-sm text-muted-foreground">{card.description}</p>
-                      </div>
-                      {isLoading ? (
-                        <Skeleton className="h-5 w-40" />
-                      ) : (
-                        <p className="font-medium text-sm break-all">{card.value}</p>
-                      )}
-                      <a href={card.action} target={card.title === 'Visit Us' ? '_blank' : undefined} rel="noopener noreferrer" className="w-full">
-                        <Button variant="outline" className="w-full min-h-[44px]">
-                          {card.actionLabel}
-                        </Button>
-                      </a>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </section>
+      <div className="px-4 py-6 max-w-lg mx-auto space-y-4">
 
-          {/* Business Hours */}
-          <section className="py-10 md:py-14 px-4 bg-muted/30">
-            <div className="container max-w-2xl mx-auto">
-              <div className="text-center space-y-6">
-                <div className="flex items-center justify-center gap-3">
-                  <Clock className="w-6 h-6 text-primary" />
-                  <h2 className="font-display text-2xl md:text-3xl font-bold">Business Hours</h2>
-                </div>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-3">
-                      {[
-                        { day: 'Monday – Friday', hours: '9:00 AM – 7:00 PM' },
-                        { day: 'Saturday', hours: '9:00 AM – 5:00 PM' },
-                        { day: 'Sunday', hours: 'Closed' },
-                      ].map((row, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-2 border-b last:border-0">
-                          <span className="font-medium text-sm">{row.day}</span>
-                          <span className={`text-sm ${row.hours === 'Closed' ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                            {row.hours}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </section>
-
-          {/* CTA Section */}
-          <section className="py-10 md:py-14 px-4">
-            <div className="container max-w-2xl mx-auto text-center space-y-6">
-              <div className="flex items-center justify-center gap-3">
-                <MessageSquare className="w-6 h-6 text-primary" />
-                <h2 className="font-display text-2xl md:text-3xl font-bold">Need a Quote?</h2>
-              </div>
-              <p className="text-muted-foreground">
-                Fill out our quick quotation form and we'll get back to you within 24 hours.
-              </p>
-              <Link to="/request-quote">
-                <Button size="lg" className="font-semibold text-base min-h-[48px] px-8">
-                  Request a Free Quote
-                </Button>
-              </Link>
-            </div>
-          </section>
+        {/* Quick Action Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <a
+            href={`https://wa.me/${phoneDigits}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col items-center gap-2 bg-green-500 hover:bg-green-600 text-white rounded-2xl p-4 transition-colors"
+          >
+            <SiWhatsapp className="w-7 h-7" />
+            <span className="text-sm font-semibold">
+              {language === 'te' ? 'వాట్సాప్‌లో చాట్' : 'Chat on WhatsApp'}
+            </span>
+          </a>
+          <a
+            href={`tel:${phone}`}
+            className="flex flex-col items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl p-4 transition-colors"
+          >
+            <PhoneCall className="w-7 h-7" />
+            <span className="text-sm font-semibold">
+              {language === 'te' ? 'కాల్ చేయండి' : 'Call Us'}
+            </span>
+          </a>
         </div>
-      </SwipeContainer>
-    </PullToRefreshContainer>
+
+        {/* Contact Info Cards */}
+        <div className="space-y-3">
+          {/* Email */}
+          <a
+            href={`mailto:${email}`}
+            className="flex items-center gap-4 bg-card border border-border rounded-2xl p-4 hover:bg-accent/5 transition-colors"
+          >
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-5 h-5 text-blue-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                {language === 'te' ? 'ఇమెయిల్' : 'Email'}
+              </p>
+              <p className="text-sm font-semibold text-foreground truncate">{email}</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
+          </a>
+
+          {/* Phone */}
+          <a
+            href={`tel:${phone}`}
+            className="flex items-center gap-4 bg-card border border-border rounded-2xl p-4 hover:bg-accent/5 transition-colors"
+          >
+            <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-950/40 flex items-center justify-center flex-shrink-0">
+              <Phone className="w-5 h-5 text-green-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                {language === 'te' ? 'ఫోన్' : 'Phone'}
+              </p>
+              <p className="text-sm font-semibold text-foreground">{phone}</p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
+          </a>
+
+          {/* Address */}
+          <div className="flex items-center gap-4 bg-card border border-border rounded-2xl p-4">
+            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-5 h-5 text-orange-500" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                {language === 'te' ? 'చిరునామా' : 'Address'}
+              </p>
+              <p className="text-sm font-semibold text-foreground">{address}</p>
+            </div>
+          </div>
+
+          {/* Get Directions */}
+          <a
+            href={mapsLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-2xl p-4 hover:bg-primary/90 transition-colors font-semibold"
+          >
+            <Navigation className="w-5 h-5" />
+            {language === 'te' ? 'దిశలు పొందండి' : 'Get Directions'}
+          </a>
+        </div>
+
+        {/* Business Hours */}
+        <div className="bg-card border border-border rounded-2xl p-4">
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <MessageCircle className="w-4 h-4 text-primary" />
+            {language === 'te' ? 'వ్యాపార సమయాలు' : 'Business Hours'}
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">
+                {language === 'te' ? 'సోమ - శని' : 'Mon – Sat'}
+              </span>
+              <span className="font-medium text-foreground">9:00 AM – 8:00 PM</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">
+                {language === 'te' ? 'ఆదివారం' : 'Sunday'}
+              </span>
+              <span className="font-medium text-foreground">10:00 AM – 6:00 PM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

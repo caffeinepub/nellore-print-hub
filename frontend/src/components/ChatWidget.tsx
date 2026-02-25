@@ -1,230 +1,135 @@
-import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Send, Loader2, LogIn } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useSendMessage } from '../hooks/useChat';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Send, MessageCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useSendMessage, useGetChatsForCustomer } from '../hooks/useChat';
+import { useGetCallerUserProfile } from '../hooks/useUserProfile';
 import { toast } from 'sonner';
 import { haptics } from '../utils/haptics';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslations } from '../translations';
 
 interface ChatWidgetProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
-export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
-  const { identity, login, loginStatus } = useInternetIdentity();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+export default function ChatWidget({ onClose }: ChatWidgetProps) {
+  const { identity } = useInternetIdentity();
+  const { data: userProfile } = useGetCallerUserProfile();
   const [message, setMessage] = useState('');
-  const [hasSetProfile, setHasSetProfile] = useState(false);
-  const [chatHistory, setChatHistory] = useState<Array<{ sender: string; text: string; timestamp: number }>>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [senderName, setSenderName] = useState('');
+  const [senderEmail, setSenderEmail] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { language } = useLanguage();
+  const t = getTranslations(language);
 
-  const sendMessageMutation = useSendMessage();
   const isAuthenticated = !!identity;
 
-  useEffect(() => {
-    const savedName = localStorage.getItem('chatName');
-    const savedEmail = localStorage.getItem('chatEmail');
-    if (savedName && savedEmail) {
-      setName(savedName);
-      setEmail(savedEmail);
-      setHasSetProfile(true);
-    }
-  }, []);
+  const email = userProfile?.email || senderEmail;
+  const { data: chatMessages = [], refetch } = useGetChatsForCustomer(email, !!email);
+  const { mutateAsync: sendMessage, isPending: isSending } = useSendMessage();
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (userProfile) {
+      setSenderName(userProfile.name);
+      setSenderEmail(userProfile.email);
     }
-  }, [chatHistory]);
+  }, [userProfile]);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
-  const handleSendMessage = async () => {
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!message.trim()) return;
-
-    if (!hasSetProfile) {
-      if (!name.trim() || !email.trim()) {
-        toast.error('Please enter your name and email');
-        return;
-      }
-      localStorage.setItem('chatName', name);
-      localStorage.setItem('chatEmail', email);
-      setHasSetProfile(true);
+    if (!senderName.trim()) {
+      toast.error(t.chat.errorName);
+      return;
+    }
+    if (!senderEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) {
+      toast.error(t.chat.errorEmail);
+      return;
     }
 
     try {
-      await sendMessageMutation.mutateAsync({
-        senderName: name,
-        senderEmail: email,
-        messageText: message,
-      });
-
-      setChatHistory([...chatHistory, { sender: name, text: message, timestamp: Date.now() }]);
+      haptics.tap();
+      await sendMessage({ senderName: senderName.trim(), senderEmail: senderEmail.trim(), messageText: message.trim() });
       setMessage('');
-      haptics.success();
-      toast.success('Message sent successfully!');
-    } catch (error: any) {
+      toast.success(t.chat.messageSent);
+      refetch();
+    } catch {
       haptics.error();
-      toast.error(error.message || 'Failed to send message. Please try again.');
+      toast.error('Failed to send message.');
     }
   };
 
-  if (!isOpen) return null;
-
-  if (!isAuthenticated) {
-    return (
-      <div className="fixed inset-0 z-[100] bg-background flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
-          <h2 className="text-lg font-semibold">Chat with Us</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-primary-foreground/10 rounded-full transition-colors"
-            aria-label="Close chat"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex-1 flex items-center justify-center p-6">
-          <Alert className="max-w-md">
-            <LogIn className="h-5 w-5" />
-            <AlertTitle>Sign in Required</AlertTitle>
-            <AlertDescription className="mt-2">
-              Please sign in to start a conversation with us.
-            </AlertDescription>
-            <div className="mt-4">
-              <Button onClick={login} disabled={loginStatus === 'logging-in'} className="w-full">
-                {loginStatus === 'logging-in' ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-            </div>
-          </Alert>
-        </div>
-      </div>
-    );
-  }
+  const sortedMessages = [...chatMessages].sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
-        <h2 className="text-lg font-semibold">Chat with Us</h2>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-primary-foreground/10 rounded-full transition-colors"
-          aria-label="Close chat"
-        >
-          <ArrowLeft className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 flex flex-col bg-background md:inset-auto md:bottom-4 md:right-4 md:w-96 md:h-[600px] md:rounded-2xl md:shadow-2xl md:border md:border-border">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground md:rounded-t-2xl">
+        <div className="flex items-center gap-2">
+          <MessageCircle className="w-5 h-5" />
+          <span className="font-semibold">{t.chat.title}</span>
+        </div>
+        <button onClick={onClose} className="p-1 rounded-full hover:bg-primary-foreground/20 transition-colors">
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        {!hasSetProfile ? (
-          <div className="space-y-4 max-w-md mx-auto">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold mb-2">Welcome!</h3>
-              <p className="text-sm text-muted-foreground">
-                Please introduce yourself before starting the conversation
-              </p>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="chat-name" className="text-sm font-medium">
-                Your Name
-              </label>
-              <Input
-                id="chat-name"
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-12"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="chat-email" className="text-sm font-medium">
-                Your Email
-              </label>
-              <Input
-                id="chat-email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {chatHistory.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                <p>Start a conversation with us!</p>
-              </div>
+      {!isAuthenticated ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-4">
+          <MessageCircle className="w-12 h-12 text-muted-foreground" />
+          <p className="text-muted-foreground">{t.chat.loginPrompt}</p>
+        </div>
+      ) : (
+        <>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {sortedMessages.length === 0 ? (
+              <p className="text-center text-muted-foreground text-sm py-8">{t.chat.noMessages}</p>
             ) : (
-              chatHistory.map((msg, idx) => (
-                <div key={idx} className="flex justify-end">
-                  <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-[80%]">
-                    <p className="text-sm">{msg.text}</p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {new Date(msg.timestamp).toLocaleTimeString()}
+              sortedMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.senderIsOwner ? 'justify-start' : 'justify-end'}`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                      msg.senderIsOwner
+                        ? 'bg-muted text-foreground rounded-tl-sm'
+                        : 'bg-primary text-primary-foreground rounded-tr-sm'
+                    }`}
+                  >
+                    <p className="font-medium text-xs mb-0.5 opacity-70">
+                      {msg.senderIsOwner ? t.chat.owner : t.chat.you}
                     </p>
+                    <p>{msg.messageText}</p>
                   </div>
                 </div>
               ))
             )}
+            <div ref={messagesEndRef} />
           </div>
-        )}
-      </ScrollArea>
 
-      <div className="p-4 border-t bg-muted/30">
-        <div className="flex gap-2">
-          <Textarea
-            placeholder={hasSetProfile ? 'Type your message...' : 'Fill in your details above first'}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
-            className="min-h-[48px] max-h-32 resize-none"
-            disabled={sendMessageMutation.isPending}
-          />
-          <Button
-            onClick={handleSendMessage}
-            disabled={sendMessageMutation.isPending || !message.trim()}
-            size="icon"
-            className="h-12 w-12 flex-shrink-0"
-          >
-            {sendMessageMutation.isPending ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Send className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
-      </div>
+          {/* Input */}
+          <form onSubmit={handleSend} className="p-3 border-t border-border flex gap-2">
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={t.chat.messagePlaceholder}
+              className="flex-1 h-10"
+              disabled={isSending}
+            />
+            <Button type="submit" size="icon" disabled={isSending || !message.trim()} className="h-10 w-10 shrink-0">
+              <Send className="w-4 h-4" />
+            </Button>
+          </form>
+        </>
+      )}
     </div>
   );
 }

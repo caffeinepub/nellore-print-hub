@@ -1,76 +1,91 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add Contact Us page, Gallery with admin photo upload, and updated Services list",
+  "title": "Admin-Editable Contact Us, Customer Project Gallery, and Admin Icon Login",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Create a Contact Us page displaying company email, phone, and physical address with consistent styling and navigation access",
+      "summary": "Wire ContactInfoManagementPage into admin dashboard as a quick-link card labeled 'Edit Contact Info'",
       "acceptanceCriteria": [
-        "A Contact Us page is accessible via navigation",
-        "The page displays email, phone number, and location/address",
-        "The page is styled consistently with the rest of the site",
-        "The page is reachable from the bottom navigation or header"
+        "Admin dashboard has a visible 'Edit Contact Info' quick-link card",
+        "Clicking the card navigates to ContactInfoManagementPage",
+        "The page is protected by AdminGuard and only accessible to logged-in admins",
+        "Admin can update email, phone, address, and Google Maps link and save changes",
+        "Updated contact info is immediately reflected on the public ContactUsPage"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ContactUsPage.tsx",
-          "operation": "create",
-          "description": "Create Contact Us page that fetches contact info from backend using getContactInfo() and displays email, phone, and location. Include a hero section with title, contact details cards with icons, and optional embedded map for location. Style consistently with existing pages using Tailwind classes. Use PullToRefreshContainer for mobile UX."
-        },
-        {
-          "path": "frontend/src/hooks/useContactInfo.ts",
-          "operation": "create",
-          "description": "Create hook that exports useGetContactInfo (fetches contact info via actor.getContactInfo()) and useUpdateContactInfo mutation (admin-only, calls actor.updateContactInfo with email, phone, location). Include proper loading states and query invalidation on update."
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Add a new quick-link card with label 'Edit Contact Info' (English) and 'సంప్రదింపు సమాచారాన్ని సవరించండి' (Telugu) that navigates to '/admin/contact-info'. Position it alongside existing quick-link cards (Manage Quotations, Manage Users, Delivery Pricing). Use the Mail or Contact icon from lucide-react. The card should be visible to all authenticated admins and use the same styling as existing dashboard cards."
         },
         {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add a new route for the Contact Us page at /contact with the Route component. Import ContactUsPage and register the route within the router configuration alongside existing customer pages (home, services, gallery, reviews)."
-        },
-        {
-          "path": "frontend/src/components/BottomNav.tsx",
-          "operation": "modify",
-          "description": "Add a Contact navigation item to the bottom navigation bar. Include an appropriate icon (e.g., Mail or MapPin from lucide-react) and link to /contact. Position it alongside existing nav items (Home, Services, Gallery, Reviews, Chat). No authentication required for this item."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Ensure the Contact Us page route (/contact) is included in the customer pages list so that the bottom navigation displays correctly when users navigate to the Contact page. Verify that the layout renders the BottomNav component for this route."
+          "description": "Verify that the route '/admin/contact-info' for ContactInfoManagementPage is already registered and wrapped with AdminGuard. If not present, add the route with lazy import: { path: '/admin/contact-info', lazy: () => import('./pages/admin/ContactInfoManagementPage') } and ensure AdminGuard wrapper is applied via the route configuration."
         }
       ]
     },
     {
-      "id": "REQ-3",
-      "summary": "Add admin photo upload button to Project Gallery page visible only to authenticated admins",
+      "id": "REQ-2",
+      "summary": "Remove authentication gates from ProjectGalleryPage to make it fully public while preserving admin-only controls",
       "acceptanceCriteria": [
-        "An 'Upload Photo' button is visible only to authenticated admins on the gallery page",
-        "Admins can select and upload an image file which then appears in the gallery",
-        "Non-admin users do not see the upload button",
-        "Upload progress is shown during photo upload",
-        "Newly uploaded photos appear in the gallery without a full page reload"
+        "ProjectGalleryPage is accessible to unauthenticated (guest) users without any login prompt",
+        "Each project card displays the project image, title, description, and category",
+        "Clicking a project card opens a detail view or expanded view with full project information",
+        "Category filter buttons are visible and functional for all users",
+        "Add/Edit/Delete project controls are only shown to authenticated admin users"
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/ProjectGalleryPage.tsx",
           "operation": "modify",
-          "description": "Add an 'Upload Photo' button at the top of the gallery that is conditionally rendered only when useIsAdmin() returns true. Use the authorization component to check admin status. When clicked, open a dialog/modal with a form for uploading a new project: image file input (with upload progress tracking using ExternalBlob.withUploadProgress), title, description, and category selection. On submit, call useAddProject mutation and invalidate project queries to refresh the gallery. Use the blob-storage component for image uploads by converting File to ExternalBlob. Verify the component's usage instructions before implementing."
+          "description": "Remove any conditional authentication checks or login prompts that block unauthenticated users from viewing the gallery. Ensure useGetAllProjects hook is called unconditionally (not guarded by authentication state). Keep the category filter buttons (All, Banner, Digital, Offset, Design) visible and functional for all users. Ensure the 'Upload New Project' button and any edit/delete controls remain conditionally rendered based on isAdmin check from useIsAdmin hook. Verify each project card displays imageUrl, title, description, and category for all visitors."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Verify the route '/gallery' for ProjectGalleryPage is registered without any authentication or AdminGuard wrapper. The route should be publicly accessible. If the route has an auth guard, remove it. Ensure lazy loading: { path: '/gallery', lazy: () => import('./pages/ProjectGalleryPage') }."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add a project detail modal to ProjectGalleryPage that opens when a user clicks a project card",
+      "acceptanceCriteria": [
+        "Clicking any project card opens a detail dialog/modal",
+        "The modal shows the full-size project image, project title, full description, and category",
+        "The modal has a close button and can be dismissed by clicking outside or pressing Escape",
+        "The detail view is accessible to all users including unauthenticated guests"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/ProjectDetailModal.tsx",
+          "operation": "create",
+          "description": "Create a new modal component that accepts props: open (boolean), onClose (callback), and project (Project type from backend.d.ts). Use shadcn/ui Dialog component for the modal structure with Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription. Render the project.imageUrl as a large image using <img> tag with object-fit cover. Display project.title in DialogTitle, project.description in DialogDescription, and project.category as a badge or label below the description. Include a close button (X icon) in the DialogHeader. Ensure the modal is dismissible by clicking the backdrop or pressing Escape (Dialog default behavior). The modal should be fully accessible to unauthenticated users. Add bilingual support for the close button using useLanguage context."
+        },
+        {
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "operation": "modify",
+          "description": "Import and integrate ProjectDetailModal component. Add local state to track the selected project (useState<Project | null>). When a project card is clicked, set the selected project in state. Render ProjectDetailModal with open={!!selectedProject}, onClose={() => setSelectedProject(null)}, and project={selectedProject}. Ensure clicking any project card (including from filtered results) opens the modal with full project details. The modal must be accessible to all users (no authentication check)."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Update the Services page to accurately list all four service categories with descriptions, features, and call-to-action buttons",
+      "summary": "Add an admin icon to the app header that navigates to login for guests or dashboard for authenticated admins",
       "acceptanceCriteria": [
-        "Services page lists all relevant service categories with accurate descriptions",
-        "Each service card includes a title, description, feature list, and a call-to-action button",
-        "The page is styled consistently with the site theme"
+        "An admin icon (shield or settings icon) is visible in the header or navigation area",
+        "Clicking the icon when not logged in redirects to /admin/login",
+        "Clicking the icon when logged in as admin redirects to /admin/dashboard",
+        "The icon is always visible but does not expose admin controls to non-admins",
+        "After admin login, clicking the same icon goes directly to the admin dashboard without showing the login page again"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ServicesPage.tsx",
+          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Update the service cards to ensure all four categories are present: Digital Printing, Flex & Banner, Offset Printing, and Creative Design. For each service, provide an accurate and detailed description reflecting Nellore Print Hub's actual offerings. Include a feature list (3-5 bullet points per service) highlighting key capabilities. Ensure each card has a consistent layout with a title, description, feature list, and a 'Request Quote' or 'Learn More' button. Use icons from generated assets (frontend/public/assets/generated/digital-icon.dim_256x256.png, frontend/public/assets/generated/flex-icon.dim_256x256.png, frontend/public/assets/generated/offset-icon.dim_256x256.png, frontend/public/assets/generated/design-icon.dim_256x256.png). Keep styling consistent with existing Tailwind classes and mobile-first responsive design."
+          "description": "Add an admin icon button to the header section (next to LanguageToggle and LoginButton). Use ShieldCheck or Settings icon from lucide-react. Import useInternetIdentity hook to check authentication state (identity). Import useIsAdmin hook to check if the authenticated user is an admin. Import useNavigate from TanStack Router. On click: if not authenticated (!identity), navigate to '/admin/login'; if authenticated and isAdmin, navigate to '/admin/dashboard'; if authenticated but not admin, navigate to '/admin/login' (they may need to authenticate as admin). The icon should be visible to all users (always rendered) with a neutral color (e.g., text-gray-600 hover:text-gray-900). Add aria-label for accessibility: 'Admin Access'."
         }
       ]
     }

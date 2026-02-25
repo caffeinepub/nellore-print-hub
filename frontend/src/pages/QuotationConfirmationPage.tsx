@@ -1,157 +1,65 @@
-import { useParams, Link } from '@tanstack/react-router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Mail, Smartphone, CreditCard, Bell } from 'lucide-react';
+import React from 'react';
+import { CheckCircle, ArrowRight, List } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslations } from '../translations';
 
 export default function QuotationConfirmationPage() {
+  const navigate = useNavigate();
   const { id } = useParams({ from: '/quotation-confirmation/$id' });
+  const { language } = useLanguage();
+  const t = getTranslations(language);
+
+  const steps = [
+    t.quotationConfirmation.step1,
+    t.quotationConfirmation.step2,
+    t.quotationConfirmation.step3,
+    t.quotationConfirmation.step4,
+  ];
 
   return (
-    <div className="flex flex-col">
-      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-16 md:py-20">
-        <div className="container text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground mb-4">
-            <CheckCircle className="w-8 h-8" />
-          </div>
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Request <span className="text-primary">Submitted</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Your quotation request has been received successfully
-          </p>
+    <div className="max-w-lg mx-auto px-4 py-16 text-center">
+      <div className="flex justify-center mb-6">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+          <CheckCircle className="w-10 h-10 text-primary" />
         </div>
-      </section>
+      </div>
 
-      <section className="py-16 md:py-24">
-        <div className="container max-w-3xl space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Request ID: {id}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">What Happens Next?</h3>
-                <ol className="space-y-3">
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center font-semibold">
-                      1
-                    </span>
-                    <span>Our team will review your requirements and create a custom quotation</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center font-semibold">
-                      2
-                    </span>
-                    <span>You'll receive a message/email notification when the owner approves your quotation</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center font-semibold">
-                      3
-                    </span>
-                    <span>You can accept, reject, or negotiate the quotation through your response page</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm flex items-center justify-center font-semibold">
-                      4
-                    </span>
-                    <span>Once approved, we'll share our office location and begin working on your project</span>
-                  </li>
-                </ol>
-              </div>
+      <h1 className="text-2xl font-extrabold text-foreground mb-2">{t.quotationConfirmation.title}</h1>
+      <p className="text-muted-foreground mb-2">{t.quotationConfirmation.subtitle}</p>
+      {id && (
+        <p className="text-xs text-muted-foreground mb-6 font-mono bg-muted px-3 py-1 rounded-full inline-block">
+          ID: {id}
+        </p>
+      )}
 
-              <div className="pt-4 border-t">
-                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-primary" />
-                  Notification Process
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  After the owner reviews and approves your quotation, you will receive a notification with options to:
-                </p>
-                <div className="space-y-2 pl-7">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium">Accept the quotation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-red-600" />
-                    <span className="text-sm font-medium">Reject the quotation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-medium">Negotiate with a counter-offer</span>
-                  </div>
-                </div>
-              </div>
+      <div className="bg-card rounded-2xl border border-border p-6 mb-8 text-left">
+        <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+          <List className="w-4 h-4 text-primary" />
+          {language === 'te' ? 'తదుపరి దశలు' : 'What happens next?'}
+        </h2>
+        <ol className="space-y-3">
+          {steps.map((step, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <span className="w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <span className="text-sm text-muted-foreground">{step}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
 
-              <div className="pt-4 border-t">
-                <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-primary" />
-                  Contact Information
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Your quotation will be sent directly to:
-                </p>
-                <div className="space-y-2 pl-7">
-                  <div className="flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Your Mobile Number</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">Your Email Address</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Payment Options
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                After you approve your quotation, you can choose from flexible payment options:
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong>50% Deposit</strong>
-                    <p className="text-sm text-muted-foreground">Pay half upfront, balance on delivery</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong>100% Upfront</strong>
-                    <p className="text-sm text-muted-foreground">Full payment before production begins</p>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <strong>Custom Amount</strong>
-                    <p className="text-sm text-muted-foreground">Agreed-upon payment terms for your project</p>
-                  </div>
-                </li>
-              </ul>
-              <p className="text-sm text-muted-foreground pt-2 border-t">
-                Payment options will be enabled immediately after you approve your quotation.
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="text-center">
-            <Link to="/">
-              <Button size="lg">Return to Home</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <div className="flex flex-col gap-3">
+        <Button onClick={() => navigate({ to: '/my-quotations' })} className="gap-2">
+          {t.quotationConfirmation.viewQuotations}
+          <ArrowRight className="w-4 h-4" />
+        </Button>
+        <Button variant="outline" onClick={() => navigate({ to: '/' })}>
+          {t.quotationConfirmation.backHome}
+        </Button>
+      </div>
     </div>
   );
 }

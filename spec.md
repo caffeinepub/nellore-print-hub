@@ -1,12 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Add a Contact Us page, enable admin photo uploads in the Gallery, and update the Services page listing for Nellore Print Hub.
+**Goal:** Add admin-editable contact info access from the dashboard, open the project gallery to all visitors with a detail modal, and add an admin icon in the header for quick login/dashboard access.
 
 **Planned changes:**
-- Add a Contact Us page displaying email, phone number, and physical address, accessible from the main navigation
-- Store contact details in the backend with a public read endpoint and an admin-only update endpoint
-- Add an "Upload Photo" button on the Gallery page visible only to authenticated admins, allowing image uploads that appear in the gallery without a full page reload
-- Update the Services page to accurately list all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) with descriptions, feature lists, and call-to-action buttons
+- Add an "Edit Contact Info" quick-link card to the admin dashboard that navigates to the ContactInfoManagementPage (protected by AdminGuard)
+- Make the ProjectGalleryPage fully public and accessible to unauthenticated users without any login prompt
+- Show project cards (image, title, description, category) and category filter buttons to all visitors; hide add/edit/delete controls from non-admins
+- Add a project detail modal that opens when any project card is clicked, displaying the full-size image, title, full description, and category with a close button
+- Add an admin icon (shield or user-cog) to the app header/navigation that navigates unauthenticated users to the admin login page, and authenticated admins directly to the admin dashboard
 
-**User-visible outcome:** Visitors can view contact information on a dedicated Contact Us page; gallery visitors can browse photos; admins can upload new gallery photos directly from the gallery page; the Services page reflects the correct and complete list of services offered.
+**User-visible outcome:** Customers can browse the project gallery and view project details without logging in. Admins can quickly access contact info editing from the dashboard and use a persistent admin icon in the header to reach the dashboard or login page at any time.

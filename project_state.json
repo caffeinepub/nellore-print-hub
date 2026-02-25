@@ -1,30 +1,41 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "A service/business web app with admin and customer-facing features including WhatsApp/mobile chat, editable contact info, services list, quotation requests with file uploads, delivery pricing, and hourly reminders. New features being added: admin-editable contact us section, customer-facing project gallery with pictures and details, and admin login triggered from admin icon.",
+  "architectural_notes": [
+    "Admin authentication is initiated via an admin icon click; post-login state unlocks admin-only features",
+    "Project Gallery is publicly visible to customers and managed by admin (add/edit pictures and details)"
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-create-a-contact-us-page-displaying-the-company-s-email-address-phone-number-and-physical-location-address-the-page-should-be-accessible-from-the-main-navigation-and-styled-consistently-with-the-existing-site-theme",
-      "title": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+      "id": "feature-ensure-the-contact-us-page-admin-editing-capability-is-accessible-from-the-admin-dashboard-at-any-time-the-contactinfomanagementpage-must-be-linked-from-the-admin-dashboard-quick-link-cards-so-admins-can-navigate-to-it-directly-to-update-email-phone-address-and-google-maps-link-the-link-should-be-clearly-labeled-edit-contact-info-and-protected-by-adminguard",
+      "title": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-project-gallery-page-to-allow-admin-users-to-upload-new-photos-directly-from-the-gallery-page-the-upload-button-must-only-be-visible-to-authenticated-admin-users-non-admin-users-continue-to-browse-gallery-photos-as-before",
-      "title": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+      "id": "feature-make-the-project-gallery-page-fully-public-and-customer-facing-remove-any-admin-only-gate-or-authentication-requirement-for-viewing-projects-the-gallery-must-display-project-images-titles-descriptions-and-categories-for-all-visitors-logged-in-or-not-the-add-edit-delete-project-controls-must-remain-visible-only-to-authenticated-admins",
+      "title": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-project-detail-modal-or-expanded-view-on-the-projectgallerypage-so-that-when-a-customer-clicks-a-project-card-a-full-screen-or-overlay-dialog-opens-showing-the-project-image-at-larger-size-title-full-description-and-category-label",
+      "title": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-the-services-page-to-reflect-the-current-and-correct-list-of-services-offered-by-nellore-print-hub-ensure-all-four-service-categories-digital-printing-flex-banner-offset-printing-creative-design-are-accurately-described-with-relevant-features-and-call-to-action-buttons",
-      "title": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+      "id": "feature-add-an-admin-icon-e-g-a-shield-or-user-cog-icon-to-the-app-header-or-bottom-navigation-bar-when-clicked-unauthenticated-users-are-navigated-to-the-adminloginpage-when-an-admin-is-already-logged-in-clicking-the-icon-navigates-directly-to-the-admindashboardpage-bypassing-the-login-page",
+      "title": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
       "reqIds": [
         "REQ-4"
       ],
@@ -33,14 +44,25 @@
   ],
   "new_feature_requests": [
     {
+      "id": "AR-1",
+      "summary": "Admin can edit Contact Us section anytime from admin panel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
       "id": "AR-2",
-      "summary": "Add a route and backend endpoint for the Contact Us page data (email, phone, location) so admins can manage contact details. Store contact info in the backend and expose a public read endpoint.",
-      "reqIds": [
-        "REQ-2"
-      ],
+      "summary": "Customer-facing Project Gallery showing pictures and project details",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Admin login triggered by clicking the admin icon; admin features accessible after login",
+      "reqIds": [],
       "status": "pending"
     }
   ],
+  "gameProjectType": "none",
   "projectName": "Nellore Print Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0

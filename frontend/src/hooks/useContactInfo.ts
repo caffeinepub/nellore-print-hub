@@ -21,9 +21,9 @@ export function useUpdateContactInfo() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { email: string; phone: string; location: string }) => {
+    mutationFn: async (data: { email: string; phone: string; physicalAddress: string; mapsLink: string }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateContactInfo(data.email, data.phone, data.location);
+      return actor.updateContactInfo(data.email, data.phone, data.physicalAddress, data.mapsLink);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contactInfo'] });

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
@@ -20,19 +21,36 @@ import AdminUserManagementPage from './pages/admin/AdminUserManagementPage';
 import MyQuotationsPage from './pages/MyQuotationsPage';
 import QuotationResponsePage from './pages/QuotationResponsePage';
 import ContactUsPage from './pages/ContactUsPage';
+import ContactInfoManagementPage from './pages/admin/ContactInfoManagementPage';
 import ProfileSetup from './components/ProfileSetup';
 import { Toaster } from '@/components/ui/sonner';
+import { useInternetIdentity } from './hooks/useInternetIdentity';
+import { useGetCallerUserProfile } from './hooks/useUserProfile';
 
-const rootRoute = createRootRoute({
-  component: () => (
+function RootLayout() {
+  const { identity } = useInternetIdentity();
+  const isAuthenticated = !!identity;
+  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
+  const [profileCompleted, setProfileCompleted] = useState(false);
+
+  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null && !profileCompleted;
+
+  return (
     <>
       <Layout>
         <Outlet />
       </Layout>
-      <ProfileSetup />
+      <ProfileSetup
+        open={showProfileSetup}
+        onComplete={() => setProfileCompleted(true)}
+      />
       <Toaster />
     </>
-  ),
+  );
+}
+
+const rootRoute = createRootRoute({
+  component: RootLayout,
 });
 
 const indexRoute = createRoute({
@@ -155,6 +173,12 @@ const adminUsersRoute = createRoute({
   component: AdminUserManagementPage,
 });
 
+const adminContactInfoRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/contact-info',
+  component: ContactInfoManagementPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   aboutRoute,
@@ -176,6 +200,7 @@ const routeTree = rootRoute.addChildren([
   adminLogoRoute,
   adminChatsRoute,
   adminUsersRoute,
+  adminContactInfoRoute,
 ]);
 
 const router = createRouter({ routeTree });

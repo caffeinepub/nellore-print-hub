@@ -37,10 +37,12 @@ export interface ChatMessage {
   'senderEmail' : string,
 }
 export interface ContactInfo {
+  'mapsLink' : string,
   'email' : string,
+  'physicalAddress' : string,
   'phone' : string,
-  'location' : string,
 }
+export interface DeliveryConfig { 'minimumFee' : bigint, 'perKmRate' : bigint }
 export type ExternalBlob = Uint8Array;
 export interface NegotiationMessage {
   'sender' : string,
@@ -65,6 +67,7 @@ export interface QuotationDetails {
   'description' : string,
   'approvalTimestamp' : [] | [bigint],
   'approved' : boolean,
+  'replyFile' : [] | [ExternalBlob],
   'price' : bigint,
 }
 export interface QuotationRequest {
@@ -139,6 +142,7 @@ export interface _SERVICE {
     [string, bigint, string, string],
     undefined
   >,
+  'addReplyFile' : ActorMethod<[string, ExternalBlob], undefined>,
   'addReview' : ActorMethod<
     [string, string, bigint, [] | [string], ServiceType],
     string
@@ -147,7 +151,7 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'calculateDeliveryFee' : ActorMethod<[bigint], bigint>,
   'createQuotationRequest' : ActorMethod<
-    [ServiceType, bigint, string, string, string],
+    [ServiceType, bigint, string, string, string, [] | [ExternalBlob]],
     string
   >,
   'deleteProject' : ActorMethod<[string], undefined>,
@@ -165,14 +169,16 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getChatsForCustomer' : ActorMethod<[string], Array<ChatMessage>>,
-  'getContactInfo' : ActorMethod<[], [] | [ContactInfo]>,
+  'getContactInfo' : ActorMethod<[], ContactInfo>,
   'getCustomerChatHistory' : ActorMethod<
     [string],
     { 'messages' : Array<ChatMessage>, 'replies' : Array<ChatMessage> }
   >,
+  'getDeliveryConfig' : ActorMethod<[], DeliveryConfig>,
   'getLogo' : ActorMethod<[], [] | [ExternalBlob]>,
   'getMyQuotations' : ActorMethod<[], Array<QuotationRequest>>,
   'getOfficeLocation' : ActorMethod<[], [] | [OfficeLocation]>,
+  'getPendingQuotationsOlderThan1Hour' : ActorMethod<[], Array<string>>,
   'getProjectsByCategory' : ActorMethod<[ServiceType], Array<Project>>,
   'getQuotationDetails' : ActorMethod<[string], [] | [QuotationDetails]>,
   'getQuotationStatistics' : ActorMethod<
@@ -184,6 +190,7 @@ export interface _SERVICE {
       'negotiating' : bigint,
     }
   >,
+  'getReplyFile' : ActorMethod<[string], [] | [ExternalBlob]>,
   'getReviewsByRating' : ActorMethod<[bigint], Array<Review>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'handleQuotationResponse' : ActorMethod<
@@ -198,10 +205,13 @@ export interface _SERVICE {
   'respondToNegotiation' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendMessage' : ActorMethod<[string, string, string], string>,
+  'setDeliveryConfig' : ActorMethod<[bigint, bigint], undefined>,
   'setLogo' : ActorMethod<[ExternalBlob], undefined>,
   'setOfficeLocation' : ActorMethod<[OfficeLocation], undefined>,
-  'updateContactInfo' : ActorMethod<[string, string, string], undefined>,
-  'uploadQuotationFile' : ActorMethod<[string, ExternalBlob], undefined>,
+  'updateContactInfo' : ActorMethod<
+    [string, string, string, string],
+    undefined
+  >,
   'verifyAuthentication' : ActorMethod<[string, string], boolean>,
 }
 export declare const idlService: IDL.ServiceClass;

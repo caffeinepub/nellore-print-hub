@@ -1,85 +1,74 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T22:38:18.390Z",
+  "generatedAt": "2026-02-25T23:41:03.812Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 4,
-    "implemented": 3,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+        "summary": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ContactUsPage.tsx",
-          "frontend/src/hooks/useContactInfo.ts",
-          "frontend/src/App.tsx",
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/components/Layout.tsx"
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ContactUsPage.tsx",
-          "frontend/src/hooks/useContactInfo.ts",
-          "frontend/src/App.tsx",
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/components/Layout.tsx"
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Add a route and backend endpoint for the Contact Us page data (email, phone, location) so admins can manage contact details. Store contact info in the backend and expose a public read endpoint.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ProjectGalleryPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ProjectGalleryPage.tsx"
+        ]
       },
       {
         "id": "REQ-3",
-        "summary": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+        "summary": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/components/ProjectDetailModal.tsx",
           "frontend/src/pages/ProjectGalleryPage.tsx"
         ],
         "matchedFiles": [
+          "frontend/src/components/ProjectDetailModal.tsx",
           "frontend/src/pages/ProjectGalleryPage.tsx"
         ]
       },
       {
         "id": "REQ-4",
-        "summary": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+        "summary": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ServicesPage.tsx"
+          "frontend/src/components/Layout.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ServicesPage.tsx"
+          "frontend/src/components/Layout.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
-    "build-template/README.md",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/BottomNav.tsx",
     "frontend/src/components/Layout.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useContactInfo.ts",
-    "frontend/src/pages/ContactUsPage.tsx",
+    "frontend/src/components/ProjectDetailModal.tsx",
     "frontend/src/pages/ProjectGalleryPage.tsx",
-    "frontend/src/pages/ServicesPage.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

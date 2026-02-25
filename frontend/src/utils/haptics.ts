@@ -33,3 +33,21 @@ export const haptics = {
     return 'vibrate' in navigator;
   },
 };
+
+// Convenience function for haptic feedback by type
+export function hapticFeedback(type: 'tap' | 'success' | 'error' | 'selection') {
+  switch (type) {
+    case 'tap':
+      haptics.tap();
+      break;
+    case 'success':
+      haptics.success();
+      break;
+    case 'error':
+      haptics.error();
+      break;
+    case 'selection':
+      haptics.select();
+      break;
+  }
+}

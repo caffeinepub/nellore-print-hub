@@ -1,18 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { ServiceType, QuotationRequest, QuotationDetails } from '../backend';
+import { QuotationRequest, QuotationDetails, ServiceType, QuotationStatus, ExternalBlob } from '../backend';
 
 export function useGetAllQuotations() {
   const { actor, isFetching } = useActor();
 
   return useQuery<QuotationRequest[]>({
-    queryKey: ['quotations'],
+    queryKey: ['allQuotations'],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getAllQuotations();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -26,18 +26,21 @@ export function useGetMyQuotations() {
       return actor.getMyQuotations();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 }
 
-export function useGetQuotationDetails() {
-  const { actor } = useActor();
+export function useGetQuotationDetails(quotationId: string) {
+  const { actor, isFetching } = useActor();
 
-  return useMutation({
-    mutationFn: async (quotationId: string) => {
-      if (!actor) throw new Error('Actor not available');
+  return useQuery<QuotationDetails | null>({
+    queryKey: ['quotationDetails', quotationId],
+    queryFn: async () => {
+      if (!actor) return null;
       return actor.getQuotationDetails(quotationId);
     },
+    enabled: !!actor && !isFetching && !!quotationId,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -45,25 +48,25 @@ export function useCreateQuotation() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (data: {
+  return useMutation<
+    string,
+    Error,
+    {
       serviceType: ServiceType;
       deadline: bigint;
       projectDetails: string;
       mobileNumber: string;
       email: string;
-    }) => {
+      file: ExternalBlob | null;
+    }
+  >({
+    mutationFn: async ({ serviceType, deadline, projectDetails, mobileNumber, email, file }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createQuotationRequest(
-        data.serviceType,
-        data.deadline,
-        data.projectDetails,
-        data.mobileNumber,
-        data.email
-      );
+      return actor.createQuotationRequest(serviceType, deadline, projectDetails, mobileNumber, email, file);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      queryClient.invalidateQueries({ queryKey: ['myQuotations'] });
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
     },
   });
 }
@@ -72,18 +75,18 @@ export function useAddQuotationDetails() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (data: {
-      quotationId: string;
-      price: bigint;
-      description: string;
-      terms: string;
-    }) => {
+  return useMutation<
+    void,
+    Error,
+    { quotationId: string; price: bigint; description: string; terms: string }
+  >({
+    mutationFn: async ({ quotationId, price, description, terms }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.addQuotationDetails(data.quotationId, data.price, data.description, data.terms);
+      return actor.addQuotationDetails(quotationId, price, description, terms);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+    onSuccess: (_, { quotationId }) => {
+      queryClient.invalidateQueries({ queryKey: ['quotationDetails', quotationId] });
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
     },
   });
 }
@@ -92,14 +95,29 @@ export function useApproveQuotation() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, Error, string>({
     mutationFn: async (quotationId: string) => {
       if (!actor) throw new Error('Actor not available');
       return actor.approveQuotation(quotationId);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['quotations'] });
-      queryClient.invalidateQueries({ queryKey: ['quotationStatistics'] });
+    onSuccess: (_, quotationId) => {
+      queryClient.invalidateQueries({ queryKey: ['quotationDetails', quotationId] });
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
     },
+  });
+}
+
+export function useGetOverdueQuotations() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<string[]>({
+    queryKey: ['overdueQuotations'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getPendingQuotationsOlderThan1Hour();
+    },
+    enabled: !!actor && !isFetching,
+    refetchInterval: 5 * 60 * 1000, // Poll every 5 minutes
+    staleTime: 60 * 1000,
   });
 }

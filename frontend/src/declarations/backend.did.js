@@ -25,6 +25,7 @@ export const ServiceType = IDL.Variant({
   'design' : IDL.Null,
   'digital' : IDL.Null,
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -79,7 +80,6 @@ export const NegotiationMessage = IDL.Record({
   'message' : IDL.Text,
   'timestamp' : IDL.Int,
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const QuotationRequest = IDL.Record({
   'id' : IDL.Text,
   'status' : QuotationStatus,
@@ -108,9 +108,14 @@ export const UserProfile = IDL.Record({
   'email' : IDL.Text,
 });
 export const ContactInfo = IDL.Record({
+  'mapsLink' : IDL.Text,
   'email' : IDL.Text,
+  'physicalAddress' : IDL.Text,
   'phone' : IDL.Text,
-  'location' : IDL.Text,
+});
+export const DeliveryConfig = IDL.Record({
+  'minimumFee' : IDL.Int,
+  'perKmRate' : IDL.Int,
 });
 export const OfficeLocation = IDL.Record({
   'lat' : IDL.Float64,
@@ -122,6 +127,7 @@ export const QuotationDetails = IDL.Record({
   'description' : IDL.Text,
   'approvalTimestamp' : IDL.Opt(IDL.Int),
   'approved' : IDL.Bool,
+  'replyFile' : IDL.Opt(ExternalBlob),
   'price' : IDL.Int,
 });
 
@@ -164,6 +170,7 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'addReplyFile' : IDL.Func([IDL.Text, ExternalBlob], [], []),
   'addReview' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Int, IDL.Opt(IDL.Text), ServiceType],
       [IDL.Text],
@@ -173,7 +180,14 @@ export const idlService = IDL.Service({
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
   'createQuotationRequest' : IDL.Func(
-      [ServiceType, IDL.Int, IDL.Text, IDL.Text, IDL.Text],
+      [
+        ServiceType,
+        IDL.Int,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Opt(ExternalBlob),
+      ],
       [IDL.Text],
       [],
     ),
@@ -201,7 +215,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(ChatMessage)],
       ['query'],
     ),
-  'getContactInfo' : IDL.Func([], [IDL.Opt(ContactInfo)], ['query']),
+  'getContactInfo' : IDL.Func([], [ContactInfo], ['query']),
   'getCustomerChatHistory' : IDL.Func(
       [IDL.Text],
       [
@@ -212,9 +226,15 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getDeliveryConfig' : IDL.Func([], [DeliveryConfig], ['query']),
   'getLogo' : IDL.Func([], [IDL.Opt(ExternalBlob)], ['query']),
   'getMyQuotations' : IDL.Func([], [IDL.Vec(QuotationRequest)], ['query']),
   'getOfficeLocation' : IDL.Func([], [IDL.Opt(OfficeLocation)], ['query']),
+  'getPendingQuotationsOlderThan1Hour' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Text)],
+      ['query'],
+    ),
   'getProjectsByCategory' : IDL.Func(
       [ServiceType],
       [IDL.Vec(Project)],
@@ -237,6 +257,7 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getReplyFile' : IDL.Func([IDL.Text], [IDL.Opt(ExternalBlob)], ['query']),
   'getReviewsByRating' : IDL.Func([IDL.Int], [IDL.Vec(Review)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
@@ -256,10 +277,14 @@ export const idlService = IDL.Service({
   'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
+  'setDeliveryConfig' : IDL.Func([IDL.Int, IDL.Int], [], []),
   'setLogo' : IDL.Func([ExternalBlob], [], []),
   'setOfficeLocation' : IDL.Func([OfficeLocation], [], []),
-  'updateContactInfo' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-  'uploadQuotationFile' : IDL.Func([IDL.Text, ExternalBlob], [], []),
+  'updateContactInfo' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [],
+      [],
+    ),
   'verifyAuthentication' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
 });
 
@@ -283,6 +308,7 @@ export const idlFactory = ({ IDL }) => {
     'design' : IDL.Null,
     'digital' : IDL.Null,
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -337,7 +363,6 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'timestamp' : IDL.Int,
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const QuotationRequest = IDL.Record({
     'id' : IDL.Text,
     'status' : QuotationStatus,
@@ -366,9 +391,14 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
   });
   const ContactInfo = IDL.Record({
+    'mapsLink' : IDL.Text,
     'email' : IDL.Text,
+    'physicalAddress' : IDL.Text,
     'phone' : IDL.Text,
-    'location' : IDL.Text,
+  });
+  const DeliveryConfig = IDL.Record({
+    'minimumFee' : IDL.Int,
+    'perKmRate' : IDL.Int,
   });
   const OfficeLocation = IDL.Record({
     'lat' : IDL.Float64,
@@ -380,6 +410,7 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'approvalTimestamp' : IDL.Opt(IDL.Int),
     'approved' : IDL.Bool,
+    'replyFile' : IDL.Opt(ExternalBlob),
     'price' : IDL.Int,
   });
   
@@ -422,6 +453,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'addReplyFile' : IDL.Func([IDL.Text, ExternalBlob], [], []),
     'addReview' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Int, IDL.Opt(IDL.Text), ServiceType],
         [IDL.Text],
@@ -431,7 +463,14 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
     'createQuotationRequest' : IDL.Func(
-        [ServiceType, IDL.Int, IDL.Text, IDL.Text, IDL.Text],
+        [
+          ServiceType,
+          IDL.Int,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Opt(ExternalBlob),
+        ],
         [IDL.Text],
         [],
       ),
@@ -459,7 +498,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ChatMessage)],
         ['query'],
       ),
-    'getContactInfo' : IDL.Func([], [IDL.Opt(ContactInfo)], ['query']),
+    'getContactInfo' : IDL.Func([], [ContactInfo], ['query']),
     'getCustomerChatHistory' : IDL.Func(
         [IDL.Text],
         [
@@ -470,9 +509,15 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getDeliveryConfig' : IDL.Func([], [DeliveryConfig], ['query']),
     'getLogo' : IDL.Func([], [IDL.Opt(ExternalBlob)], ['query']),
     'getMyQuotations' : IDL.Func([], [IDL.Vec(QuotationRequest)], ['query']),
     'getOfficeLocation' : IDL.Func([], [IDL.Opt(OfficeLocation)], ['query']),
+    'getPendingQuotationsOlderThan1Hour' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Text)],
+        ['query'],
+      ),
     'getProjectsByCategory' : IDL.Func(
         [ServiceType],
         [IDL.Vec(Project)],
@@ -495,6 +540,7 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getReplyFile' : IDL.Func([IDL.Text], [IDL.Opt(ExternalBlob)], ['query']),
     'getReviewsByRating' : IDL.Func([IDL.Int], [IDL.Vec(Review)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
@@ -514,10 +560,14 @@ export const idlFactory = ({ IDL }) => {
     'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
+    'setDeliveryConfig' : IDL.Func([IDL.Int, IDL.Int], [], []),
     'setLogo' : IDL.Func([ExternalBlob], [], []),
     'setOfficeLocation' : IDL.Func([OfficeLocation], [], []),
-    'updateContactInfo' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-    'uploadQuotationFile' : IDL.Func([IDL.Text, ExternalBlob], [], []),
+    'updateContactInfo' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [],
+        [],
+      ),
     'verifyAuthentication' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
   });
 };

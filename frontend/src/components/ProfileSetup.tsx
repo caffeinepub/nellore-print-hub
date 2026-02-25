@@ -1,103 +1,104 @@
-import { useState } from 'react';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useGetCallerUserProfile, useSaveCallerUserProfile } from '../hooks/useUserProfile';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { useSaveCallerUserProfile } from '../hooks/useUserProfile';
 import { toast } from 'sonner';
-import { haptics } from '../utils/haptics';
+import { hapticFeedback } from '../utils/haptics';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslations } from '../translations';
 
-export default function ProfileSetup() {
-  const { identity } = useInternetIdentity();
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
-  const saveProfile = useSaveCallerUserProfile();
+interface ProfileSetupProps {
+  open: boolean;
+  onComplete: () => void;
+}
 
+export default function ProfileSetup({ open, onComplete }: ProfileSetupProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [mobileNumber, setMobileNumber] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [errors, setErrors] = useState<{ name?: string; email?: string; mobile?: string }>({});
+  const { mutateAsync: saveProfile, isPending } = useSaveCallerUserProfile();
+  const { language } = useLanguage();
+  const t = getTranslations(language);
 
-  const isAuthenticated = !!identity;
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+  const validate = () => {
+    const newErrors: { name?: string; email?: string; mobile?: string } = {};
+    if (!name.trim()) newErrors.name = t.profile.errorName;
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t.profile.errorEmail;
+    if (!mobile.trim()) newErrors.mobile = t.profile.errorMobile;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!name.trim() || !email.trim() || !mobileNumber.trim()) {
-      haptics.error();
-      toast.error('Please fill in all fields');
+    if (!validate()) {
+      hapticFeedback('error');
       return;
     }
-
     try {
-      await saveProfile.mutateAsync({ name, email, mobileNumber });
-      haptics.success();
-      toast.success('Profile created successfully!');
-    } catch (error) {
-      haptics.error();
-      toast.error('Failed to create profile');
-      console.error(error);
+      await saveProfile({ name: name.trim(), email: email.trim(), mobileNumber: mobile.trim() });
+      hapticFeedback('success');
+      toast.success('Profile saved!');
+      onComplete();
+    } catch (err) {
+      hapticFeedback('error');
+      toast.error('Failed to save profile. Please try again.');
     }
   };
 
   return (
-    <Dialog open={showProfileSetup} onOpenChange={() => {}}>
+    <Dialog open={open}>
       <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Welcome to Nellore Print Hub!</DialogTitle>
-          <DialogDescription>
-            Please provide your details to get started with our services.
-          </DialogDescription>
+          <DialogTitle>{t.profile.title}</DialogTitle>
+          <DialogDescription>{t.profile.subtitle}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="profile-name">{t.profile.name}</Label>
             <Input
-              id="name"
+              id="profile-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your full name"
-              required
-              inputMode="text"
-              className="h-12 text-base"
+              placeholder={t.profile.namePlaceholder}
+              className="h-12"
+              autoComplete="name"
             />
+            {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="profile-email">{t.profile.email}</Label>
             <Input
-              id="email"
+              id="profile-email"
               type="email"
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
-              required
-              inputMode="email"
-              className="h-12 text-base"
+              placeholder={t.profile.emailPlaceholder}
+              className="h-12"
+              autoComplete="email"
             />
+            {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="mobile">Mobile Number</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="profile-mobile">{t.profile.mobile}</Label>
             <Input
-              id="mobile"
+              id="profile-mobile"
               type="tel"
-              value={mobileNumber}
-              onChange={(e) => setMobileNumber(e.target.value)}
-              placeholder="+91 XXXXX XXXXX"
-              required
               inputMode="tel"
-              className="h-12 text-base"
+              value={mobile}
+              onChange={(e) => setMobile(e.target.value)}
+              placeholder={t.profile.mobilePlaceholder}
+              className="h-12"
+              autoComplete="tel"
             />
+            {errors.mobile && <p className="text-xs text-destructive">{errors.mobile}</p>}
           </div>
-          <Button type="submit" className="w-full min-h-[48px] text-base" disabled={saveProfile.isPending}>
-            {saveProfile.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Creating Profile...
-              </>
-            ) : (
-              'Continue'
-            )}
+          <Button type="submit" className="w-full h-12" disabled={isPending}>
+            {isPending ? t.profile.saving : t.profile.save}
           </Button>
         </form>
       </DialogContent>

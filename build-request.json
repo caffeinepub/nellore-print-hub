@@ -1,96 +1,99 @@
 {
   "kind": "build_request",
-  "title": "Add Contact Us page, Gallery with admin photo upload, and updated Services list",
+  "title": "Admin-Editable Contact Us, Customer Project Gallery, and Admin Icon Login",
   "projectName": "Nellore Print Hub",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Create a Contact Us page displaying the company's email address, phone number, and physical location/address. The page should be accessible from the main navigation and styled consistently with the existing site theme.",
+      "text": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Contact Us page (with your email, phone, location)"
+          "make contact us editable for admin anytime"
         ]
       },
       "acceptanceCriteria": [
-        "A Contact Us page is accessible via navigation",
-        "The page displays email, phone number, and location/address",
-        "The page is styled consistently with the rest of the site",
-        "The page is reachable from the bottom navigation or header"
+        "Admin dashboard has a visible 'Edit Contact Info' quick-link card",
+        "Clicking the card navigates to ContactInfoManagementPage",
+        "The page is protected by AdminGuard and only accessible to logged-in admins",
+        "Admin can update email, phone, address, and Google Maps link and save changes",
+        "Updated contact info is immediately reflected on the public ContactUsPage"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Add a route and backend endpoint for the Contact Us page data (email, phone, location) so admins can manage contact details. Store contact info in the backend and expose a public read endpoint.",
-      "target": "backend",
+      "text": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Contact Us page (with your email, phone, location)"
+          "make project gallary open for customer show our pictures and deatils of projects"
         ]
       },
       "acceptanceCriteria": [
-        "Backend stores contact details (email, phone, address)",
-        "A public query function returns current contact details",
-        "An admin-only update function allows changing contact details"
+        "ProjectGalleryPage is accessible to unauthenticated (guest) users without any login prompt",
+        "Each project card displays the project image, title, description, and category",
+        "Clicking a project card opens a detail view or expanded view with full project information",
+        "Category filter buttons are visible and functional for all users",
+        "Add/Edit/Delete project controls are only shown to authenticated admin users"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Update the Project Gallery page to allow admin users to upload new photos directly from the gallery page. The upload button must only be visible to authenticated admin users. Non-admin users continue to browse gallery photos as before.",
+      "text": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Gallery with admin-only photo upload"
+          "show our pictures and deatils of projects"
         ]
       },
       "acceptanceCriteria": [
-        "An 'Upload Photo' button is visible only to authenticated admins on the gallery page",
-        "Admins can select and upload an image file which then appears in the gallery",
-        "Non-admin users do not see the upload button",
-        "Upload progress is shown during photo upload",
-        "Newly uploaded photos appear in the gallery without a full page reload"
+        "Clicking any project card opens a detail dialog/modal",
+        "The modal shows the full-size project image, project title, full description, and category",
+        "The modal has a close button and can be dismissed by clicking outside or pressing Escape",
+        "The detail view is accessible to all users including unauthenticated guests"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Update the Services page to reflect the current and correct list of services offered by Nellore Print Hub. Ensure all four service categories (Digital Printing, Flex & Banner, Offset Printing, Creative Design) are accurately described with relevant features and call-to-action buttons.",
+      "text": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Updated Services list"
+          "make admin login on admin icon after admin loged"
         ]
       },
       "acceptanceCriteria": [
-        "Services page lists all relevant service categories with accurate descriptions",
-        "Each service card includes a title, description, feature list, and a call-to-action button",
-        "The page is styled consistently with the site theme"
+        "An admin icon (shield or settings icon) is visible in the header or navigation area",
+        "Clicking the icon when not logged in redirects to /admin/login",
+        "Clicking the icon when logged in as admin redirects to /admin/dashboard",
+        "The icon is always visible but does not expose admin controls to non-admins",
+        "After admin login, clicking the same icon goes directly to the admin dashboard without showing the login page again"
       ]
     }
   ],
   "constraints": [
     "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "All Motoko logic must remain in the single backend/main.mo actor",
-    "Admin-only features must be protected by AdminGuard or equivalent admin auth checks"
+    "All Motoko backend logic must remain in the single actor in backend/main.mo",
+    "Admin create/edit/delete project actions must remain protected by AdminGuard"
   ],
   "nonGoals": [
-    "Payment integration",
-    "Real-time chat changes",
-    "Quotation workflow changes",
-    "Admin user management changes",
-    "Any features beyond Contact Us page, Gallery photo upload, and Services list update"
+    "Adding new backend data fields for projects beyond what already exists",
+    "Changing the authentication mechanism (Internet Identity remains the only auth method)",
+    "Adding real-time updates or WebSocket-based gallery refresh",
+    "Redesigning the overall app theme or color scheme"
   ],
   "imageRequirements": {
     "required": [],

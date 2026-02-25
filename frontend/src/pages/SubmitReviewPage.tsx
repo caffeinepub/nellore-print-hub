@@ -1,243 +1,194 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Star, Upload, X } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
+import { Label } from '../components/ui/label';
 import { useNavigate } from '@tanstack/react-router';
 import { useAddReview } from '../hooks/useReviews';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Star, Upload, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { ServiceType } from '../backend';
-import { ExternalBlob } from '../lib/blobStorage';
-import BottomSheetSelect from '../components/BottomSheetSelect';
 import { haptics } from '../utils/haptics';
+import { ServiceType } from '../backend';
+import { useLanguage } from '../contexts/LanguageContext';
+import { getTranslations } from '../translations';
 
 export default function SubmitReviewPage() {
   const navigate = useNavigate();
-  const addReview = useAddReview();
+  const { mutateAsync: addReview, isPending } = useAddReview();
+  const { language } = useLanguage();
+  const t = getTranslations(language);
 
-  const [customerName, setCustomerName] = useState('');
+  const [name, setName] = useState('');
   const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [projectType, setProjectType] = useState<ServiceType | ''>('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const projectOptions = [
-    { value: 'digital', label: 'Digital Printing' },
-    { value: 'banner', label: 'Flex & Banner Printing' },
-    { value: 'offset', label: 'Offset Printing' },
-    { value: 'design', label: 'Creative Design Services' },
+  const projectTypes = [
+    { value: ServiceType.digital, label: t.quotation.digital },
+    { value: ServiceType.banner, label: t.quotation.banner },
+    { value: ServiceType.offset, label: t.quotation.offset },
+    { value: ServiceType.design, label: t.quotation.design },
   ];
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = t.submitReview.errorName;
+    if (!reviewText.trim()) newErrors.reviewText = t.submitReview.errorReview;
+    if (!rating) newErrors.rating = t.submitReview.errorRating;
+    if (!projectType) newErrors.projectType = t.submitReview.errorProjectType;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('Image size must be less than 10MB');
-        return;
-      }
-      if (!file.type.startsWith('image/')) {
-        toast.error('Please upload a valid image file');
-        return;
-      }
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file.');
+      return;
     }
-  };
-
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
-    setUploadProgress(0);
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB.');
+      return;
+    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!customerName.trim() || !reviewText.trim() || !projectType) {
+    if (!validate()) {
       haptics.error();
-      toast.error('Please fill in all required fields');
       return;
     }
-
     try {
       let imageUrl: string | null = null;
-
-      if (imageFile) {
-        const arrayBuffer = await imageFile.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
-        const blob = ExternalBlob.fromBytes(uint8Array).withUploadProgress((percentage) => {
-          setUploadProgress(percentage);
-        });
-        imageUrl = blob.getDirectURL();
+      if (imageFile && imagePreview) {
+        imageUrl = imagePreview;
       }
-
-      await addReview.mutateAsync({
-        customerName,
-        reviewText,
-        rating,
+      await addReview({
+        customerName: name.trim(),
+        reviewText: reviewText.trim(),
+        rating: rating, // number, as expected by useAddReview
         imageUrl,
         projectType: projectType as ServiceType,
       });
-
       haptics.success();
-      toast.success('Review submitted successfully!');
+      toast.success(t.submitReview.success);
       navigate({ to: '/testimonials' });
-    } catch (error) {
+    } catch {
       haptics.error();
       toast.error('Failed to submit review. Please try again.');
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <section className="bg-gradient-to-br from-primary/10 to-secondary/10 py-12 md:py-16 px-4">
-        <div className="container text-center space-y-4 max-w-3xl mx-auto">
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Leave a <span className="text-primary">Review</span>
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Share your experience with Nellore Print Hub
-          </p>
+    <div className="max-w-lg mx-auto px-4 py-10">
+      <h1 className="text-2xl font-extrabold text-foreground mb-6">{t.submitReview.title}</h1>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Name */}
+        <div className="space-y-1.5">
+          <Label htmlFor="review-name">{t.submitReview.yourName}</Label>
+          <Input
+            id="review-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t.submitReview.yourNamePlaceholder}
+            className="h-12"
+          />
+          {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
         </div>
-      </section>
 
-      <section className="py-8 md:py-12 px-4 flex-1">
-        <div className="container max-w-2xl">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Feedback</CardTitle>
-              <CardDescription>
-                Help others by sharing your experience with our services
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Your Name *</Label>
-                  <Input
-                    id="name"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Enter your name"
-                    required
-                    inputMode="text"
-                    className="h-12 text-base"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Rating *</Label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => {
-                          haptics.tap();
-                          setRating(star);
-                        }}
-                        className="focus:outline-none focus:ring-2 focus:ring-primary rounded min-w-[44px] min-h-[44px] flex items-center justify-center"
-                      >
-                        <Star
-                          className={`w-8 h-8 transition-colors ${
-                            star <= rating ? 'fill-secondary text-secondary' : 'text-muted-foreground'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <BottomSheetSelect
-                  label="Project Type"
-                  value={projectType}
-                  onValueChange={(value) => setProjectType(value as ServiceType)}
-                  options={projectOptions}
-                  placeholder="Select project type"
-                  required
+        {/* Rating */}
+        <div className="space-y-1.5">
+          <Label>{t.submitReview.rating}</Label>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHoverRating(star)}
+                onMouseLeave={() => setHoverRating(0)}
+                className="p-1"
+              >
+                <Star
+                  className={`w-8 h-8 transition-colors ${
+                    star <= (hoverRating || rating)
+                      ? 'text-amber-400 fill-amber-400'
+                      : 'text-muted-foreground'
+                  }`}
                 />
-
-                <div className="space-y-2">
-                  <Label htmlFor="review">Your Review *</Label>
-                  <Textarea
-                    id="review"
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                    placeholder="Tell us about your experience..."
-                    rows={5}
-                    required
-                    className="text-base resize-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="image">Project Photo (Optional)</Label>
-                  {imagePreview ? (
-                    <div className="relative">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 min-w-[44px] min-h-[44px]"
-                        onClick={removeImage}
-                      >
-                        <X className="w-5 h-5" />
-                      </Button>
-                      {uploadProgress > 0 && uploadProgress < 100 && (
-                        <div className="absolute bottom-2 left-2 right-2 bg-background/90 rounded-full h-2">
-                          <div
-                            className="bg-primary h-full rounded-full transition-all"
-                            style={{ width: `${uploadProgress}%` }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                      <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                      <Label htmlFor="image" className="cursor-pointer text-primary hover:underline">
-                        Click to upload image
-                      </Label>
-                      <Input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-                      <p className="text-sm text-muted-foreground mt-1">PNG, JPG up to 10MB</p>
-                    </div>
-                  )}
-                </div>
-
-                <Button type="submit" className="w-full min-h-[48px] text-base" size="lg" disabled={addReview.isPending}>
-                  {addReview.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    'Submit Review'
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+              </button>
+            ))}
+          </div>
+          {errors.rating && <p className="text-xs text-destructive">{errors.rating}</p>}
         </div>
-      </section>
+
+        {/* Project Type */}
+        <div className="space-y-1.5">
+          <Label htmlFor="project-type">{t.submitReview.projectType}</Label>
+          <select
+            id="project-type"
+            value={projectType}
+            onChange={(e) => setProjectType(e.target.value as ServiceType)}
+            className="w-full h-12 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">-- {t.submitReview.projectType} --</option>
+            {projectTypes.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          {errors.projectType && <p className="text-xs text-destructive">{errors.projectType}</p>}
+        </div>
+
+        {/* Review Text */}
+        <div className="space-y-1.5">
+          <Label htmlFor="review-text">{t.submitReview.reviewText}</Label>
+          <Textarea
+            id="review-text"
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            placeholder={t.submitReview.reviewTextPlaceholder}
+            className="min-h-[120px]"
+          />
+          {errors.reviewText && <p className="text-xs text-destructive">{errors.reviewText}</p>}
+        </div>
+
+        {/* Image Upload */}
+        <div className="space-y-1.5">
+          <Label>{t.submitReview.addPhoto}</Label>
+          {imagePreview ? (
+            <div className="relative">
+              <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-xl" />
+              <button
+                type="button"
+                onClick={() => { setImageFile(null); setImagePreview(null); }}
+                className="absolute top-2 right-2 bg-background/80 rounded-full p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 transition-colors">
+              <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+              <span className="text-sm text-muted-foreground">{t.submitReview.addPhoto}</span>
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+            </label>
+          )}
+        </div>
+
+        <Button type="submit" className="w-full h-12" disabled={isPending}>
+          {isPending ? t.submitReview.submitting : t.submitReview.submit}
+        </Button>
+      </form>
     </div>
   );
 }

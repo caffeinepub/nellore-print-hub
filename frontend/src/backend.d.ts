@@ -28,6 +28,7 @@ export interface QuotationDetails {
     description: string;
     approvalTimestamp?: bigint;
     approved: boolean;
+    replyFile?: ExternalBlob;
     price: bigint;
 }
 export interface OfficeLocation {
@@ -77,6 +78,10 @@ export interface ChatMessage {
     senderName: string;
     senderEmail: string;
 }
+export interface DeliveryConfig {
+    minimumFee: bigint;
+    perKmRate: bigint;
+}
 export interface Project {
     id: string;
     title: string;
@@ -86,9 +91,10 @@ export interface Project {
     category: ServiceType;
 }
 export interface ContactInfo {
+    mapsLink: string;
     email: string;
+    physicalAddress: string;
     phone: string;
-    location: string;
 }
 export interface UserProfile {
     name: string;
@@ -120,11 +126,12 @@ export interface backendInterface {
     addInternetIdentityAdmin(principal: Principal): Promise<void>;
     addProject(imageUrl: string, title: string, description: string, category: ServiceType): Promise<string>;
     addQuotationDetails(quotationId: string, price: bigint, description: string, terms: string): Promise<void>;
+    addReplyFile(quotationId: string, file: ExternalBlob): Promise<void>;
     addReview(customerName: string, reviewText: string, rating: bigint, imageUrl: string | null, projectType: ServiceType): Promise<string>;
     approveQuotation(quotationId: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     calculateDeliveryFee(distance: bigint): Promise<bigint>;
-    createQuotationRequest(serviceType: ServiceType, deadline: bigint, projectDetails: string, mobileNumber: string, email: string): Promise<string>;
+    createQuotationRequest(serviceType: ServiceType, deadline: bigint, projectDetails: string, mobileNumber: string, email: string, file: ExternalBlob | null): Promise<string>;
     deleteProject(projectId: string): Promise<void>;
     editProject(projectId: string, imageUrl: string, title: string, description: string, category: ServiceType): Promise<void>;
     getAdminInvitations(): Promise<Array<AdminInvitationEntry>>;
@@ -137,14 +144,16 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChatsForCustomer(senderEmail: string): Promise<Array<ChatMessage>>;
-    getContactInfo(): Promise<ContactInfo | null>;
+    getContactInfo(): Promise<ContactInfo>;
     getCustomerChatHistory(senderEmail: string): Promise<{
         messages: Array<ChatMessage>;
         replies: Array<ChatMessage>;
     }>;
+    getDeliveryConfig(): Promise<DeliveryConfig>;
     getLogo(): Promise<ExternalBlob | null>;
     getMyQuotations(): Promise<Array<QuotationRequest>>;
     getOfficeLocation(): Promise<OfficeLocation | null>;
+    getPendingQuotationsOlderThan1Hour(): Promise<Array<string>>;
     getProjectsByCategory(category: ServiceType): Promise<Array<Project>>;
     getQuotationDetails(quotationId: string): Promise<QuotationDetails | null>;
     getQuotationStatistics(): Promise<{
@@ -153,6 +162,7 @@ export interface backendInterface {
         accepted: bigint;
         negotiating: bigint;
     }>;
+    getReplyFile(quotationId: string): Promise<ExternalBlob | null>;
     getReviewsByRating(rating: bigint): Promise<Array<Review>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     handleQuotationResponse(quotationId: string, status: QuotationStatus, message: string | null): Promise<void>;
@@ -164,9 +174,9 @@ export interface backendInterface {
     respondToNegotiation(quotationId: string, message: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(senderName: string, senderEmail: string, messageText: string): Promise<string>;
+    setDeliveryConfig(perKmRate: bigint, minimumFee: bigint): Promise<void>;
     setLogo(_logo: ExternalBlob): Promise<void>;
     setOfficeLocation(_location: OfficeLocation): Promise<void>;
-    updateContactInfo(email: string, phone: string, location: string): Promise<void>;
-    uploadQuotationFile(quotationId: string, file: ExternalBlob): Promise<void>;
+    updateContactInfo(email: string, phone: string, physicalAddress: string, mapsLink: string): Promise<void>;
     verifyAuthentication(email: string, hashedPassword: string): Promise<boolean>;
 }
