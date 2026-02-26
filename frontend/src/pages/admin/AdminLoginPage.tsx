@@ -10,6 +10,20 @@ import { haptics } from '../../utils/haptics';
 
 type LoginMethod = 'select' | 'email' | 'biometric';
 
+// Store session in sessionStorage with multiple keys for compatibility
+function storeAdminSession(adminEmail: string) {
+  const now = Date.now();
+  // Primary session object
+  sessionStorage.setItem('adminEmailSession', JSON.stringify({
+    email: adminEmail,
+    timestamp: now,
+  }));
+  // Secondary flat keys (checked by AdminGuard as fallback)
+  sessionStorage.setItem('adminEmail', adminEmail);
+  sessionStorage.setItem('adminAuthenticated', 'true');
+  sessionStorage.setItem('adminAuthTimestamp', String(now));
+}
+
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -23,14 +37,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loginSuccess, setLoginSuccess] = useState(false);
-
-  // Store email/password session in sessionStorage so AdminGuard can verify it
-  const storeEmailSession = (adminEmail: string) => {
-    sessionStorage.setItem('adminEmailSession', JSON.stringify({
-      email: adminEmail,
-      timestamp: Date.now(),
-    }));
-  };
 
   // After II login succeeds, navigate to dashboard
   useEffect(() => {
@@ -52,13 +58,11 @@ export default function AdminLoginPage() {
       const result = await verifyEmailPassword.mutateAsync({ email, password });
       if (result) {
         haptics.success();
-        storeEmailSession(email);
-        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
-        queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+        // Store session with all keys before navigating
+        storeAdminSession(email);
         setLoginSuccess(true);
-        setTimeout(() => {
-          navigate({ to: '/admin/dashboard', replace: true });
-        }, 300);
+        // Navigate immediately — AdminGuard will read session synchronously
+        navigate({ to: '/admin/dashboard', replace: true });
       } else {
         haptics.error();
         setError('Invalid email or password. Please try again.');
@@ -79,17 +83,12 @@ export default function AdminLoginPage() {
     }
 
     try {
-      // useBiometricLogin expects a string (email), not an object
       const result = await biometricLogin.mutateAsync(email);
       if (result) {
         haptics.success();
-        storeEmailSession(email);
-        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
-        queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+        storeAdminSession(email);
         setLoginSuccess(true);
-        setTimeout(() => {
-          navigate({ to: '/admin/dashboard', replace: true });
-        }, 300);
+        navigate({ to: '/admin/dashboard', replace: true });
       } else {
         haptics.error();
         setError('Biometric authentication failed.');
@@ -205,8 +204,8 @@ export default function AdminLoginPage() {
             </button>
 
             {error && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm text-center">
-                {error}
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
 
@@ -223,109 +222,118 @@ export default function AdminLoginPage() {
 
         {/* Email Login Form */}
         {method === 'email' && (
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <div className="space-y-4">
             <button
-              type="button"
               onClick={() => { setMethod('select'); setError(''); }}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              Back to login options
             </button>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="admin@example.com"
-                required
-                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-              />
-            </div>
-
-            {error && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-                {error}
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  required
+                  className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={verifyEmailPassword.isPending}
-              className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {verifyEmailPassword.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+              </div>
+
+              {error && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
               )}
-            </button>
-          </form>
+
+              <button
+                type="submit"
+                disabled={verifyEmailPassword.isPending}
+                className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {verifyEmailPassword.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    Sign In
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         )}
 
-        {/* Biometric Login Form */}
+        {/* Biometric Login */}
         {method === 'biometric' && (
           <div className="space-y-4">
             <button
-              type="button"
               onClick={() => { setMethod('select'); setError(''); }}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              Back to login options
             </button>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="admin@example.com"
-                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
-              />
-            </div>
-
-            {error && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
-                {error}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full px-4 py-3 bg-card border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
               </div>
-            )}
 
-            <button
-              onClick={handleBiometricLogin}
-              disabled={biometricLogin.isPending || !email}
-              className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {biometricLogin.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Authenticating...
-                </>
-              ) : (
-                <>
-                  <Fingerprint className="w-5 h-5" />
-                  Authenticate with Biometric
-                </>
+              {error && (
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive">{error}</p>
+                </div>
               )}
-            </button>
+
+              <button
+                onClick={handleBiometricLogin}
+                disabled={biometricLogin.isPending || !email}
+                className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {biometricLogin.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Authenticating...
+                  </>
+                ) : (
+                  <>
+                    <Fingerprint className="w-5 h-5" />
+                    Authenticate with Biometric
+                  </>
+                )}
+              </button>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Use your registered fingerprint, face ID, or passkey to sign in.
+              </p>
+            </div>
           </div>
         )}
       </div>

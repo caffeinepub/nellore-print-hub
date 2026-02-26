@@ -1,35 +1,48 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T04:00:20.134Z",
+  "generatedAt": "2026-02-26T06:26:49.846Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
+        "summary": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ServicesPage.tsx"
+          "frontend/src/pages/QuotationRequestPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ServicesPage.tsx"
+          "frontend/src/pages/QuotationRequestPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
+        "summary": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ServicesPage.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/components/AdminGuard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ServicesPage.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/components/AdminGuard.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Layout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Layout.tsx"
         ]
       }
     ]
@@ -39,13 +52,10 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/service-design.dim_800x500.png",
-    "frontend/public/assets/generated/service-digital-printing.dim_800x500.png",
-    "frontend/public/assets/generated/service-indoor-printing.dim_800x500.png",
-    "frontend/public/assets/generated/service-offset-printing.dim_800x500.png",
-    "frontend/public/assets/generated/service-outdoor-printing.dim_800x500.png",
-    "frontend/public/assets/generated/service-screen-printing.dim_800x500.png",
-    "frontend/src/pages/ServicesPage.tsx",
+    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/pages/QuotationRequestPage.tsx",
+    "frontend/src/pages/admin/AdminLoginPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

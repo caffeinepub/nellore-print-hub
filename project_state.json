@@ -1,37 +1,40 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "A printing and design services app/website. The project displays multiple service categories (Design Services, Digital Printing, Outdoor Printing, Indoor Printing, Screen Printing & Personalization, Offset Printing) each with sub-items and sample pictures.",
+  "summary": "Print hub web application (nellore-print-hub) with admin dashboard functionality. Fixing UI option toggle and admin login/authentication issues.",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Graphic design workspace with colorful logos and brand identity materials on a desk (service-design.dim_800x500.png)\n- Stack of professionally printed business cards, flyers and brochures on a clean surface (service-digital-printing.dim_800x500.png)\n- Large outdoor flex banner and signboard installation on a building exterior (service-outdoor-printing.dim_800x500.png)\n- Collection of die-cut stickers, vinyl prints and indoor banners displayed on a wall (service-indoor-printing.dim_800x500.png)\n- Colorful custom printed t-shirts, pens and balloons arranged together (service-screen-printing.dim_800x500.png)\n- Offset printing press machine with stacked magazines, catalogs and paper bags (service-offset-printing.dim_800x500.png)",
+  "known_issues": [
+    "'Is your design ready?' option toggle not responding to user interaction",
+    "Admin login on live app redirects to 'go to admin setup or return to home' instead of Admin Dashboard — authentication or routing issue on production"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-servicespage-to-display-exactly-6-service-categories-each-with-its-listed-sub-items-and-a-sample-image-1-design-services-logo-design-brand-identity-marketing-materials-social-media-graphics-packaging-design-photo-editing-2-digital-printing-business-cards-flyers-brochures-posters-letterheads-envelopes-books-3-outdoor-printing-flex-banners-star-flex-signboards-canvas-4-indoor-printing-stickers-die-cut-stickers-white-black-grey-back-transparent-stickers-vinyl-printing-indoor-banners-canvas-prints-posters-5-screen-printing-personalization-pen-printing-t-shirt-printing-balloon-printing-sublimation-printing-dtf-direct-to-film-printing-6-offset-printing-with-description-cost-effective-bulk-printing-with-consistent-quality-for-large-volume-orders-and-sub-items-magazines-catalogs-books-packaging-cardboard-boxes-paper-bags-each-category-card-must-display-its-sample-image-from-frontend-public-assets-generated-the-category-title-the-sub-item-list-and-a-get-a-quote-cta-button",
-      "title": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
+      "id": "feature-fix-the-is-your-design-ready-option-selector-on-the-quotationrequestpage-so-that-clicking-yes-no-options-visually-updates-the-selected-state-and-correctly-stores-the-chosen-value-the-toggle-must-respond-to-user-interaction-and-reflect-the-active-selection-with-proper-styling",
+      "title": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-render-the-6-generated-service-category-sample-images-as-static-assets-from-frontend-public-assets-generated-and-reference-them-in-the-servicespage-component",
-      "title": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
+      "id": "feature-fix-the-admin-authentication-and-routing-logic-so-that-on-the-live-production-app-a-valid-admin-login-via-email-password-correctly-redirects-to-the-admin-dashboard-instead-of-showing-go-to-admin-setup-or-return-to-home-investigate-the-adminguard-and-adminloginpage-components-ensure-session-storage-keys-and-values-are-written-and-read-consistently-and-that-the-admin-exists-check-and-credential-verification-work-correctly-in-production-not-just-in-draft-preview-the-fix-must-make-email-password-admin-login-work-reliably-on-the-deployed-app",
+      "title": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
-    }
-  ],
-  "new_feature_requests": [
+    },
     {
-      "id": "AR-1",
-      "summary": "Update services section with 6 categories (Design Services, Digital Printing, Outdoor Printing, Indoor Printing, Screen Printing & Personalization, Offset Printing) and their sub-items, each with sample pictures",
-      "reqIds": [],
-      "status": "pending"
+      "id": "feature-add-a-clearly-visible-standalone-admin-login-link-or-button-on-the-main-site-e-g-in-the-footer-or-as-a-small-discreet-link-on-the-homepage-so-admins-can-always-navigate-directly-to-admin-login-without-needing-to-know-the-url-this-provides-a-reliable-alternative-entry-point-to-the-admin-area",
+      "title": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
     }
   ],
+  "new_feature_requests": [],
   "gameProjectType": "none",
   "projectName": "Nellore Print Hub",
   "clarification_mode": "instant",

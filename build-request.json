@@ -1,74 +1,80 @@
 {
   "kind": "build_request",
-  "title": "Update Services page with 6 categories, sub-items, and sample pictures",
+  "title": "Fix design-ready toggle and admin login/authentication on live app",
   "projectName": "Nellore Print Hub",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
+      "text": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-latest"
         ],
         "quotes": [
-          "1. Design Services\n* Logo Design\n* Brand Identity\n* Marketing Materials\n* Social Media Graphics\n* Packaging Design\n* Photo Editing",
-          "2. Digital Printing\n* Business Cards\n* Flyers & Brochures\n* Posters\n* Letterheads\n* Envelopes\n* Books",
-          "3. Outdoor Printing\n* Flex Banners\n* Star Flex\n* Signboards\n* Canvas",
-          "4 Indoor Printing\n* Stickers (Die-cut)\n* Stickers (White/Black/Grey back)\n* Transparent Stickers\n* Vinyl Printing\n* Indoor Banners\n* Canvas Prints\n* Posters",
-          "5. Screen Printing & Personalization\n* Pen Printing\n* T-Shirt Printing\n* Balloon Printing\n* Sublimation Printing\n* DTF (Direct to Film) Printing",
-          "F. Offset Printing\n* Cost-effective bulk printing with consistent quality for large volume orders."
+          "Is your design ready? Option was not changing fix that"
         ]
       },
       "acceptanceCriteria": [
-        "Exactly 6 service category sections are displayed on the Services page.",
-        "Each category shows its correct title and full sub-item list as specified.",
-        "Each category card displays a relevant sample image loaded from frontend/public/assets/generated/.",
-        "Offset Printing section includes the descriptive tagline about cost-effective bulk printing.",
-        "Each category card includes a 'Get a Quote' CTA button linking to the quotation request page.",
-        "Layout is responsive and consistent across mobile and desktop views."
+        "Clicking 'Yes' highlights the Yes option and deselects No",
+        "Clicking 'No' highlights the No option and deselects Yes",
+        "The selected value is correctly passed when the quotation form is submitted",
+        "The toggle state is visually distinct (e.g., filled/colored vs. outline) for selected vs. unselected"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
+      "text": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-latest"
         ],
         "quotes": [
-          "need to change our services with sample pictures"
+          "when i log in on live app web pages not opening Admin Dashboard its showing go to admin setup or retun to home",
+          "i cant login with my gmail and password"
         ]
       },
       "acceptanceCriteria": [
-        "All 6 service category images are placed in frontend/public/assets/generated/ with the correct filenames.",
-        "Each image is displayed in the corresponding service category card on the Services page.",
-        "Images load correctly without broken links."
+        "Entering valid admin email and password on the live app redirects to /admin/dashboard",
+        "AdminGuard correctly reads the session and grants access to admin routes after login",
+        "The 'Go to Admin Setup' page is NOT shown to a user who has successfully authenticated with valid admin credentials",
+        "If no admin exists yet, the setup page is shown; if admin exists and credentials are valid, the dashboard is shown",
+        "Admin login via email/password works on the deployed/live app URL, not just in draft mode"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "if not clear make another way to login admin page"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A link or button labeled 'Admin Login' is visible on the live site (e.g., in the footer)",
+        "Clicking it navigates to the /admin/login route",
+        "The link is unobtrusive and does not disrupt the customer-facing design"
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "All user-facing text must be in English.",
-    "Static images must be served from frontend/public/assets/generated/, not through the backend."
+    "Do not change the backend admin credential storage or hashing logic unless it is confirmed to be the root cause of the login failure",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Adding or modifying backend service data models.",
-    "Implementing admin-side service category management.",
-    "Changing any other pages beyond ServicesPage.",
-    "Adding Telugu translations for the new service content in this request."
+    "Adding new admin features or dashboard sections",
+    "Changing the Internet Identity login flow",
+    "Modifying customer-facing authentication",
+    "Redesigning the admin dashboard layout"
   ],
   "imageRequirements": {
-    "required": [
-      "Graphic design workspace with colorful logos and brand identity materials on a desk (service-design.dim_800x500.png)",
-      "Stack of professionally printed business cards, flyers and brochures on a clean surface (service-digital-printing.dim_800x500.png)",
-      "Large outdoor flex banner and signboard installation on a building exterior (service-outdoor-printing.dim_800x500.png)",
-      "Collection of die-cut stickers, vinyl prints and indoor banners displayed on a wall (service-indoor-printing.dim_800x500.png)",
-      "Colorful custom printed t-shirts, pens and balloons arranged together (service-screen-printing.dim_800x500.png)",
-      "Offset printing press machine with stacked magazines, catalogs and paper bags (service-offset-printing.dim_800x500.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

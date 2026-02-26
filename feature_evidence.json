@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-servicespage-to-display-exactly-6-service-categories-each-with-its-listed-sub-items-and-a-sample-image-1-design-services-logo-design-brand-identity-marketing-materials-social-media-graphics-packaging-design-photo-editing-2-digital-printing-business-cards-flyers-brochures-posters-letterheads-envelopes-books-3-outdoor-printing-flex-banners-star-flex-signboards-canvas-4-indoor-printing-stickers-die-cut-stickers-white-black-grey-back-transparent-stickers-vinyl-printing-indoor-banners-canvas-prints-posters-5-screen-printing-personalization-pen-printing-t-shirt-printing-balloon-printing-sublimation-printing-dtf-direct-to-film-printing-6-offset-printing-with-description-cost-effective-bulk-printing-with-consistent-quality-for-large-volume-orders-and-sub-items-magazines-catalogs-books-packaging-cardboard-boxes-paper-bags-each-category-card-must-display-its-sample-image-from-frontend-public-assets-generated-the-category-title-the-sub-item-list-and-a-get-a-quote-cta-button",
-      "featureTitle": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
+      "featureId": "feature-fix-the-is-your-design-ready-option-selector-on-the-quotationrequestpage-so-that-clicking-yes-no-options-visually-updates-the-selected-state-and-correctly-stores-the-chosen-value-the-toggle-must-respond-to-user-interaction-and-reflect-the-active-selection-with-proper-styling",
+      "featureTitle": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
       "files": [
-        "frontend/src/pages/ServicesPage.tsx"
+        "frontend/src/pages/QuotationRequestPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,10 +22,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-render-the-6-generated-service-category-sample-images-as-static-assets-from-frontend-public-assets-generated-and-reference-them-in-the-servicespage-component",
-      "featureTitle": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
+      "featureId": "feature-fix-the-admin-authentication-and-routing-logic-so-that-on-the-live-production-app-a-valid-admin-login-via-email-password-correctly-redirects-to-the-admin-dashboard-instead-of-showing-go-to-admin-setup-or-return-to-home-investigate-the-adminguard-and-adminloginpage-components-ensure-session-storage-keys-and-values-are-written-and-read-consistently-and-that-the-admin-exists-check-and-credential-verification-work-correctly-in-production-not-just-in-draft-preview-the-fix-must-make-email-password-admin-login-work-reliably-on-the-deployed-app",
+      "featureTitle": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
       "files": [
-        "frontend/src/pages/ServicesPage.tsx"
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/pages/admin/AdminLoginPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,6 +39,26 @@
       ],
       "testIds": [
         "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-clearly-visible-standalone-admin-login-link-or-button-on-the-main-site-e-g-in-the-footer-or-as-a-small-discreet-link-on-the-homepage-so-admins-can-always-navigate-directly-to-admin-login-without-needing-to-know-the-url-this-provides-a-reliable-alternative-entry-point-to-the-admin-area",
+      "featureTitle": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+      "files": [
+        "frontend/src/components/Layout.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Printer, CheckCircle, Palette, Clock, Phone, Mail, Loader2 } from 'lucide-react';
@@ -58,6 +57,11 @@ export default function QuotationRequestPage() {
     } catch (err) {
       haptics.error();
     }
+  };
+
+  const handleDesignStatusChange = (value: DesignStatus) => {
+    setDesignStatus(value);
+    haptics.select();
   };
 
   return (
@@ -117,44 +121,46 @@ export default function QuotationRequestPage() {
                 {errors.projectDetails && <p className="text-xs text-destructive">{errors.projectDetails}</p>}
               </div>
 
-              {/* Design Status - NEW: replaces file attachment */}
+              {/* Design Status - Toggle Buttons */}
               <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
                 <Label className="text-sm font-semibold flex items-center gap-2">
                   <Palette className="w-4 h-4 text-primary" />
-                  {t('designStatusQuestion')} *
+                  {t('designStatusQuestion') || 'Is your design ready?'} *
                 </Label>
-                <RadioGroup
-                  value={designStatus}
-                  onValueChange={(v) => setDesignStatus(v as DesignStatus)}
-                  className="space-y-3"
-                >
-                  <div
-                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                <div className="grid grid-cols-2 gap-3">
+                  {/* YES button */}
+                  <button
+                    type="button"
+                    onClick={() => handleDesignStatusChange(DesignStatus.ready)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 font-semibold text-sm transition-all duration-200 cursor-pointer select-none ${
                       designStatus === DesignStatus.ready
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-background hover:border-primary/50'
+                        ? 'border-primary bg-primary text-primary-foreground shadow-md scale-[1.02]'
+                        : 'border-border bg-background text-foreground hover:border-primary/60 hover:bg-primary/5'
                     }`}
-                    onClick={() => setDesignStatus(DesignStatus.ready)}
                   >
-                    <RadioGroupItem value={DesignStatus.ready} id="design-ready" />
-                    <Label htmlFor="design-ready" className="cursor-pointer font-medium text-sm">
-                      ✅ {t('designStatusReady')}
-                    </Label>
-                  </div>
-                  <div
-                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    <span className="text-2xl">✅</span>
+                    <span>{t('designStatusReady') || 'Yes, Ready'}</span>
+                  </button>
+
+                  {/* NO button */}
+                  <button
+                    type="button"
+                    onClick={() => handleDesignStatusChange(DesignStatus.needed)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 font-semibold text-sm transition-all duration-200 cursor-pointer select-none ${
                       designStatus === DesignStatus.needed
-                        ? 'border-accent bg-accent/10'
-                        : 'border-border bg-background hover:border-accent/50'
+                        ? 'border-accent bg-accent text-accent-foreground shadow-md scale-[1.02]'
+                        : 'border-border bg-background text-foreground hover:border-accent/60 hover:bg-accent/5'
                     }`}
-                    onClick={() => setDesignStatus(DesignStatus.needed)}
                   >
-                    <RadioGroupItem value={DesignStatus.needed} id="design-needed" />
-                    <Label htmlFor="design-needed" className="cursor-pointer font-medium text-sm">
-                      🎨 {t('designStatusNeeded')}
-                    </Label>
-                  </div>
-                </RadioGroup>
+                    <span className="text-2xl">🎨</span>
+                    <span>{t('designStatusNeeded') || 'No, Need Design'}</span>
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {designStatus === DesignStatus.ready
+                    ? '✓ You will provide your own design files'
+                    : '✓ We will create the design for you'}
+                </p>
               </div>
 
               {/* Deadline */}

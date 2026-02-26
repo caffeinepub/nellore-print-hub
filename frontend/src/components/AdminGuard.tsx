@@ -10,50 +10,54 @@ interface AdminGuardProps {
   children: React.ReactNode;
 }
 
+// Check session synchronously — avoids race conditions with async useEffect
+function checkEmailSession(): boolean {
+  try {
+    // Check both storage keys for compatibility
+    const session = sessionStorage.getItem('adminEmailSession');
+    if (session) {
+      const parsed = JSON.parse(session);
+      const now = Date.now();
+      if (parsed.timestamp && now - parsed.timestamp < 8 * 60 * 60 * 1000 && parsed.email) {
+        return true;
+      } else {
+        sessionStorage.removeItem('adminEmailSession');
+      }
+    }
+    // Also check the simpler key format
+    const adminAuthenticated = sessionStorage.getItem('adminAuthenticated');
+    const adminEmail = sessionStorage.getItem('adminEmail');
+    if (adminAuthenticated === 'true' && adminEmail) {
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}
+
 export default function AdminGuard({ children }: AdminGuardProps) {
   const navigate = useNavigate();
   const { identity, isInitializing } = useInternetIdentity();
   const { isFetching: actorFetching } = useActor();
-  // useIsCallerAdmin spreads query result — data is the boolean, not isAdmin
   const { data: isAdmin, isLoading: adminLoading, isFetched: adminStatusFetched } = useIsCallerAdmin();
   const { adminExists, isLoading: adminExistsLoading, isFetched: adminExistsFetched } = useAdminExists();
 
-  // Check for email/password or biometric session stored at login time
-  const [emailSessionValid, setEmailSessionValid] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const session = sessionStorage.getItem('adminEmailSession');
-    if (session) {
-      try {
-        const parsed = JSON.parse(session);
-        const now = Date.now();
-        // Session valid for 8 hours
-        if (parsed.timestamp && now - parsed.timestamp < 8 * 60 * 60 * 1000) {
-          setEmailSessionValid(true);
-          return;
-        } else {
-          sessionStorage.removeItem('adminEmailSession');
-        }
-      } catch {
-        sessionStorage.removeItem('adminEmailSession');
-      }
-    }
-    setEmailSessionValid(false);
-  }, []);
+  // Synchronous check — no useEffect needed, avoids render-cycle race
+  const emailSessionValid = checkEmailSession();
 
   const isIIAuthenticated = !!identity;
+
+  // If email/password session is valid, allow access immediately — no further checks needed
+  if (emailSessionValid) {
+    return <>{children}</>;
+  }
 
   const isLoading =
     isInitializing ||
     actorFetching ||
     adminExistsLoading ||
-    !adminExistsFetched ||
-    emailSessionValid === null;
-
-  // If email/password session is valid, allow access immediately
-  if (emailSessionValid === true) {
-    return <>{children}</>;
-  }
+    !adminExistsFetched;
 
   // Still loading
   if (isLoading) {

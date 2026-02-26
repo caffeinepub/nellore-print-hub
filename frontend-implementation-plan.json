@@ -1,40 +1,61 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Update Services page with 6 categories, sub-items, and sample pictures",
+  "title": "Fix design-ready toggle and admin login/authentication on live app",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Update ServicesPage to display exactly 6 service categories with sub-items, descriptions, and sample images",
+      "summary": "Fix the 'Is your design ready?' option selector on QuotationRequestPage so clicking Yes/No options visually updates the selected state and correctly stores the chosen value",
       "acceptanceCriteria": [
-        "Exactly 6 service category sections are displayed on the Services page.",
-        "Each category shows its correct title and full sub-item list as specified.",
-        "Each category card displays a relevant sample image loaded from frontend/public/assets/generated/.",
-        "Offset Printing section includes the descriptive tagline about cost-effective bulk printing.",
-        "Each category card includes a 'Get a Quote' CTA button linking to the quotation request page.",
-        "Layout is responsive and consistent across mobile and desktop views."
+        "Clicking 'Yes' highlights the Yes option and deselects No",
+        "Clicking 'No' highlights the No option and deselects Yes",
+        "The selected value is correctly passed when the quotation form is submitted",
+        "The toggle state is visually distinct (e.g., filled/colored vs. outline) for selected vs. unselected"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ServicesPage.tsx",
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
           "operation": "modify",
-          "description": "Replace the current 4-service layout with a 6-service category grid. Add complete service data for: (1) Design Services with 6 sub-items (Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing) and image service-design.dim_800x500.png; (2) Digital Printing with 6 sub-items (Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books) and image service-digital-printing.dim_800x500.png; (3) Outdoor Printing with 4 sub-items (Flex Banners, Star Flex, Signboards, Canvas) and image service-outdoor-printing.dim_800x500.png; (4) Indoor Printing with 7 sub-items (Stickers Die-cut, Stickers with backing variants, Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters) and image service-indoor-printing.dim_800x500.png; (5) Screen Printing & Personalization with 5 sub-items (Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF Printing) and image service-screen-printing.dim_800x500.png; (6) Offset Printing with description 'Cost-effective bulk printing with consistent quality for large volume orders' and 5 sub-items (Magazines, Catalogs, Books, Packaging/Cardboard Boxes, Paper Bags) and image service-offset-printing.dim_800x500.png. Reference all images using the workspace path frontend/public/assets/generated/<filename>. Each category card must include the category title, sub-item list, sample image, and a 'Get a Quote' button that navigates to /quotation-request. Maintain responsive grid layout and bilingual support using the BilingualText component and translation system."
+          "description": "Fix the design status toggle by ensuring the designStatus state is properly updated when a user clicks Yes or No. Update the button click handlers to set designStatus to 'ready' or 'needed' respectively. Ensure the visual styling (background color, border, text color) reflects the active selection by comparing each button's value against the current designStatus state. Add proper Tailwind classes for selected (filled background with primary color) vs. unselected (outline/border only) states."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Wire the 6 generated service category sample images as static assets in the frontend",
+      "summary": "Fix admin authentication and routing logic so valid admin login via email/password correctly redirects to Admin Dashboard instead of showing setup or home prompts",
       "acceptanceCriteria": [
-        "All 6 service category images are placed in frontend/public/assets/generated/ with the correct filenames.",
-        "Each image is displayed in the corresponding service category card on the Services page.",
-        "Images load correctly without broken links."
+        "Entering valid admin email and password on the live app redirects to /admin/dashboard",
+        "AdminGuard correctly reads the session and grants access to admin routes after login",
+        "The 'Go to Admin Setup' page is NOT shown to a user who has successfully authenticated with valid admin credentials",
+        "If no admin exists yet, the setup page is shown; if admin exists and credentials are valid, the dashboard is shown",
+        "Admin login via email/password works on the deployed/live app URL, not just in draft mode"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ServicesPage.tsx",
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Ensure all 6 service category images are correctly referenced with their full workspace paths: frontend/public/assets/generated/service-design.dim_800x500.png, frontend/public/assets/generated/service-digital-printing.dim_800x500.png, frontend/public/assets/generated/service-outdoor-printing.dim_800x500.png, frontend/public/assets/generated/service-indoor-printing.dim_800x500.png, frontend/public/assets/generated/service-screen-printing.dim_800x500.png, and frontend/public/assets/generated/service-offset-printing.dim_800x500.png. Use the standard img tag with proper alt text for accessibility. Verify images render without 404 errors and maintain aspect ratio across different viewport sizes."
+          "description": "Review and fix the email/password authentication flow to ensure that after successful backend verification, both the admin email and a verified session flag are stored consistently in sessionStorage (e.g., 'adminEmail' and 'adminAuthenticated'). After setting sessionStorage, invalidate all React Query caches using queryClient.invalidateQueries() to ensure AdminGuard and useAdminExists hooks re-fetch. Add explicit navigation to '/admin/dashboard' using navigate() after successful authentication. Ensure the authentication mutation's onSuccess handler waits for cache invalidation to complete before navigating."
+        },
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Fix the AdminGuard logic to correctly detect authenticated admin sessions by checking both sessionStorage keys ('adminEmail' and 'adminAuthenticated') and Internet Identity principal. Ensure the guard does not redirect an authenticated email/password admin to the setup page. If sessionStorage contains 'adminAuthenticated' === 'true' and a valid 'adminEmail', treat the user as authenticated and skip the admin-exists check. Only redirect to setup if no admin exists AND the user is not already authenticated via email/password. Ensure the guard reads sessionStorage values synchronously before making routing decisions."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add a clearly visible, standalone 'Admin Login' link in the footer so admins can navigate directly to /admin/login",
+      "acceptanceCriteria": [
+        "A link or button labeled 'Admin Login' is visible on the live site (e.g., in the footer)",
+        "Clicking it navigates to the /admin/login route",
+        "The link is unobtrusive and does not disrupt the customer-facing design"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Add a small, discreet 'Admin Login' link in the footer section below the existing contact info and social links. Use a muted text color (text-gray-500 or similar) and small font size to keep it unobtrusive. Wire the link to navigate to '/admin/login' using TanStack Router's Link component. Position it at the bottom-right or center of the footer to avoid disrupting the main customer-facing content."
         }
       ]
     }

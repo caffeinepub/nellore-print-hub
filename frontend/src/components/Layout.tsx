@@ -11,6 +11,7 @@ import {
   Heart,
   ChevronUp,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useIsCallerAdmin } from '../hooks/useAdmin';
@@ -260,19 +261,30 @@ export default function Layout({ children }: LayoutProps) {
             <p className="text-xs text-white/40">
               © {currentYear} {displayName}. {t('allRightsReserved') || 'All rights reserved.'}
             </p>
-            <p className="text-xs text-white/40 flex items-center gap-1">
-              Built with{' '}
-              <Heart className="w-3 h-3 text-[oklch(0.78_0.18_78)] fill-current" />{' '}
-              using{' '}
-              <a
-                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[oklch(0.78_0.18_78)] hover:text-[oklch(0.88_0.16_78)] transition-colors"
+            <div className="flex items-center gap-4">
+              {/* Admin Login link - discreet */}
+              <Link
+                to="/admin/login"
+                className="flex items-center gap-1 text-xs text-white/25 hover:text-white/50 transition-colors"
+                title="Admin Login"
               >
-                caffeine.ai
-              </a>
-            </p>
+                <Lock className="w-3 h-3" />
+                Admin
+              </Link>
+              <p className="text-xs text-white/40 flex items-center gap-1">
+                Built with{' '}
+                <Heart className="w-3 h-3 text-[oklch(0.78_0.18_78)] fill-current" />{' '}
+                using{' '}
+                <a
+                  href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[oklch(0.78_0.18_78)] hover:text-[oklch(0.88_0.16_78)] transition-colors"
+                >
+                  caffeine.ai
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </footer>
@@ -283,46 +295,82 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="flex items-center gap-2">
               {logoUrl ? (
-                <img src={logoUrl} alt={displayName} className="h-7 w-auto max-w-[100px] rounded object-contain" />
+                <img
+                  src={logoUrl}
+                  alt={displayName}
+                  className="h-8 w-auto max-w-[100px] rounded object-contain bg-white/10 p-0.5"
+                />
               ) : (
-                <div className="h-7 w-7 rounded bg-[oklch(0.68_0.18_72)] flex items-center justify-center">
+                <div className="h-8 w-8 rounded bg-[oklch(0.68_0.18_72)] flex items-center justify-center">
                   <Printer className="w-4 h-4 text-white" />
                 </div>
               )}
               <div className="text-left">
-                <span className="font-heading text-sm font-bold text-white block">{displayName}</span>
-                <span className="text-[9px] text-[oklch(0.78_0.18_78)] uppercase tracking-wider">Powered by Magic Advertising</span>
+                <div className="font-heading text-sm font-bold text-white">{displayName}</div>
+                <div className="text-[9px] text-[oklch(0.78_0.18_78)] uppercase tracking-widest flex items-center gap-1">
+                  <Sparkles className="w-2 h-2" />
+                  Magic Advertising
+                </div>
               </div>
             </div>
-            <p className="text-xs text-white/40">
-              © {currentYear} {displayName}
-            </p>
-            <p className="text-xs text-white/40 flex items-center gap-1">
-              Built with <Heart className="w-3 h-3 text-[oklch(0.78_0.18_78)] fill-current" /> using{' '}
-              <a
-                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[oklch(0.78_0.18_78)]"
+
+            <div className="flex items-center gap-4 flex-wrap justify-center">
+              {contactInfo?.phone && (
+                <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors">
+                  <Phone className="w-3 h-3" />
+                  {contactInfo.phone}
+                </a>
+              )}
+              {contactInfo?.email && (
+                <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-1 text-xs text-white/60 hover:text-white transition-colors">
+                  <Mail className="w-3 h-3" />
+                  {contactInfo.email}
+                </a>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Admin Login link - discreet */}
+              <Link
+                to="/admin/login"
+                className="flex items-center gap-1 text-xs text-white/25 hover:text-white/50 transition-colors"
+                title="Admin Login"
               >
-                caffeine.ai
-              </a>
+                <Lock className="w-3 h-3" />
+                Admin
+              </Link>
+              <p className="text-xs text-white/40 flex items-center gap-1">
+                Built with <Heart className="w-3 h-3 text-[oklch(0.78_0.18_78)] fill-current" /> using{' '}
+                <a
+                  href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[oklch(0.78_0.18_78)] hover:text-[oklch(0.88_0.16_78)] transition-colors"
+                >
+                  caffeine.ai
+                </a>
+              </p>
+            </div>
+
+            <p className="text-xs text-white/30">
+              © {currentYear} {displayName}
             </p>
           </div>
         </div>
       </footer>
 
-      {/* Scroll to top */}
+      {/* Scroll to Top */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-24 right-4 z-40 p-2.5 bg-[oklch(0.42_0.12_195)] text-white rounded shadow-press hover:bg-[oklch(0.35_0.12_195)] transition-all lg:bottom-8"
+          className="fixed bottom-24 right-4 lg:bottom-8 z-40 w-10 h-10 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-all"
+          aria-label="Scroll to top"
         >
           <ChevronUp className="w-5 h-5" />
         </button>
       )}
 
-      {/* Bottom Nav (mobile) */}
+      {/* Mobile Bottom Navigation */}
       <BottomNav />
     </div>
   );
