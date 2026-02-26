@@ -199,6 +199,10 @@ export interface _SERVICE {
   'getAllProjects' : ActorMethod<[], Array<Project>>,
   'getAllQuotations' : ActorMethod<[], Array<QuotationRequest>>,
   'getAllReviews' : ActorMethod<[], Array<Review>>,
+  /**
+   * / Query the current app name (publicly available).
+   */
+  'getAppName' : ActorMethod<[], string>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getChatsForCustomer' : ActorMethod<[string], Array<ChatMessage>>,
@@ -246,6 +250,10 @@ export interface _SERVICE {
   'respondToNegotiation' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendMessage' : ActorMethod<[string, string, string], string>,
+  /**
+   * / Set the app name (admin only).
+   */
+  'setAppName' : ActorMethod<[string], undefined>,
   'setDeliveryConfig' : ActorMethod<[bigint, bigint], undefined>,
   'setLogo' : ActorMethod<[ExternalBlob], undefined>,
   'setOfficeLocation' : ActorMethod<[OfficeLocation], undefined>,

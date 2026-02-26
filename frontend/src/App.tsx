@@ -1,272 +1,131 @@
-import { useState } from 'react';
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
+import React from 'react';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { ThemeProvider } from 'next-themes';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { LanguageProvider } from './contexts/LanguageContext';
+import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
+import { Toaster } from '@/components/ui/sonner';
+
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
 import ServicesPage from './pages/ServicesPage';
-import QuotationRequestPage from './pages/QuotationRequestPage';
-import QuotationConfirmationPage from './pages/QuotationConfirmationPage';
-import DeliveryInfoPage from './pages/DeliveryInfoPage';
 import ProjectGalleryPage from './pages/ProjectGalleryPage';
 import TestimonialsPage from './pages/TestimonialsPage';
+import QuotationRequestPage from './pages/QuotationRequestPage';
+import QuotationConfirmationPage from './pages/QuotationConfirmationPage';
+import AboutPage from './pages/AboutPage';
+import ContactUsPage from './pages/ContactUsPage';
+import DeliveryInfoPage from './pages/DeliveryInfoPage';
 import SubmitReviewPage from './pages/SubmitReviewPage';
-import QuotationManagementPage from './pages/admin/QuotationManagementPage';
-import ProjectManagementPage from './pages/admin/ProjectManagementPage';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import LogoManagementPage from './pages/admin/LogoManagementPage';
-import ChatManagementPage from './pages/admin/ChatManagementPage';
-import AdminLoginPage from './pages/admin/AdminLoginPage';
-import AdminRegistrationPage from './pages/admin/AdminRegistrationPage';
-import AdminUserManagementPage from './pages/admin/AdminUserManagementPage';
 import MyQuotationsPage from './pages/MyQuotationsPage';
 import QuotationResponsePage from './pages/QuotationResponsePage';
-import ContactUsPage from './pages/ContactUsPage';
+
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminRegistrationPage from './pages/admin/AdminRegistrationPage';
+import QuotationManagementPage from './pages/admin/QuotationManagementPage';
+import ProjectManagementPage from './pages/admin/ProjectManagementPage';
+import LogoManagementPage from './pages/admin/LogoManagementPage';
 import ContactInfoManagementPage from './pages/admin/ContactInfoManagementPage';
-import ServiceMediaManagementPage from './pages/admin/ServiceMediaManagementPage';
+import ChatManagementPage from './pages/admin/ChatManagementPage';
+import AdminUserManagementPage from './pages/admin/AdminUserManagementPage';
 import BusinessHoursManagementPage from './pages/admin/BusinessHoursManagementPage';
-import HomepageContentManagementPage from './pages/admin/HomepageContentManagementPage';
-import AboutContentManagementPage from './pages/admin/AboutContentManagementPage';
+import ServiceMediaManagementPage from './pages/admin/ServiceMediaManagementPage';
+import AppNameManagementPage from './pages/admin/AppNameManagementPage';
+
 import CustomerLoginPage from './pages/customer/CustomerLoginPage';
 import CustomerRegistrationPage from './pages/customer/CustomerRegistrationPage';
 import CustomerPortalPage from './pages/customer/CustomerPortalPage';
-import ProfileSetup from './components/ProfileSetup';
-import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
-import { Toaster } from '@/components/ui/sonner';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from './hooks/useUserProfile';
 
-function RootLayout() {
-  const { identity } = useInternetIdentity();
-  const isAuthenticated = !!identity;
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
-  const [profileCompleted, setProfileCompleted] = useState(false);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 30_000,
+    },
+  },
+});
 
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null && !profileCompleted;
-
-  return (
-    <>
-      <Layout>
-        <Outlet />
-      </Layout>
-      <ProfileSetup
-        open={showProfileSetup}
-        onComplete={() => setProfileCompleted(true)}
-      />
-      <Toaster />
-    </>
-  );
-}
-
+// Root layout with Outlet
 const rootRoute = createRootRoute({
-  component: RootLayout,
+  component: () => (
+    <Layout>
+      <Outlet />
+    </Layout>
+  ),
 });
 
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: HomePage,
-});
-
-const aboutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/about',
-  component: AboutPage,
-});
-
-const servicesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/services',
-  component: ServicesPage,
-});
-
-const requestQuoteRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/request-quote',
-  component: QuotationRequestPage,
-});
-
-const quotationConfirmationRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/quotation-confirmation/$id',
-  component: QuotationConfirmationPage,
-});
-
-const deliveryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/delivery',
-  component: DeliveryInfoPage,
-});
-
-const galleryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/gallery',
-  component: ProjectGalleryPage,
-});
-
-const testimonialsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/testimonials',
-  component: TestimonialsPage,
-});
-
-const submitReviewRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/submit-review',
-  component: SubmitReviewPage,
-});
-
-const myQuotationsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/my-quotations',
-  component: MyQuotationsPage,
-});
-
-const quotationResponseRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/quotations/respond',
-  component: QuotationResponsePage,
-});
-
-const contactRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/contact',
-  component: ContactUsPage,
-});
+// Public routes
+const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage });
+const servicesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/services', component: ServicesPage });
+const galleryRoute = createRoute({ getParentRoute: () => rootRoute, path: '/gallery', component: ProjectGalleryPage });
+const testimonialsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/testimonials', component: TestimonialsPage });
+const quotationRoute = createRoute({ getParentRoute: () => rootRoute, path: '/request-quote', component: QuotationRequestPage });
+const quotationConfirmRoute = createRoute({ getParentRoute: () => rootRoute, path: '/quotation-confirmation/$id', component: QuotationConfirmationPage });
+const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: '/about', component: AboutPage });
+const contactRoute = createRoute({ getParentRoute: () => rootRoute, path: '/contact', component: ContactUsPage });
+const deliveryRoute = createRoute({ getParentRoute: () => rootRoute, path: '/delivery', component: DeliveryInfoPage });
+const submitReviewRoute = createRoute({ getParentRoute: () => rootRoute, path: '/submit-review', component: SubmitReviewPage });
+const myQuotationsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/my-quotations', component: MyQuotationsPage });
+const quotationResponseRoute = createRoute({ getParentRoute: () => rootRoute, path: '/quotation-response/$id', component: QuotationResponsePage });
 
 // Admin routes
-const adminLoginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/login',
-  component: AdminLoginPage,
-});
+const adminLoginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/login', component: AdminLoginPage });
+// /admin/setup redirects to /admin/register (same component)
+const adminSetupRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/setup', component: AdminRegistrationPage });
+const adminRegistrationRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/register', component: AdminRegistrationPage });
+const adminDashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/dashboard', component: AdminDashboardPage });
+const adminQuotationsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/quotations', component: QuotationManagementPage });
+const adminProjectsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/projects', component: ProjectManagementPage });
+const adminLogoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/logo', component: LogoManagementPage });
+const adminContactRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/contact', component: ContactInfoManagementPage });
+const adminContactInfoRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/contact-info', component: ContactInfoManagementPage });
+const adminChatRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/chat', component: ChatManagementPage });
+const adminChatsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/chats', component: ChatManagementPage });
+const adminUsersRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/users', component: AdminUserManagementPage });
+const adminHoursRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/hours', component: BusinessHoursManagementPage });
+const adminBusinessHoursRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/business-hours', component: BusinessHoursManagementPage });
+const adminMediaRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/media', component: ServiceMediaManagementPage });
+const adminServiceMediaRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/service-media', component: ServiceMediaManagementPage });
+const adminAppNameRoute = createRoute({ getParentRoute: () => rootRoute, path: '/admin/app-name', component: AppNameManagementPage });
 
-const adminRegisterRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/register',
-  component: AdminRegistrationPage,
-});
-
-const adminDashboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/dashboard',
-  component: AdminDashboardPage,
-});
-
-const adminQuotationsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/quotations',
-  component: QuotationManagementPage,
-});
-
-const adminProjectsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/projects',
-  component: ProjectManagementPage,
-});
-
-const adminLogoRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/logo',
-  component: LogoManagementPage,
-});
-
-const adminChatsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/chats',
-  component: ChatManagementPage,
-});
-
-// Also register /admin/chat as an alias so dashboard links work
-const adminChatRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/chat',
-  component: ChatManagementPage,
-});
-
-const adminUsersRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/users',
-  component: AdminUserManagementPage,
-});
-
-const adminContactInfoRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/contact-info',
-  component: ContactInfoManagementPage,
-});
-
-const adminServiceMediaRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/service-media',
-  component: ServiceMediaManagementPage,
-});
-
-const adminBusinessHoursRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/business-hours',
-  component: BusinessHoursManagementPage,
-});
-
-const adminHomepageContentRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/homepage-content',
-  component: HomepageContentManagementPage,
-});
-
-const adminAboutContentRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/about-content',
-  component: AboutContentManagementPage,
-});
-
-// Customer portal routes
-const customerLoginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/customer/login',
-  component: CustomerLoginPage,
-});
-
-const customerRegisterRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/customer/register',
-  component: CustomerRegistrationPage,
-});
-
-const customerPortalRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/customer/portal',
-  component: CustomerPortalPage,
-});
+// Customer routes
+const customerLoginRoute = createRoute({ getParentRoute: () => rootRoute, path: '/customer/login', component: CustomerLoginPage });
+const customerRegistrationRoute = createRoute({ getParentRoute: () => rootRoute, path: '/customer/register', component: CustomerRegistrationPage });
+const customerPortalRoute = createRoute({ getParentRoute: () => rootRoute, path: '/customer/portal', component: CustomerPortalPage });
 
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  aboutRoute,
+  homeRoute,
   servicesRoute,
-  requestQuoteRoute,
-  quotationConfirmationRoute,
-  deliveryRoute,
   galleryRoute,
   testimonialsRoute,
+  quotationRoute,
+  quotationConfirmRoute,
+  aboutRoute,
+  contactRoute,
+  deliveryRoute,
   submitReviewRoute,
   myQuotationsRoute,
   quotationResponseRoute,
-  contactRoute,
   adminLoginRoute,
-  adminRegisterRoute,
+  adminSetupRoute,
+  adminRegistrationRoute,
   adminDashboardRoute,
   adminQuotationsRoute,
   adminProjectsRoute,
   adminLogoRoute,
-  adminChatsRoute,
-  adminChatRoute,
-  adminUsersRoute,
+  adminContactRoute,
   adminContactInfoRoute,
-  adminServiceMediaRoute,
+  adminChatRoute,
+  adminChatsRoute,
+  adminUsersRoute,
+  adminHoursRoute,
   adminBusinessHoursRoute,
-  adminHomepageContentRoute,
-  adminAboutContentRoute,
+  adminMediaRoute,
+  adminServiceMediaRoute,
+  adminAppNameRoute,
   customerLoginRoute,
-  customerRegisterRoute,
+  customerRegistrationRoute,
   customerPortalRoute,
 ]);
 
@@ -280,8 +139,15 @@ declare module '@tanstack/react-router' {
 
 export default function App() {
   return (
-    <CustomerAuthProvider>
-      <RouterProvider router={router} />
-    </CustomerAuthProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        <LanguageProvider>
+          <CustomerAuthProvider>
+            <RouterProvider router={router} />
+            <Toaster richColors position="top-right" />
+          </CustomerAuthProvider>
+        </LanguageProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

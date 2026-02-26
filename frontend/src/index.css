@@ -1,141 +1,275 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-    :root {
-        --radius: 0.5rem;
-        /* Print industry inspired colors - vibrant cyan and deep navy */
-        --background: 0.99 0 0;
-        --foreground: 0.2 0.02 250;
-        --card: 1 0 0;
-        --card-foreground: 0.2 0.02 250;
-        --popover: 1 0 0;
-        --popover-foreground: 0.2 0.02 250;
-        /* Vibrant cyan primary - represents ink/printing */
-        --primary: 0.65 0.19 210;
-        --primary-foreground: 0.99 0 0;
-        /* Warm orange accent - creative energy */
-        --secondary: 0.75 0.15 45;
-        --secondary-foreground: 0.2 0.02 250;
-        --muted: 0.96 0.01 250;
-        --muted-foreground: 0.5 0.02 250;
-        --accent: 0.96 0.01 250;
-        --accent-foreground: 0.2 0.02 250;
-        --destructive: 0.577 0.245 27.325;
-        --destructive-foreground: 0.99 0 0;
-        --border: 0.9 0.01 250;
-        --input: 0.9 0.01 250;
-        --ring: 0.65 0.19 210;
-        --chart-1: 0.65 0.19 210;
-        --chart-2: 0.75 0.15 45;
-        --chart-3: 0.55 0.18 280;
-        --chart-4: 0.7 0.16 150;
-        --chart-5: 0.6 0.2 340;
-        --sidebar: 0.99 0 0;
-        --sidebar-foreground: 0.2 0.02 250;
-        --sidebar-primary: 0.65 0.19 210;
-        --sidebar-primary-foreground: 0.99 0 0;
-        --sidebar-accent: 0.96 0.01 250;
-        --sidebar-accent-foreground: 0.2 0.02 250;
-        --sidebar-border: 0.9 0.01 250;
-        --sidebar-ring: 0.65 0.19 210;
-    }
+  :root {
+    /* ── Deep Teal & Gold Printing Theme ── */
 
-    .dark {
-        --background: 0.15 0.02 250;
-        --foreground: 0.98 0.01 250;
-        --card: 0.2 0.02 250;
-        --card-foreground: 0.98 0.01 250;
-        --popover: 0.18 0.02 250;
-        --popover-foreground: 0.98 0.01 250;
-        --primary: 0.7 0.2 210;
-        --primary-foreground: 0.15 0.02 250;
-        --secondary: 0.8 0.16 45;
-        --secondary-foreground: 0.15 0.02 250;
-        --muted: 0.25 0.02 250;
-        --muted-foreground: 0.65 0.02 250;
-        --accent: 0.3 0.03 250;
-        --accent-foreground: 0.98 0.01 250;
-        --destructive: 0.65 0.22 27;
-        --destructive-foreground: 0.98 0.01 250;
-        --border: 0.3 0.02 250;
-        --input: 0.3 0.02 250;
-        --ring: 0.7 0.2 210;
-        --chart-1: 0.7 0.2 210;
-        --chart-2: 0.8 0.16 45;
-        --chart-3: 0.6 0.19 280;
-        --chart-4: 0.75 0.17 150;
-        --chart-5: 0.65 0.21 340;
-        --sidebar: 0.2 0.02 250;
-        --sidebar-foreground: 0.98 0.01 250;
-        --sidebar-primary: 0.7 0.2 210;
-        --sidebar-primary-foreground: 0.15 0.02 250;
-        --sidebar-accent: 0.25 0.02 250;
-        --sidebar-accent-foreground: 0.98 0.01 250;
-        --sidebar-border: 0.3 0.02 250;
-        --sidebar-ring: 0.7 0.2 210;
-    }
+    /* Backgrounds */
+    --background: oklch(0.97 0.006 195);
+    --foreground: oklch(0.14 0.03 210);
 
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-        font-feature-settings: "rlig" 1, "calt" 1;
-    }
+    /* Card / Surface */
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.14 0.03 210);
+
+    /* Popover */
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.14 0.03 210);
+
+    /* Primary — deep teal */
+    --primary: oklch(0.42 0.12 195);
+    --primary-foreground: oklch(0.97 0.006 195);
+
+    /* Secondary — light teal tint */
+    --secondary: oklch(0.90 0.04 195);
+    --secondary-foreground: oklch(0.25 0.08 195);
+
+    /* Muted */
+    --muted: oklch(0.93 0.01 195);
+    --muted-foreground: oklch(0.50 0.03 195);
+
+    /* Accent — warm gold */
+    --accent: oklch(0.72 0.18 75);
+    --accent-foreground: oklch(0.14 0.03 75);
+
+    /* Destructive */
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.98 0.01 25);
+
+    /* Border / Input / Ring */
+    --border: oklch(0.86 0.03 195);
+    --input: oklch(0.94 0.02 195);
+    --ring: oklch(0.42 0.12 195);
+
+    /* Radius */
+    --radius: 0.5rem;
+
+    /* Brand tokens — teal */
+    --teal-dark: oklch(0.28 0.10 195);
+    --teal-mid: oklch(0.42 0.12 195);
+    --teal-light: oklch(0.62 0.10 195);
+    --teal-pale: oklch(0.88 0.05 195);
+
+    /* Brand tokens — gold */
+    --gold-bright: oklch(0.78 0.18 78);
+    --gold-mid: oklch(0.68 0.18 72);
+    --gold-dark: oklch(0.55 0.16 68);
+
+    /* Ink — deep navy-charcoal */
+    --ink-dark: oklch(0.12 0.03 220);
+    --ink-medium: oklch(0.28 0.04 215);
+    --ink-light: oklch(0.48 0.03 210);
+
+    /* Paper tones */
+    --paper-white: oklch(0.99 0.003 195);
+    --paper-cream: oklch(0.96 0.01 195);
+    --paper-warm: oklch(0.93 0.02 195);
+
+    /* Charts */
+    --chart-1: oklch(0.42 0.12 195);
+    --chart-2: oklch(0.68 0.18 72);
+    --chart-3: oklch(0.55 0.15 260);
+    --chart-4: oklch(0.60 0.14 145);
+    --chart-5: oklch(0.65 0.12 30);
+
+    /* Sidebar */
+    --sidebar: oklch(0.18 0.06 205);
+    --sidebar-foreground: oklch(0.92 0.02 195);
+    --sidebar-primary: oklch(0.68 0.18 72);
+    --sidebar-primary-foreground: oklch(0.14 0.03 75);
+    --sidebar-accent: oklch(0.26 0.07 205);
+    --sidebar-accent-foreground: oklch(0.92 0.02 195);
+    --sidebar-border: oklch(0.30 0.06 205);
+    --sidebar-ring: oklch(0.68 0.18 72);
+  }
+
+  .dark {
+    /* Dark mode — deep teal navy with gold accents */
+    --background: oklch(0.13 0.04 210);
+    --foreground: oklch(0.93 0.01 195);
+
+    --card: oklch(0.18 0.05 210);
+    --card-foreground: oklch(0.93 0.01 195);
+
+    --popover: oklch(0.18 0.05 210);
+    --popover-foreground: oklch(0.93 0.01 195);
+
+    /* Primary — brighter teal in dark */
+    --primary: oklch(0.58 0.14 190);
+    --primary-foreground: oklch(0.10 0.03 210);
+
+    --secondary: oklch(0.24 0.06 210);
+    --secondary-foreground: oklch(0.85 0.03 195);
+
+    --muted: oklch(0.22 0.04 210);
+    --muted-foreground: oklch(0.60 0.03 195);
+
+    --accent: oklch(0.72 0.18 75);
+    --accent-foreground: oklch(0.14 0.03 75);
+
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(0.98 0.01 25);
+
+    --border: oklch(0.28 0.06 210);
+    --input: oklch(0.22 0.05 210);
+    --ring: oklch(0.58 0.14 190);
+
+    --teal-dark: oklch(0.58 0.14 190);
+    --teal-mid: oklch(0.48 0.12 192);
+    --teal-light: oklch(0.68 0.10 190);
+    --teal-pale: oklch(0.28 0.07 205);
+
+    --gold-bright: oklch(0.80 0.18 78);
+    --gold-mid: oklch(0.70 0.18 72);
+    --gold-dark: oklch(0.58 0.16 68);
+
+    --ink-dark: oklch(0.93 0.01 195);
+    --ink-medium: oklch(0.75 0.02 195);
+    --ink-light: oklch(0.55 0.02 195);
+
+    --paper-white: oklch(0.18 0.05 210);
+    --paper-cream: oklch(0.20 0.04 210);
+    --paper-warm: oklch(0.22 0.04 210);
+
+    --chart-1: oklch(0.58 0.14 190);
+    --chart-2: oklch(0.72 0.18 75);
+    --chart-3: oklch(0.60 0.15 260);
+    --chart-4: oklch(0.65 0.14 145);
+    --chart-5: oklch(0.68 0.12 30);
+
+    --sidebar: oklch(0.10 0.04 215);
+    --sidebar-foreground: oklch(0.92 0.02 195);
+    --sidebar-primary: oklch(0.72 0.18 75);
+    --sidebar-primary-foreground: oklch(0.14 0.03 75);
+    --sidebar-accent: oklch(0.18 0.05 210);
+    --sidebar-accent-foreground: oklch(0.92 0.02 195);
+    --sidebar-border: oklch(0.24 0.05 210);
+    --sidebar-ring: oklch(0.72 0.18 75);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
+  }
 }
 
 @layer utilities {
-    .text-balance {
-        text-wrap: balance;
-    }
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
 
-    /* Mobile app utilities */
-    .safe-area-bottom {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
+  .font-heading {
+    font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
+  }
 
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+  .font-body {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
 
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
+  /* Teal brand utilities */
+  .text-teal-brand {
+    color: var(--teal-mid);
+  }
 
-    /* Shimmer effect for skeleton loaders */
-    .shimmer {
-        background: linear-gradient(
-            90deg,
-            oklch(var(--muted)) 0%,
-            oklch(var(--muted) / 0.5) 50%,
-            oklch(var(--muted)) 100%
-        );
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-    }
+  .bg-teal-brand {
+    background-color: var(--teal-mid);
+  }
 
-    @keyframes shimmer {
-        0% {
-            background-position: -200% 0;
-        }
-        100% {
-            background-position: 200% 0;
-        }
-    }
+  .border-teal-brand {
+    border-color: var(--teal-mid);
+  }
 
-    @keyframes slide-up {
-        from {
-            transform: translateY(100%);
-        }
-        to {
-            transform: translateY(0);
-        }
-    }
+  /* Gold brand utilities */
+  .text-gold-brand {
+    color: var(--gold-mid);
+  }
 
-    .animate-slide-up {
-        animation: slide-up 0.3s ease-out;
-    }
+  .bg-gold-brand {
+    background-color: var(--gold-mid);
+  }
+
+  .border-gold-brand {
+    border-color: var(--gold-mid);
+  }
+
+  /* Ink utilities */
+  .text-ink-dark {
+    color: var(--ink-dark);
+  }
+
+  .text-ink-medium {
+    color: var(--ink-medium);
+  }
+
+  .text-ink-light {
+    color: var(--ink-light);
+  }
+
+  /* Paper utilities */
+  .bg-paper-white {
+    background-color: var(--paper-white);
+  }
+
+  .bg-paper-cream {
+    background-color: var(--paper-cream);
+  }
+
+  .bg-paper-warm {
+    background-color: var(--paper-warm);
+  }
+
+  /* Shimmer animation for skeleton loading */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      oklch(0.90 0.02 195) 25%,
+      oklch(0.95 0.01 195) 50%,
+      oklch(0.90 0.02 195) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Pull-to-refresh indicator */
+  .pull-indicator {
+    @apply flex items-center justify-center py-4 text-muted-foreground;
+  }
+
+  /* Bottom nav safe area */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Smooth page transitions */
+  .page-enter {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
 }

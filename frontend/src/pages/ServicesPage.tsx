@@ -1,145 +1,194 @@
 import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { ArrowRight, CheckCircle, Printer } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, ArrowRight, Printer } from 'lucide-react';
+
+const serviceData = [
+  {
+    id: 'design',
+    sampleImage: '/assets/generated/service-design.dim_800x500.png',
+    title: 'Design Services',
+    description: 'Professional graphic design services to create stunning print-ready artwork for all your materials.',
+    items: [
+      'Logo Design',
+      'Brand Identity',
+      'Marketing Materials',
+      'Social Media Graphics',
+      'Packaging Design',
+      'Photo Editing',
+    ],
+    badge: 'Creative',
+    badgeColor: 'bg-[oklch(0.94_0.06_75)] text-[oklch(0.40_0.16_68)] border-[oklch(0.82_0.10_72)]',
+    tagline: null,
+  },
+  {
+    id: 'digital',
+    sampleImage: '/assets/generated/service-digital-printing.dim_800x500.png',
+    title: 'Digital Printing',
+    description: 'High-resolution digital prints for all your business needs with vibrant colors and sharp details.',
+    items: [
+      'Business Cards',
+      'Flyers & Brochures',
+      'Posters',
+      'Letterheads',
+      'Envelopes',
+      'Books',
+    ],
+    badge: 'Fast Turnaround',
+    badgeColor: 'bg-[oklch(0.92_0.05_195)] text-[oklch(0.35_0.12_195)] border-[oklch(0.80_0.06_195)]',
+    tagline: null,
+  },
+  {
+    id: 'outdoor',
+    sampleImage: '/assets/generated/service-outdoor-printing.dim_800x500.png',
+    title: 'Outdoor Printing',
+    description: 'Large format outdoor prints for maximum visibility at events, shops, and outdoor advertising.',
+    items: [
+      'Flex Banners',
+      'Star Flex',
+      'Signboards',
+      'Canvas',
+    ],
+    badge: 'Large Format',
+    badgeColor: 'bg-[oklch(0.92_0.06_145)] text-[oklch(0.35_0.14_145)] border-[oklch(0.80_0.08_145)]',
+    tagline: null,
+  },
+  {
+    id: 'indoor',
+    sampleImage: '/assets/generated/service-indoor-printing.dim_800x500.png',
+    title: 'Indoor Printing',
+    description: 'Premium quality indoor prints and displays for retail, exhibitions, and interior decoration.',
+    items: [
+      'Stickers (Die-cut)',
+      'Stickers (White/Black/Grey back)',
+      'Transparent Stickers',
+      'Vinyl Printing',
+      'Indoor Banners',
+      'Canvas Prints',
+      'Posters',
+    ],
+    badge: 'Premium Quality',
+    badgeColor: 'bg-[oklch(0.92_0.04_270)] text-[oklch(0.35_0.12_270)] border-[oklch(0.80_0.06_270)]',
+    tagline: null,
+  },
+  {
+    id: 'screen',
+    sampleImage: '/assets/generated/service-screen-printing.dim_800x500.png',
+    title: 'Screen Printing & Personalization',
+    description: 'Custom screen printing and personalization services for promotional items and branded merchandise.',
+    items: [
+      'Pen Printing',
+      'T-Shirt Printing',
+      'Balloon Printing',
+      'Sublimation Printing',
+      'DTF (Direct to Film) Printing',
+    ],
+    badge: 'Personalized',
+    badgeColor: 'bg-[oklch(0.93_0.05_30)] text-[oklch(0.38_0.14_25)] border-[oklch(0.82_0.08_28)]',
+    tagline: null,
+  },
+  {
+    id: 'offset',
+    sampleImage: '/assets/generated/service-offset-printing.dim_800x500.png',
+    title: 'Offset Printing',
+    description: 'Cost-effective bulk printing with consistent quality for large volume orders.',
+    items: [
+      'Magazines',
+      'Catalogs',
+      'Books',
+      'Packaging / Cardboard Boxes',
+      'Paper Bags',
+    ],
+    badge: 'Bulk Orders',
+    badgeColor: 'bg-[oklch(0.92_0.04_240)] text-[oklch(0.35_0.12_240)] border-[oklch(0.80_0.06_240)]',
+    tagline: 'Cost-effective bulk printing with consistent quality for large volume orders.',
+  },
+];
 
 export default function ServicesPage() {
-  const { t } = useLanguage();
   const navigate = useNavigate();
-
-  const services = [
-    {
-      id: 'digital',
-      icon: '/assets/generated/digital-icon.dim_256x256.png',
-      title: t('digitalPrinting'),
-      description: t('language') === 'te'
-        ? 'అత్యాధునిక డిజిటల్ ప్రింటింగ్ సాంకేతికత ఉపయోగించి అత్యుత్తమ నాణ్యత ముద్రణ.'
-        : 'High-quality digital printing using the latest technology for vibrant, precise results.',
-      features: t('language') === 'te'
-        ? ['వేగవంతమైన టర్నరౌండ్', 'వివిధ పేపర్ సైజులు', 'రంగు ఖచ్చితత్వం', 'చిన్న పరిమాణాలు']
-        : ['Fast turnaround', 'Various paper sizes', 'Color accuracy', 'Small quantities'],
-      sample: '/assets/generated/print-sample-business-card.dim_800x450.png',
-      color: 'from-blue-500/10 to-blue-600/5',
-      badge: 'bg-blue-100 text-blue-700',
-    },
-    {
-      id: 'banner',
-      icon: '/assets/generated/flex-icon.dim_256x256.png',
-      title: t('bannerPrinting'),
-      description: t('language') === 'te'
-        ? 'పెద్ద ఫార్మాట్ బ్యానర్లు మరియు ఫ్లెక్స్ ప్రింటింగ్ అన్ని ఈవెంట్లు మరియు ప్రకటనలకు.'
-        : 'Large format banner and flex printing for all events and advertising needs.',
-      features: t('language') === 'te'
-        ? ['పెద్ద ఫార్మాట్ ప్రింటింగ్', 'వాతావరణ నిరోధకత', 'వివిధ పదార్థాలు', 'అనుకూల సైజులు']
-        : ['Large format printing', 'Weather resistant', 'Various materials', 'Custom sizes'],
-      sample: '/assets/generated/print-sample-flex.dim_800x450.png',
-      color: 'from-green-500/10 to-green-600/5',
-      badge: 'bg-green-100 text-green-700',
-    },
-    {
-      id: 'offset',
-      icon: '/assets/generated/offset-icon.dim_256x256.png',
-      title: t('offsetPrinting'),
-      description: t('language') === 'te'
-        ? 'పెద్ద పరిమాణాలకు అత్యుత్తమ ఆఫ్‌సెట్ ప్రింటింగ్ — పుస్తకాలు, బ్రోచర్లు మరియు మరిన్ని.'
-        : 'Premium offset printing for large quantities — books, brochures, and more.',
-      features: t('language') === 'te'
-        ? ['పెద్ద పరిమాణాలు', 'అత్యుత్తమ నాణ్యత', 'తక్కువ ధర', 'వివిధ ముగింపులు']
-        : ['Large quantities', 'Premium quality', 'Cost effective', 'Various finishes'],
-      sample: '/assets/generated/print-sample-brochure.dim_800x450.png',
-      color: 'from-orange-500/10 to-orange-600/5',
-      badge: 'bg-orange-100 text-orange-700',
-    },
-    {
-      id: 'design',
-      icon: '/assets/generated/design-icon.dim_256x256.png',
-      title: t('designServices'),
-      description: t('language') === 'te'
-        ? 'వృత్తిపరమైన గ్రాఫిక్ డిజైన్ సేవలు మీ బ్రాండ్‌ను జీవంలోకి తీసుకొస్తాయి.'
-        : 'Professional graphic design services to bring your brand to life.',
-      features: t('language') === 'te'
-        ? ['లోగో డిజైన్', 'బ్రాండ్ ఐడెంటిటీ', 'ప్రింట్ రెడీ ఫైల్స్', 'అనంతమైన రివిజన్లు']
-        : ['Logo design', 'Brand identity', 'Print-ready files', 'Unlimited revisions'],
-      sample: '/assets/generated/print-sample-banner.dim_800x450.png',
-      color: 'from-purple-500/10 to-purple-600/5',
-      badge: 'bg-purple-100 text-purple-700',
-    },
-  ];
+  const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-primary/10 to-accent/5 py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <Badge variant="outline" className="mb-4 text-primary border-primary">
-            {t('servicesTitle')}
-          </Badge>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
-            {t('servicesTitle')}
+    <div className="bg-background min-h-screen">
+      {/* Page Header */}
+      <div className="bg-[oklch(0.20_0.07_205)] text-white py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-2 text-white/50 text-xs uppercase tracking-widest mb-3">
+            <Printer className="w-3.5 h-3.5" />
+            Our Services
+          </div>
+          <h1 className="font-heading text-4xl font-bold text-white mb-3">
+            {t('services.title') || 'Printing Services'}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t('servicesSubtitle')}
+          <p className="text-white/70 max-w-xl">
+            {t('services.subtitle') || 'From business cards to large-format banners — professional printing for every need.'}
           </p>
         </div>
-      </section>
+      </div>
 
-      {/* Services Grid */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto space-y-8">
-          {services.map((service, i) => (
-            <Card
+      {/* Services List */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="space-y-8">
+          {serviceData.map((service, idx) => (
+            <div
               key={service.id}
-              className={`overflow-hidden border-0 shadow-md hover:shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] bg-gradient-to-br ${service.color}`}
+              className="bg-card border border-border rounded-xl shadow-card overflow-hidden hover:shadow-card-hover transition-shadow"
             >
-              <CardContent className="p-0">
-                <div className={`flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
-                  {/* Image */}
-                  <div className="md:w-2/5 overflow-hidden">
-                    <img
-                      src={service.sample}
-                      alt={service.title}
-                      className="w-full h-48 md:h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
-                    <div className="flex items-center gap-3 mb-4">
-                      <img src={service.icon} alt={service.title} className="w-12 h-12 object-contain" />
-                      <div>
-                        <h2 className="text-2xl font-bold text-foreground">{service.title}</h2>
-                      </div>
-                    </div>
-
-                    <p className="text-muted-foreground mb-4 leading-relaxed">{service.description}</p>
-
-                    <ul className="space-y-2 mb-6">
-                      {service.features.map((feature, fi) => (
-                        <li key={fi} className="flex items-center gap-2 text-sm text-foreground">
-                          <CheckCircle className="w-4 h-4 text-primary shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <Button
-                      className="self-start bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full px-6 hover:scale-105 active:scale-95 transition-all"
-                      onClick={() => navigate({ to: '/request-quote' })}
-                    >
-                      <Printer className="w-4 h-4 mr-2" />
-                      {t('requestQuote')}
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </div>
+              <div className={`grid grid-cols-1 lg:grid-cols-2 ${idx % 2 === 1 ? 'lg:grid-flow-dense' : ''}`}>
+                {/* Image */}
+                <div className={`relative overflow-hidden ${idx % 2 === 1 ? 'lg:col-start-2' : ''}`}>
+                  <img
+                    src={service.sampleImage}
+                    alt={service.title}
+                    className="w-full h-56 lg:h-full object-cover"
+                    style={{ minHeight: '220px' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Content */}
+                <div className="p-6 lg:p-8 flex flex-col justify-center">
+                  <div className="mb-4">
+                    <div className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded border mb-2 ${service.badgeColor}`}>
+                      {service.badge}
+                    </div>
+                    <h2 className="font-heading text-2xl font-bold text-foreground">
+                      {service.title}
+                    </h2>
+                    {service.tagline && (
+                      <p className="text-sm text-[oklch(0.42_0.12_195)] font-medium mt-1 italic">
+                        {service.tagline}
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="text-muted-foreground leading-relaxed mb-5 text-sm">
+                    {service.description}
+                  </p>
+
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-6">
+                    {service.items.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-foreground">
+                        <CheckCircle className="w-4 h-4 text-[oklch(0.42_0.12_195)] shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <button
+                    onClick={() => navigate({ to: '/request-quote' })}
+                    className="self-start flex items-center gap-2 px-5 py-2.5 bg-[oklch(0.42_0.12_195)] hover:bg-[oklch(0.68_0.18_72)] text-white font-semibold rounded transition-colors text-sm"
+                  >
+                    {t('services.getQuote') || 'Get a Quote'}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

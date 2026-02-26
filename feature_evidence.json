@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-admin-login-flow-so-that-after-successful-authentication-via-email-password-biometric-or-internet-identity-the-user-is-reliably-redirected-to-the-admin-dashboard-page-in-production-not-shown-a-go-to-admin-setup-or-return-to-home-fallback-screen-the-redirect-logic-must-work-consistently-in-both-draft-and-production-environments",
-      "featureTitle": "Fix the admin login flow so that after successful authentication (via email/password, biometric, or Internet Identity), the user is reliably redirected to the Admin Dashboard page in production — not shown a 'Go to Admin Setup or Return to Home' fallback screen. The redirect logic must work consistently in both draft and production environments.",
+      "featureId": "feature-update-the-servicespage-to-display-exactly-6-service-categories-each-with-its-listed-sub-items-and-a-sample-image-1-design-services-logo-design-brand-identity-marketing-materials-social-media-graphics-packaging-design-photo-editing-2-digital-printing-business-cards-flyers-brochures-posters-letterheads-envelopes-books-3-outdoor-printing-flex-banners-star-flex-signboards-canvas-4-indoor-printing-stickers-die-cut-stickers-white-black-grey-back-transparent-stickers-vinyl-printing-indoor-banners-canvas-prints-posters-5-screen-printing-personalization-pen-printing-t-shirt-printing-balloon-printing-sublimation-printing-dtf-direct-to-film-printing-6-offset-printing-with-description-cost-effective-bulk-printing-with-consistent-quality-for-large-volume-orders-and-sub-items-magazines-catalogs-books-packaging-cardboard-boxes-paper-bags-each-category-card-must-display-its-sample-image-from-frontend-public-assets-generated-the-category-title-the-sub-item-list-and-a-get-a-quote-cta-button",
+      "featureTitle": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
       "files": [
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
+        "frontend/src/pages/ServicesPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,10 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-investigate-and-fix-the-adminguard-component-to-ensure-it-does-not-prematurely-evaluate-admin-status-before-the-actor-and-identity-are-fully-initialized-in-production-if-the-identity-or-actor-is-not-yet-ready-the-guard-must-show-a-loading-state-rather-than-falling-through-to-the-admin-setup-screen",
-      "featureTitle": "Investigate and fix the AdminGuard component to ensure it does not prematurely evaluate admin status before the actor and identity are fully initialized in production. If the identity or actor is not yet ready, the guard must show a loading state rather than falling through to the 'admin setup' screen.",
+      "featureId": "feature-render-the-6-generated-service-category-sample-images-as-static-assets-from-frontend-public-assets-generated-and-reference-them-in-the-servicespage-component",
+      "featureTitle": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
       "files": [
-        "frontend/src/components/AdminGuard.tsx"
+        "frontend/src/pages/ServicesPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,26 +38,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-fix-the-adminloginpage-post-login-navigation-to-use-a-reliable-programmatic-redirect-e-g-router-navigate-to-the-admin-dashboard-route-after-all-authentication-methods-succeed-ensuring-the-navigation-fires-after-actor-identity-state-is-fully-settled-not-before-async-state-updates-complete",
-      "featureTitle": "Fix the AdminLoginPage post-login navigation to use a reliable programmatic redirect (e.g., router.navigate) to the admin dashboard route after all authentication methods succeed, ensuring the navigation fires after actor/identity state is fully settled — not before async state updates complete.",
-      "files": [
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }

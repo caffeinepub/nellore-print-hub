@@ -174,6 +174,10 @@ export interface backendInterface {
     getAllProjects(): Promise<Array<Project>>;
     getAllQuotations(): Promise<Array<QuotationRequest>>;
     getAllReviews(): Promise<Array<Review>>;
+    /**
+     * / Query the current app name (publicly available).
+     */
+    getAppName(): Promise<string>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChatsForCustomer(senderEmail: string): Promise<Array<ChatMessage>>;
@@ -215,6 +219,10 @@ export interface backendInterface {
     respondToNegotiation(quotationId: string, message: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(senderName: string, senderEmail: string, messageText: string): Promise<string>;
+    /**
+     * / Set the app name (admin only).
+     */
+    setAppName(name: string): Promise<void>;
     setDeliveryConfig(perKmRate: bigint, minimumFee: bigint): Promise<void>;
     setLogo(_logo: ExternalBlob): Promise<void>;
     setOfficeLocation(_location: OfficeLocation): Promise<void>;

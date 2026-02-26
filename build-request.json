@@ -1,77 +1,74 @@
 {
   "kind": "build_request",
-  "title": "Fix Admin Dashboard redirect after login in production",
-  "priority": "high",
+  "title": "Update Services page with 6 categories, sub-items, and sample pictures",
+  "projectName": "Nellore Print Hub",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the admin login flow so that after successful authentication (via email/password, biometric, or Internet Identity), the user is reliably redirected to the Admin Dashboard page in production — not shown a 'Go to Admin Setup or Return to Home' fallback screen. The redirect logic must work consistently in both draft and production environments.",
+      "text": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "when i log in on open draft it will goes Admin Dashboard but when i log in on live app web pages not opening Admin Dashboard its showing go to admin setup or retun to home"
+          "1. Design Services\n* Logo Design\n* Brand Identity\n* Marketing Materials\n* Social Media Graphics\n* Packaging Design\n* Photo Editing",
+          "2. Digital Printing\n* Business Cards\n* Flyers & Brochures\n* Posters\n* Letterheads\n* Envelopes\n* Books",
+          "3. Outdoor Printing\n* Flex Banners\n* Star Flex\n* Signboards\n* Canvas",
+          "4 Indoor Printing\n* Stickers (Die-cut)\n* Stickers (White/Black/Grey back)\n* Transparent Stickers\n* Vinyl Printing\n* Indoor Banners\n* Canvas Prints\n* Posters",
+          "5. Screen Printing & Personalization\n* Pen Printing\n* T-Shirt Printing\n* Balloon Printing\n* Sublimation Printing\n* DTF (Direct to Film) Printing",
+          "F. Offset Printing\n* Cost-effective bulk printing with consistent quality for large volume orders."
         ]
       },
       "acceptanceCriteria": [
-        "After successful admin login in production, the user is navigated directly to the Admin Dashboard page.",
-        "The 'Go to Admin Setup or Return to Home' fallback is not shown to already-authenticated admin users.",
-        "The redirect behavior is identical between draft and production environments.",
-        "AdminGuard correctly recognizes the authenticated admin principal/session in production and does not redirect them to setup.",
-        "The admin login page clears any stale auth state before checking admin existence to avoid race conditions."
+        "Exactly 6 service category sections are displayed on the Services page.",
+        "Each category shows its correct title and full sub-item list as specified.",
+        "Each category card displays a relevant sample image loaded from frontend/public/assets/generated/.",
+        "Offset Printing section includes the descriptive tagline about cost-effective bulk printing.",
+        "Each category card includes a 'Get a Quote' CTA button linking to the quotation request page.",
+        "Layout is responsive and consistent across mobile and desktop views."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Investigate and fix the AdminGuard component to ensure it does not prematurely evaluate admin status before the actor and identity are fully initialized in production. If the identity or actor is not yet ready, the guard must show a loading state rather than falling through to the 'admin setup' screen.",
+      "text": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "its showing go to admin setup or retun to home what is problem"
+          "need to change our services with sample pictures"
         ]
       },
       "acceptanceCriteria": [
-        "AdminGuard displays a loading indicator while actor or identity is being initialized.",
-        "AdminGuard does not render the 'admin setup' or 'access denied' UI until the identity and admin status check are fully resolved.",
-        "In production, authenticated admin users are granted access to the Admin Dashboard without seeing the setup screen."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Fix the AdminLoginPage post-login navigation to use a reliable programmatic redirect (e.g., router.navigate) to the admin dashboard route after all authentication methods succeed, ensuring the navigation fires after actor/identity state is fully settled — not before async state updates complete.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "when i log in on open draft it will goes Admin Dashboard but when i log in on live app web pages not opening Admin Dashboard"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After login succeeds via any method (email/password, biometric, Internet Identity), navigation to Admin Dashboard fires reliably in production.",
-        "Navigation does not occur before the authentication state and actor are ready.",
-        "No stale query cache causes the admin check to return a false negative immediately after login."
+        "All 6 service category images are placed in frontend/public/assets/generated/ with the correct filenames.",
+        "Each image is displayed in the corresponding service category card on the Services page.",
+        "Images load correctly without broken links."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Do not change the backend admin authorization logic.",
-    "The fix must not break the existing draft environment behavior."
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "All user-facing text must be in English.",
+    "Static images must be served from frontend/public/assets/generated/, not through the backend."
   ],
   "nonGoals": [
-    "Adding new admin features or pages.",
-    "Changing the admin authentication methods.",
-    "Modifying customer-facing login or portal pages."
+    "Adding or modifying backend service data models.",
+    "Implementing admin-side service category management.",
+    "Changing any other pages beyond ServicesPage.",
+    "Adding Telugu translations for the new service content in this request."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Graphic design workspace with colorful logos and brand identity materials on a desk (service-design.dim_800x500.png)",
+      "Stack of professionally printed business cards, flyers and brochures on a clean surface (service-digital-printing.dim_800x500.png)",
+      "Large outdoor flex banner and signboard installation on a building exterior (service-outdoor-printing.dim_800x500.png)",
+      "Collection of die-cut stickers, vinyl prints and indoor banners displayed on a wall (service-indoor-printing.dim_800x500.png)",
+      "Colorful custom printed t-shirts, pens and balloons arranged together (service-screen-printing.dim_800x500.png)",
+      "Offset printing press machine with stacked magazines, catalogs and paper bags (service-offset-printing.dim_800x500.png)"
+    ],
     "edits": []
   }
 }

@@ -9,6 +9,7 @@ import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
 
+
 import Principal "mo:core/Principal";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
@@ -198,6 +199,8 @@ actor {
     aboutPageContent : Text;
   };
 
+  var appName : Text = "Nellore Print Hub";
+
   var nextId = 0;
   var logo : ?Storage.ExternalBlob = null;
   var officeLocation : ?OfficeLocation = null;
@@ -206,7 +209,7 @@ actor {
     email = "magic.nellorehub@gmail.com";
     phone = "+919390535070";
     physicalAddress = "Dargamitta, Podalakur Road, Nellore";
-    mapsLink = "https://maps.app.goo.gl/TTjDJUpiKHcE6RHX9?g_st=ic2";
+    mapsLink = "https://maps.app.goo.gl/TTjDJUpgKHcE6RHX9?G_st=ic2";
   };
 
   let userProfiles = Map.empty<Principal, UserProfile>();
@@ -227,6 +230,21 @@ actor {
     let id = nextId;
     nextId += 1;
     id.toText();
+  };
+
+  // ── App Name Management ───────────────────────────────────────────────
+
+  /// Query the current app name (publicly available).
+  public query ({ caller }) func getAppName() : async Text {
+    appName;
+  };
+
+  /// Set the app name (admin only).
+  public shared ({ caller }) func setAppName(name : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can set the app name");
+    };
+    appName := name;
   };
 
   // ── Chat ──────────────────────────────────────────────────────────────────
@@ -983,7 +1001,7 @@ actor {
           terms = details.terms;
           approved = details.approved;
           approvalTimestamp = details.approvalTimestamp;
-          replyFile = ?file;
+          replyFile = details.replyFile;
         };
         quotationDetails.add(quotationId, updatedDetails);
       };

@@ -236,6 +236,7 @@ export const idlService = IDL.Service({
   'getAllProjects' : IDL.Func([], [IDL.Vec(Project)], ['query']),
   'getAllQuotations' : IDL.Func([], [IDL.Vec(QuotationRequest)], ['query']),
   'getAllReviews' : IDL.Func([], [IDL.Vec(Review)], ['query']),
+  'getAppName' : IDL.Func([], [IDL.Text], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getChatsForCustomer' : IDL.Func(
@@ -317,6 +318,7 @@ export const idlService = IDL.Service({
   'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
+  'setAppName' : IDL.Func([IDL.Text], [], []),
   'setDeliveryConfig' : IDL.Func([IDL.Int, IDL.Int], [], []),
   'setLogo' : IDL.Func([ExternalBlob], [], []),
   'setOfficeLocation' : IDL.Func([OfficeLocation], [], []),
@@ -572,6 +574,7 @@ export const idlFactory = ({ IDL }) => {
     'getAllProjects' : IDL.Func([], [IDL.Vec(Project)], ['query']),
     'getAllQuotations' : IDL.Func([], [IDL.Vec(QuotationRequest)], ['query']),
     'getAllReviews' : IDL.Func([], [IDL.Vec(Review)], ['query']),
+    'getAppName' : IDL.Func([], [IDL.Text], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getChatsForCustomer' : IDL.Func(
@@ -657,6 +660,7 @@ export const idlFactory = ({ IDL }) => {
     'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
+    'setAppName' : IDL.Func([IDL.Text], [], []),
     'setDeliveryConfig' : IDL.Func([IDL.Int, IDL.Int], [], []),
     'setLogo' : IDL.Func([ExternalBlob], [], []),
     'setOfficeLocation' : IDL.Func([OfficeLocation], [], []),

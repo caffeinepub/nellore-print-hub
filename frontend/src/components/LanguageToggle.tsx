@@ -1,29 +1,41 @@
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { haptics } from '../utils/haptics';
-import { Button } from '@/components/ui/button';
-import { Languages } from 'lucide-react';
 
 export default function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
 
-  const toggle = () => {
-    haptics.select();
-    setLanguage(language === 'en' ? 'te' : 'en');
+  const handleToggle = () => {
+    haptics.tap();
+    const next = language === 'en' ? 'te' : 'en';
+    setLanguage(next);
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={toggle}
-      className="flex items-center gap-1.5 font-semibold text-sm border-primary/30 hover:border-primary hover:bg-primary/5 rounded-full px-3 h-8"
-      title={language === 'en' ? 'Switch to Telugu' : 'Switch to English'}
+    <button
+      onClick={handleToggle}
+      aria-label={`Switch to ${language === 'en' ? 'Telugu' : 'English'}`}
+      className="relative inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-border bg-card hover:bg-muted transition-colors text-sm font-medium select-none"
     >
-      <Languages className="w-3.5 h-3.5 text-primary" />
-      <span className="text-primary">{language === 'en' ? 'EN' : 'తె'}</span>
-      <span className="text-muted-foreground text-xs">|</span>
-      <span className="text-muted-foreground text-xs">{language === 'en' ? 'తె' : 'EN'}</span>
-    </Button>
+      <span
+        className={`transition-all duration-200 ${
+          language === 'en'
+            ? 'text-primary font-bold'
+            : 'text-muted-foreground'
+        }`}
+      >
+        EN
+      </span>
+      <span className="text-muted-foreground/50 text-xs">|</span>
+      <span
+        className={`transition-all duration-200 ${
+          language === 'te'
+            ? 'text-primary font-bold'
+            : 'text-muted-foreground'
+        }`}
+      >
+        తె
+      </span>
+    </button>
   );
 }

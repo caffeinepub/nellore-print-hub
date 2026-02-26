@@ -1,46 +1,35 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T02:51:36.340Z",
+  "generatedAt": "2026-02-26T04:00:20.134Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the admin login flow so that after successful authentication (via email/password, biometric, or Internet Identity), the user is reliably redirected to the Admin Dashboard page in production — not shown a 'Go to Admin Setup or Return to Home' fallback screen. The redirect logic must work consistently in both draft and production environments.",
+        "summary": "Update the ServicesPage to display exactly 6 service categories, each with its listed sub-items and a sample image: (1) Design Services — Logo Design, Brand Identity, Marketing Materials, Social Media Graphics, Packaging Design, Photo Editing; (2) Digital Printing — Business Cards, Flyers & Brochures, Posters, Letterheads, Envelopes, Books; (3) Outdoor Printing — Flex Banners, Star Flex, Signboards, Canvas; (4) Indoor Printing — Stickers (Die-cut), Stickers (White/Black/Grey back), Transparent Stickers, Vinyl Printing, Indoor Banners, Canvas Prints, Posters; (5) Screen Printing & Personalization — Pen Printing, T-Shirt Printing, Balloon Printing, Sublimation Printing, DTF (Direct to Film) Printing; (6) Offset Printing — with description 'Cost-effective bulk printing with consistent quality for large volume orders' and sub-items: Magazines, Catalogs, Books, Packaging / Cardboard Boxes, Paper Bags. Each category card must display its sample image (from frontend/public/assets/generated/), the category title, the sub-item list, and a 'Get a Quote' CTA button.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
+          "frontend/src/pages/ServicesPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
+          "frontend/src/pages/ServicesPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Investigate and fix the AdminGuard component to ensure it does not prematurely evaluate admin status before the actor and identity are fully initialized in production. If the identity or actor is not yet ready, the guard must show a loading state rather than falling through to the 'admin setup' screen.",
+        "summary": "Render the 6 generated service category sample images as static assets from frontend/public/assets/generated/ and reference them in the ServicesPage component.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/pages/ServicesPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Fix the AdminLoginPage post-login navigation to use a reliable programmatic redirect (e.g., router.navigate) to the admin dashboard route after all authentication methods succeed, ensuring the navigation fires after actor/identity state is fully settled — not before async state updates complete.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
+          "frontend/src/pages/ServicesPage.tsx"
         ]
       }
     ]
@@ -50,10 +39,13 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/AdminGuard.tsx",
-    "frontend/src/hooks/useAdmin.ts",
-    "frontend/src/hooks/useAdminExists.ts",
-    "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/public/assets/generated/service-design.dim_800x500.png",
+    "frontend/public/assets/generated/service-digital-printing.dim_800x500.png",
+    "frontend/public/assets/generated/service-indoor-printing.dim_800x500.png",
+    "frontend/public/assets/generated/service-offset-printing.dim_800x500.png",
+    "frontend/public/assets/generated/service-outdoor-printing.dim_800x500.png",
+    "frontend/public/assets/generated/service-screen-printing.dim_800x500.png",
+    "frontend/src/pages/ServicesPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

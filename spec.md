@@ -1,12 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the admin login redirect so that authenticated admin users are reliably navigated to the Admin Dashboard in production, instead of seeing the "Go to Admin Setup or Return to Home" fallback screen.
+**Goal:** Update the Services page to display exactly 6 service categories, each with sub-items, a sample image, and a "Get a Quote" CTA button.
 
 **Planned changes:**
-- Update `AdminGuard` to show a loading indicator while actor/identity is still initializing, preventing premature evaluation of admin status that causes fallthrough to the setup screen.
-- Fix `AdminLoginPage` post-login navigation to use a reliable programmatic redirect (e.g., `router.navigate`) to the admin dashboard route, ensuring navigation fires only after actor and authentication state are fully settled.
-- Clear any stale auth/query cache state before checking admin existence on login to avoid race conditions.
-- Ensure redirect and guard behavior is consistent between draft and production environments.
+- Replace the existing Services page content with 6 category cards: Design Services, Digital Printing, Outdoor Printing, Indoor Printing, Screen Printing & Personalization, and Offset Printing.
+- Each card displays the category title, full sub-item list, a relevant sample image loaded from `frontend/public/assets/generated/`, and a "Get a Quote" button linking to the quotation request page.
+- Offset Printing card includes the descriptive tagline: "Cost-effective bulk printing with consistent quality for large volume orders."
+- Add 6 new service category images to `frontend/public/assets/generated/`.
+- Layout is responsive for both mobile and desktop views.
 
-**User-visible outcome:** After logging in as an admin in production, the user is taken directly to the Admin Dashboard without seeing the setup/fallback screen.
+**User-visible outcome:** Visitors to the Services page see 6 clearly organized service categories with images, sub-item lists, and quote CTAs.

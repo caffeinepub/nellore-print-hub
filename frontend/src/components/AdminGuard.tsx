@@ -1,146 +1,171 @@
-import { ReactNode } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useIsCallerAdmin } from '@/hooks/useAdmin';
-import { useInternetIdentity } from '@/hooks/useInternetIdentity';
-import { useAdminExists } from '@/hooks/useAdminExists';
-import { useActor } from '@/hooks/useActor';
-import { Loader2, ShieldAlert, UserPlus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useIsCallerAdmin } from '../hooks/useAdmin';
+import { useAdminExists } from '../hooks/useAdminExists';
+import { useActor } from '../hooks/useActor';
+import { Loader2, ShieldAlert } from 'lucide-react';
 
 interface AdminGuardProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export default function AdminGuard({ children }: AdminGuardProps) {
   const navigate = useNavigate();
   const { identity, isInitializing } = useInternetIdentity();
   const { isFetching: actorFetching } = useActor();
-  const { data: isAdmin, isLoading: isCheckingAdmin, isFetched: adminStatusFetched } = useIsCallerAdmin();
+  // useIsCallerAdmin spreads query result — data is the boolean, not isAdmin
+  const { data: isAdmin, isLoading: adminLoading, isFetched: adminStatusFetched } = useIsCallerAdmin();
   const { adminExists, isLoading: adminExistsLoading, isFetched: adminExistsFetched } = useAdminExists();
 
-  const isAuthenticated = !!identity;
+  // Check for email/password or biometric session stored at login time
+  const [emailSessionValid, setEmailSessionValid] = useState<boolean | null>(null);
 
-  // Show loading while:
-  // 1. Identity is initializing
-  // 2. Actor is being fetched/created
-  // 3. Admin status check is in flight
-  // 4. Admin existence check is in flight
-  // Also keep loading if actor is fetching (not yet ready) to prevent premature evaluation
+  useEffect(() => {
+    const session = sessionStorage.getItem('adminEmailSession');
+    if (session) {
+      try {
+        const parsed = JSON.parse(session);
+        const now = Date.now();
+        // Session valid for 8 hours
+        if (parsed.timestamp && now - parsed.timestamp < 8 * 60 * 60 * 1000) {
+          setEmailSessionValid(true);
+          return;
+        } else {
+          sessionStorage.removeItem('adminEmailSession');
+        }
+      } catch {
+        sessionStorage.removeItem('adminEmailSession');
+      }
+    }
+    setEmailSessionValid(false);
+  }, []);
+
+  const isIIAuthenticated = !!identity;
+
   const isLoading =
     isInitializing ||
     actorFetching ||
-    isCheckingAdmin ||
     adminExistsLoading ||
-    // If authenticated but admin status hasn't been fetched yet, keep loading
-    (isAuthenticated && !adminStatusFetched) ||
-    // If admin existence hasn't been fetched yet, keep loading
-    !adminExistsFetched;
+    !adminExistsFetched ||
+    emailSessionValid === null;
 
+  // If email/password session is valid, allow access immediately
+  if (emailSessionValid === true) {
+    return <>{children}</>;
+  }
+
+  // Still loading
   if (isLoading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-          <p className="text-muted-foreground">Verifying access...</p>
+          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground text-sm">Verifying admin access...</p>
         </div>
       </div>
     );
   }
 
-  // If user is authenticated and is confirmed admin, show the protected content
-  if (isAuthenticated && isAdmin && adminStatusFetched) {
-    return <>{children}</>;
-  }
-
-  // If no admins exist yet and user is authenticated, show registration prompt
-  if (isAuthenticated && !adminExists && adminExistsFetched) {
+  // No admin exists yet — show setup prompt
+  if (!adminExists) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <UserPlus className="h-6 w-6 text-primary" />
-            </div>
-            <CardTitle>Register as First Admin</CardTitle>
-            <CardDescription>
-              No admin accounts exist yet. Go to the admin login page to register as the first
-              administrator.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <Button onClick={() => navigate({ to: '/admin/login' })} className="w-full">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-6 max-w-md mx-auto px-6">
+          <ShieldAlert className="w-16 h-16 text-amber-500 mx-auto" />
+          <h2 className="text-2xl font-bold text-foreground">Admin Setup Required</h2>
+          <p className="text-muted-foreground">
+            No admin account has been configured yet. Please set up the first admin account.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate({ to: '/admin/setup' })}
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
               Go to Admin Setup
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: '/' })} className="w-full">
+            </button>
+            <button
+              onClick={() => navigate({ to: '/' })}
+              className="w-full px-6 py-3 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-colors"
+            >
               Return to Home
-            </Button>
-          </CardContent>
-        </Card>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // If authenticated but confirmed not admin, show access denied
-  if (isAuthenticated && adminStatusFetched && !isAdmin) {
+  // Admin exists but user is not authenticated via Internet Identity
+  if (!isIIAuthenticated) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-              <ShieldAlert className="h-6 w-6 text-destructive" />
-            </div>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>
-              You do not have permission to access this area. Only administrators can view this
-              page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <Button onClick={() => navigate({ to: '/admin/login' })} className="w-full">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-6 max-w-md mx-auto px-6">
+          <ShieldAlert className="w-16 h-16 text-amber-500 mx-auto" />
+          <h2 className="text-2xl font-bold text-foreground">Authentication Required</h2>
+          <p className="text-muted-foreground">
+            Please log in to access the admin dashboard.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate({ to: '/admin/login' })}
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
               Go to Admin Login
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: '/' })} className="w-full">
+            </button>
+            <button
+              onClick={() => navigate({ to: '/' })}
+              className="w-full px-6 py-3 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-colors"
+            >
               Return to Home
-            </Button>
-          </CardContent>
-        </Card>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
+  // II authenticated — wait for admin status check
+  if (!adminStatusFetched || adminLoading) {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
-              <ShieldAlert className="h-6 w-6 text-destructive" />
-            </div>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>You must be logged in to access this area.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <Button onClick={() => navigate({ to: '/admin/login' })} className="w-full">
-              Go to Admin Login
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: '/' })} className="w-full">
-              Return to Home
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground text-sm">Checking admin permissions...</p>
+        </div>
       </div>
     );
   }
 
-  // Fallback: keep showing loading while state settles
-  return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-        <p className="text-muted-foreground">Verifying access...</p>
+  // II authenticated but not an admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-6 max-w-md mx-auto px-6">
+          <ShieldAlert className="w-16 h-16 text-destructive mx-auto" />
+          <h2 className="text-2xl font-bold text-foreground">Access Denied</h2>
+          <p className="text-muted-foreground">
+            Your account does not have admin privileges.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate({ to: '/admin/login' })}
+              className="w-full px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
+              Try Different Account
+            </button>
+            <button
+              onClick={() => navigate({ to: '/' })}
+              className="w-full px-6 py-3 border border-border text-foreground rounded-lg font-medium hover:bg-muted transition-colors"
+            >
+              Return to Home
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // All checks passed — render protected content
+  return <>{children}</>;
 }

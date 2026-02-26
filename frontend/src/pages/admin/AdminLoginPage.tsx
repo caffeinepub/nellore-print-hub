@@ -1,93 +1,122 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useVerifyEmailPassword } from '../../hooks/useAdminAuth';
 import { useBiometricLogin } from '../../hooks/useBiometricAuth';
-import { useSeedFirstAdminPassword } from '../../hooks/useAdminRegistration';
 import { useAdminExists } from '../../hooks/useAdminExists';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield, Mail, Lock, Fingerprint, AlertCircle } from 'lucide-react';
+import { Loader2, Shield, Mail, Fingerprint, LogIn, ArrowLeft, CheckCircle } from 'lucide-react';
+import { haptics } from '../../utils/haptics';
 
-const ADMIN_EMAIL = 'magic.nellorehub@gmail.com';
-const ADMIN_PASSWORD = 'Munnu1998@';
+type LoginMethod = 'select' | 'email' | 'biometric';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [email, setEmail] = useState(ADMIN_EMAIL);
+  const { login, loginStatus, identity, isInitializing } = useInternetIdentity();
+  const { adminExists, isLoading: adminExistsLoading } = useAdminExists();
+  const verifyEmailPassword = useVerifyEmailPassword();
+  const biometricLogin = useBiometricLogin();
+
+  const [method, setMethod] = useState<LoginMethod>('select');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
-  const verifyAuth = useVerifyEmailPassword();
-  const biometricLogin = useBiometricLogin();
-  const { adminExists, isLoading: checkingAdmin } = useAdminExists();
-  const seedAdmin = useSeedFirstAdminPassword();
-  const { login: iiLogin, loginStatus, identity, isInitializing } = useInternetIdentity();
+  // Store email/password session in sessionStorage so AdminGuard can verify it
+  const storeEmailSession = (adminEmail: string) => {
+    sessionStorage.setItem('adminEmailSession', JSON.stringify({
+      email: adminEmail,
+      timestamp: Date.now(),
+    }));
+  };
 
-  // Auto-seed admin credentials if no admin exists
+  // After II login succeeds, navigate to dashboard
   useEffect(() => {
-    if (adminExists === false && !seedAdmin.isPending && !seedAdmin.isSuccess) {
-      seedAdmin.mutate({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
-    }
-  }, [adminExists]);
-
-  // Redirect if already authenticated via Internet Identity — wait until not initializing
-  useEffect(() => {
-    if (!isInitializing && identity) {
-      // Invalidate admin queries so the guard gets fresh data
+    if (loginStatus === 'success' && identity) {
       queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
       queryClient.invalidateQueries({ queryKey: ['adminExists'] });
-      navigate({ to: '/admin/dashboard', replace: true });
+      setTimeout(() => {
+        navigate({ to: '/admin/dashboard', replace: true });
+      }, 500);
     }
-  }, [identity, isInitializing, navigate, queryClient]);
+  }, [loginStatus, identity, navigate, queryClient]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    haptics.tap();
+
     try {
-      const success = await verifyAuth.mutateAsync({ email, password });
-      if (success) {
-        // Invalidate stale cache before navigating
-        await queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
-        await queryClient.invalidateQueries({ queryKey: ['adminExists'] });
-        navigate({ to: '/admin/dashboard', replace: true });
+      const result = await verifyEmailPassword.mutateAsync({ email, password });
+      if (result) {
+        haptics.success();
+        storeEmailSession(email);
+        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+        queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+        setLoginSuccess(true);
+        setTimeout(() => {
+          navigate({ to: '/admin/dashboard', replace: true });
+        }, 300);
       } else {
-        setError('Invalid credentials. Please check your email and password.');
+        haptics.error();
+        setError('Invalid email or password. Please try again.');
       }
-    } catch {
-      setError('Login failed. Please try again.');
+    } catch (err: any) {
+      haptics.error();
+      setError(err?.message || 'Login failed. Please try again.');
     }
   };
 
   const handleBiometricLogin = async () => {
     setError('');
+    haptics.tap();
+
+    if (!email) {
+      setError('Please enter your email address first.');
+      return;
+    }
+
     try {
-      await biometricLogin.mutateAsync(email);
-      // Invalidate stale cache before navigating
-      await queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
-      await queryClient.invalidateQueries({ queryKey: ['adminExists'] });
-      navigate({ to: '/admin/dashboard', replace: true });
-    } catch {
-      setError('Biometric login failed. Please try email/password login.');
+      // useBiometricLogin expects a string (email), not an object
+      const result = await biometricLogin.mutateAsync(email);
+      if (result) {
+        haptics.success();
+        storeEmailSession(email);
+        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+        queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+        setLoginSuccess(true);
+        setTimeout(() => {
+          navigate({ to: '/admin/dashboard', replace: true });
+        }, 300);
+      } else {
+        haptics.error();
+        setError('Biometric authentication failed.');
+      }
+    } catch (err: any) {
+      haptics.error();
+      setError(err?.message || 'Biometric login failed.');
     }
   };
 
   const handleIILogin = async () => {
     setError('');
+    haptics.tap();
     try {
-      await iiLogin();
-      // Navigation is handled by the useEffect above once identity is set
-    } catch {
-      setError('Internet Identity login failed.');
+      await login();
+    } catch (err: any) {
+      if (err?.message === 'User is already authenticated') {
+        queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+        navigate({ to: '/admin/dashboard', replace: true });
+      } else {
+        haptics.error();
+        setError(err?.message || 'Internet Identity login failed.');
+      }
     }
   };
 
-  if (checkingAdmin || isInitializing) {
+  if (isInitializing || adminExistsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -95,124 +124,210 @@ export default function AdminLoginPage() {
     );
   }
 
+  if (loginSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+          <h2 className="text-2xl font-bold text-foreground">Login Successful!</h2>
+          <p className="text-muted-foreground">Redirecting to Admin Dashboard...</p>
+          <Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" />
+          <button
+            onClick={() => navigate({ to: '/admin/dashboard', replace: true })}
+            className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+          >
+            Go to Admin Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/50 p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo / Header */}
+        {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
             <Shield className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
-          <p className="text-muted-foreground text-sm mt-1">Nellore Printing Hub — Owner Access</p>
+          <h1 className="text-3xl font-bold text-foreground">Admin Login</h1>
+          <p className="text-muted-foreground mt-2">Access the admin dashboard</p>
         </div>
 
-        {seedAdmin.isPending && (
-          <Alert className="mb-4">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <AlertDescription>Setting up admin credentials...</AlertDescription>
-          </Alert>
-        )}
-
-        <Card className="shadow-xl border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg">Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access the admin dashboard</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" /> Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="flex items-center gap-2">
-                  <Lock className="w-4 h-4" /> Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="w-4 h-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                disabled={verifyAuth.isPending}
-              >
-                {verifyAuth.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-              </div>
-            </div>
-
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleBiometricLogin}
-              disabled={biometricLogin.isPending}
+        {/* Method Selection */}
+        {method === 'select' && (
+          <div className="space-y-3">
+            <button
+              onClick={() => { setMethod('email'); setError(''); }}
+              className="w-full flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group"
             >
-              {biometricLogin.isPending ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Fingerprint className="w-4 h-4 mr-2" />
-              )}
-              Biometric Login
-            </Button>
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Mail className="w-5 h-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold text-foreground">Email &amp; Password</div>
+                <div className="text-sm text-muted-foreground">Sign in with your credentials</div>
+              </div>
+            </button>
 
-            <Button
-              variant="outline"
-              className="w-full"
+            <button
+              onClick={() => { setMethod('biometric'); setError(''); }}
+              className="w-full flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group"
+            >
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Fingerprint className="w-5 h-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold text-foreground">Biometric / Passkey</div>
+                <div className="text-sm text-muted-foreground">Use fingerprint or face recognition</div>
+              </div>
+            </button>
+
+            <button
               onClick={handleIILogin}
               disabled={loginStatus === 'logging-in'}
+              className="w-full flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all group disabled:opacity-50"
             >
-              {loginStatus === 'logging-in' ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Shield className="w-4 h-4 mr-2" />
-              )}
-              Internet Identity
-            </Button>
-          </CardContent>
-        </Card>
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                {loginStatus === 'logging-in' ? (
+                  <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                ) : (
+                  <LogIn className="w-5 h-5 text-primary" />
+                )}
+              </div>
+              <div className="text-left">
+                <div className="font-semibold text-foreground">
+                  {loginStatus === 'logging-in' ? 'Connecting...' : 'Internet Identity'}
+                </div>
+                <div className="text-sm text-muted-foreground">Sign in with Internet Identity</div>
+              </div>
+            </button>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          Nellore Printing Hub · Sponsored by Magic Advertising
-        </p>
+            {error && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm text-center">
+                {error}
+              </div>
+            )}
+
+            <div className="pt-4 text-center">
+              <button
+                onClick={() => navigate({ to: '/' })}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Return to Home
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Email Login Form */}
+        {method === 'email' && (
+          <form onSubmit={handleEmailLogin} className="space-y-4">
+            <button
+              type="button"
+              onClick={() => { setMethod('select'); setError(''); }}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+                required
+                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={verifyEmailPassword.isPending}
+              className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {verifyEmailPassword.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* Biometric Login Form */}
+        {method === 'biometric' && (
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => { setMethod('select'); setError(''); }}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+                className="w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleBiometricLogin}
+              disabled={biometricLogin.isPending || !email}
+              className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {biometricLogin.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                  <Fingerprint className="w-5 h-5" />
+                  Authenticate with Biometric
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

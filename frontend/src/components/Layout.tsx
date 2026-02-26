@@ -1,100 +1,171 @@
-import React from 'react';
-import { useNavigate, useLocation } from '@tanstack/react-router';
-import { useLanguage } from '../contexts/LanguageContext';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from '@tanstack/react-router';
+import {
+  Printer,
+  Phone,
+  Mail,
+  MapPin,
+  ShieldCheck,
+  Menu,
+  X,
+  Heart,
+  ChevronUp,
+  Sparkles,
+} from 'lucide-react';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { useIsCallerAdmin } from '../hooks/useAdmin';
 import LanguageToggle from './LanguageToggle';
 import BottomNav from './BottomNav';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck, Printer, Heart } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useGetCompanyLogo } from '../hooks/useCompanyLogo';
+import { useGetContactInfo } from '../hooks/useContactInfo';
+import { useGetAppName } from '../hooks/useAppName';
+import ShareAppButton from './ShareAppButton';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const { identity } = useInternetIdentity();
+  const { data: isAdmin } = useIsCallerAdmin();
+  const { t } = useLanguage();
+  const { data: logoBlob } = useGetCompanyLogo();
+  const { data: contactInfo } = useGetContactInfo();
+  const { data: appName } = useGetAppName();
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const displayName = appName || 'Nellore Print Hub';
+  const logoUrl = logoBlob ? logoBlob.getDirectURL() : null;
+
+  React.useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const navLinks = [
-    { label: t('home'), path: '/' },
-    { label: t('services'), path: '/services' },
-    { label: t('gallery'), path: '/gallery' },
-    { label: t('testimonials'), path: '/testimonials' },
-    { label: t('contact'), path: '/contact' },
-    { label: t('about'), path: '/about' },
+    { path: '/', label: t('home') || 'Home' },
+    { path: '/services', label: t('services') || 'Services' },
+    { path: '/gallery', label: t('gallery') || 'Gallery' },
+    { path: '/testimonials', label: t('testimonials') || 'Reviews' },
+    { path: '/about', label: t('about') || 'About' },
+    { path: '/contact', label: t('contact') || 'Contact' },
   ];
+
+  const handleAdminClick = () => {
+    if (isAdmin) {
+      navigate({ to: '/admin/dashboard' });
+    } else {
+      navigate({ to: '/admin/login' });
+    }
+  };
+
+  const currentYear = new Date().getFullYear();
+  const appId = encodeURIComponent(window.location.hostname || 'nellore-print-hub');
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          {/* Logo */}
-          <button
-            onClick={() => navigate({ to: '/' })}
-            className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity"
-          >
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Printer className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-extrabold text-lg text-foreground leading-tight block">
-                Nellore Printing Hub
-              </span>
-              <span className="text-xs text-muted-foreground leading-tight block">
-                by Magic Advertising
-              </span>
-            </div>
-            <span className="sm:hidden font-bold text-base text-foreground">NPH</span>
-          </button>
+      <header className="sticky top-0 z-50 bg-[oklch(0.20_0.07_205)] text-white shadow-press border-b border-[oklch(0.28_0.07_205)]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo & Brand */}
+            <Link to="/" className="flex items-center gap-3 group">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={displayName}
+                  className="h-9 w-auto max-w-[120px] rounded object-contain bg-white/10 p-0.5"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded bg-[oklch(0.68_0.18_72)] flex items-center justify-center shadow-gold">
+                  <Printer className="w-5 h-5 text-white" />
+                </div>
+              )}
+              <div className="hidden sm:block">
+                <span className="font-heading text-lg font-bold tracking-tight text-white leading-none">
+                  {displayName}
+                </span>
+                <div className="text-[10px] text-[oklch(0.78_0.18_78)] uppercase tracking-widest font-sans flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  Powered by Magic Advertising
+                </div>
+              </div>
+            </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.path;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path as any}
+                    className={`px-3 py-2 text-sm font-medium rounded transition-colors ${
+                      isActive
+                        ? 'bg-[oklch(0.68_0.18_72)] text-white'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <ShareAppButton />
               <button
-                key={link.path}
-                onClick={() => navigate({ to: link.path as any })}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                }`}
+                onClick={handleAdminClick}
+                className="p-2 rounded text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                title={isAdmin ? 'Admin Dashboard' : 'Admin Login'}
               >
-                {link.label}
+                <ShieldCheck className="w-5 h-5" />
               </button>
-            ))}
-          </nav>
-
-          {/* Right side actions */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Language Toggle - always visible */}
-            <LanguageToggle />
-
-            {/* Admin icon */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate({ to: identity ? '/admin/dashboard' : '/admin/login' })}
-              className="text-muted-foreground hover:text-primary"
-              title="Admin"
-            >
-              <ShieldCheck className="w-5 h-5" />
-            </Button>
-
-            {/* Get Quote CTA - desktop only */}
-            <Button
-              size="sm"
-              className="hidden md:flex bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full px-4"
-              onClick={() => navigate({ to: '/request-quote' })}
-            >
-              {t('getQuote')}
-            </Button>
+              {/* Mobile menu toggle */}
+              <button
+                className="lg:hidden p-2 rounded text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-white/10 bg-[oklch(0.15_0.06_210)]">
+            <nav className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-1">
+              {navLinks.map((link) => {
+                const isActive = location.pathname === link.path;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path as any}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`px-3 py-2.5 text-sm font-medium rounded transition-colors ${
+                      isActive
+                        ? 'bg-[oklch(0.68_0.18_72)] text-white'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -102,107 +173,156 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-foreground text-background py-12 px-4 hidden lg:block">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {/* Brand */}
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                  <Printer className="w-5 h-5 text-primary-foreground" />
-                </div>
+      {/* Footer - Desktop */}
+      <footer className="bg-[oklch(0.13_0.05_210)] text-white border-t border-[oklch(0.22_0.06_210)] hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Brand Column */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={displayName}
+                    className="h-10 w-auto max-w-[130px] rounded object-contain bg-white/10 p-0.5"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded bg-[oklch(0.68_0.18_72)] flex items-center justify-center">
+                    <Printer className="w-5 h-5 text-white" />
+                  </div>
+                )}
                 <div>
-                  <span className="font-extrabold text-lg block">Nellore Printing Hub</span>
-                  <span className="text-xs text-background/60 block">by Magic Advertising</span>
+                  <div className="font-heading text-base font-bold text-white">{displayName}</div>
+                  <div className="text-[10px] text-[oklch(0.78_0.18_78)] uppercase tracking-widest flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    Powered by Magic Advertising
+                  </div>
                 </div>
               </div>
-              <p className="text-background/70 text-sm leading-relaxed max-w-xs">
-                {t('footerTagline')}
+              <p className="text-sm text-white/60 leading-relaxed">
+                {t('footerTagline') || 'Your trusted partner for high-quality printing solutions in Nellore.'}
               </p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-semibold mb-3 text-background/90">{t('quickLinks')}</h4>
+              <h4 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4 border-b border-white/10 pb-2">
+                {t('quickLinks') || 'Quick Links'}
+              </h4>
               <ul className="space-y-2">
-                {navLinks.slice(0, 4).map((link) => (
+                {navLinks.map((link) => (
                   <li key={link.path}>
-                    <button
-                      onClick={() => navigate({ to: link.path as any })}
-                      className="text-background/60 hover:text-background text-sm transition-colors"
+                    <Link
+                      to={link.path as any}
+                      className="text-sm text-white/60 hover:text-[oklch(0.78_0.18_78)] transition-colors"
                     >
                       {link.label}
-                    </button>
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Contact */}
+            {/* Contact Info */}
             <div>
-              <h4 className="font-semibold mb-3 text-background/90">{t('contact')}</h4>
-              <ul className="space-y-2 text-sm text-background/60">
-                <li>📞 +91 93905 35070</li>
-                <li>✉️ magic.nellorehub@gmail.com</li>
-                <li>📍 Dargamitta, Nellore</li>
+              <h4 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-4 border-b border-white/10 pb-2">
+                {t('contact') || 'Contact Us'}
+              </h4>
+              <ul className="space-y-3">
+                {contactInfo?.phone && (
+                  <li className="flex items-center gap-2 text-sm text-white/60">
+                    <Phone className="w-4 h-4 text-[oklch(0.78_0.18_78)] shrink-0" />
+                    <a href={`tel:${contactInfo.phone}`} className="hover:text-white transition-colors">
+                      {contactInfo.phone}
+                    </a>
+                  </li>
+                )}
+                {contactInfo?.email && (
+                  <li className="flex items-center gap-2 text-sm text-white/60">
+                    <Mail className="w-4 h-4 text-[oklch(0.78_0.18_78)] shrink-0" />
+                    <a href={`mailto:${contactInfo.email}`} className="hover:text-white transition-colors">
+                      {contactInfo.email}
+                    </a>
+                  </li>
+                )}
+                {contactInfo?.physicalAddress && (
+                  <li className="flex items-start gap-2 text-sm text-white/60">
+                    <MapPin className="w-4 h-4 text-[oklch(0.78_0.18_78)] shrink-0 mt-0.5" />
+                    <span>{contactInfo.physicalAddress}</span>
+                  </li>
+                )}
               </ul>
             </div>
           </div>
 
-          {/* Sponsor Badge */}
-          <div className="border-t border-background/20 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img
-                src="/assets/generated/magic-advertising-badge.dim_320x64.png"
-                alt="Sponsored by Magic Advertising"
-                className="h-10 object-contain opacity-80"
-              />
-            </div>
-
-            <div className="flex flex-col items-center md:items-end gap-1">
-              <p className="text-background/50 text-xs">
-                © {new Date().getFullYear()} Nellore Printing Hub. {t('allRightsReserved')}.
-              </p>
-              <p className="text-background/40 text-xs flex items-center gap-1">
-                Built with <Heart className="w-3 h-3 fill-red-400 text-red-400" /> using{' '}
-                <a
-                  href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-background/70"
-                >
-                  caffeine.ai
-                </a>
-              </p>
-            </div>
+          {/* Bottom Bar */}
+          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-xs text-white/40">
+              © {currentYear} {displayName}. {t('allRightsReserved') || 'All rights reserved.'}
+            </p>
+            <p className="text-xs text-white/40 flex items-center gap-1">
+              Built with{' '}
+              <Heart className="w-3 h-3 text-[oklch(0.78_0.18_78)] fill-current" />{' '}
+              using{' '}
+              <a
+                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[oklch(0.78_0.18_78)] hover:text-[oklch(0.88_0.16_78)] transition-colors"
+              >
+                caffeine.ai
+              </a>
+            </p>
           </div>
         </div>
       </footer>
 
       {/* Mobile Footer (minimal) */}
-      <div className="lg:hidden bg-foreground/95 text-background py-4 px-4 text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <img
-            src="/assets/generated/magic-advertising-badge.dim_320x64.png"
-            alt="Sponsored by Magic Advertising"
-            className="h-7 object-contain opacity-80"
-          />
+      <footer className="lg:hidden bg-[oklch(0.13_0.05_210)] text-white border-t border-[oklch(0.22_0.06_210)] pb-20">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <div className="flex items-center gap-2">
+              {logoUrl ? (
+                <img src={logoUrl} alt={displayName} className="h-7 w-auto max-w-[100px] rounded object-contain" />
+              ) : (
+                <div className="h-7 w-7 rounded bg-[oklch(0.68_0.18_72)] flex items-center justify-center">
+                  <Printer className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <div className="text-left">
+                <span className="font-heading text-sm font-bold text-white block">{displayName}</span>
+                <span className="text-[9px] text-[oklch(0.78_0.18_78)] uppercase tracking-wider">Powered by Magic Advertising</span>
+              </div>
+            </div>
+            <p className="text-xs text-white/40">
+              © {currentYear} {displayName}
+            </p>
+            <p className="text-xs text-white/40 flex items-center gap-1">
+              Built with <Heart className="w-3 h-3 text-[oklch(0.78_0.18_78)] fill-current" /> using{' '}
+              <a
+                href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${appId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[oklch(0.78_0.18_78)]"
+              >
+                caffeine.ai
+              </a>
+            </p>
+          </div>
         </div>
-        <p className="text-background/40 text-xs flex items-center justify-center gap-1">
-          Built with <Heart className="w-3 h-3 fill-red-400 text-red-400" /> using{' '}
-          <a
-            href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            caffeine.ai
-          </a>
-        </p>
-      </div>
+      </footer>
 
-      {/* Bottom Navigation (mobile) */}
+      {/* Scroll to top */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-24 right-4 z-40 p-2.5 bg-[oklch(0.42_0.12_195)] text-white rounded shadow-press hover:bg-[oklch(0.35_0.12_195)] transition-all lg:bottom-8"
+        >
+          <ChevronUp className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Bottom Nav (mobile) */}
       <BottomNav />
     </div>
   );

@@ -1,7 +1,8 @@
 const en: Record<string, string> = {
   // App
-  appName: 'Nellore Printing Hub',
-  sponsoredBy: 'Sponsored by Magic Advertising',
+  appName: 'Nellore Print Hub',
+  poweredBy: 'Powered by Magic Advertising',
+  sponsoredBy: 'Powered by Magic Advertising',
   tagline: 'Your trusted printing partner in Nellore',
 
   // Navigation
@@ -14,7 +15,7 @@ const en: Record<string, string> = {
   chat: 'Chat',
 
   // Hero
-  heroTitle: 'Nellore Printing Hub',
+  heroTitle: 'Nellore Print Hub',
   heroSubtitle: 'Premium Quality Printing Services',
   heroDescription: 'From business cards to large banners — we bring your vision to life with precision and care.',
   getQuote: 'Get a Free Quote',
@@ -172,7 +173,7 @@ const en: Record<string, string> = {
 
   // About
   'about.title': 'About Us',
-  'about.heroText': 'We are Nellore Printing Hub, your trusted printing partner.',
+  'about.heroText': 'We are Nellore Print Hub, your trusted printing partner.',
   'about.heroSubtext': 'Delivering quality prints since 2010.',
   'about.benefit1Title': 'Quality First',
   'about.benefit1Desc': 'We use the latest printing technology to ensure the highest quality.',
@@ -184,7 +185,7 @@ const en: Record<string, string> = {
   'about.benefit4Desc': 'Competitive rates without compromising on quality.',
   'about.commitmentTitle': 'Our Commitment',
   'about.commitmentText': 'We are committed to providing the best printing services in Nellore.',
-  aboutTitle: 'About Nellore Printing Hub',
+  aboutTitle: 'About Nellore Print Hub',
   aboutSubtitle: 'Your trusted printing partner since day one',
 
   // Chat
@@ -233,6 +234,39 @@ const en: Record<string, string> = {
   allRightsReserved: 'All rights reserved',
   builtWith: 'Built with',
   love: '❤️',
+
+  // Home page
+  'home.feature1Title': 'Fast Delivery',
+  'home.feature1Desc': 'Same-day and next-day delivery options available.',
+  'home.feature2Title': 'Quality Assured',
+  'home.feature2Desc': 'Every print is quality-checked before delivery.',
+  'home.feature3Title': 'Expert Design',
+  'home.feature3Desc': 'Professional designers to bring your vision to life.',
+  'home.feature4Title': 'Trusted by 500+',
+  'home.feature4Desc': 'Hundreds of businesses trust us for their printing needs.',
+  'home.heroTitle': 'Print with',
+  'home.heroSubtitle': 'Deliver with Pride',
+  'home.heroDesc': 'Your trusted partner for high-quality digital, offset, and large-format printing in Nellore.',
+  'home.getQuote': 'Get a Quote',
+  'home.viewWork': 'View Our Work',
+  'home.whyChooseUs': 'Why Choose Us?',
+  'home.whyChooseUsDesc': 'We combine cutting-edge technology with expert craftsmanship.',
+  'home.ctaTitle': 'Start Your Print Project Today',
+  'home.ctaDesc': 'Get a free quote in minutes. Our team is ready to bring your vision to life.',
+  'home.portalDesc': 'Track your orders and manage quotations online.',
+
+  // Services page
+  'services.title': 'Printing Services',
+  'services.subtitle': 'From business cards to large-format banners — professional printing for every need.',
+  'services.digital': 'Digital Printing',
+  'services.digitalDesc': 'High-resolution digital prints for all your business needs.',
+  'services.banner': 'Flex & Banner',
+  'services.bannerDesc': 'Large format banners and flex boards for maximum visibility.',
+  'services.offset': 'Offset Printing',
+  'services.offsetDesc': 'Premium quality offset printing for bulk orders.',
+  'services.design': 'Design Services',
+  'services.designDesc': 'Professional graphic design for all your print materials.',
+  'services.getQuote': 'Get a Quote',
 
   // Errors
   errorRequired: 'This field is required',
