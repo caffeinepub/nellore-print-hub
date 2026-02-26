@@ -1,246 +1,55 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Quotation form update, admin login redirect, UX improvements, bilingual toggle, and app branding",
+  "title": "Fix Admin Dashboard redirect after login in production",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace file attachment input on QuotationRequestPage with a design status radio button asking 'Is your design ready?' with options 'Yes, my design is ready' and 'No, I need design assistance'",
+      "summary": "Fix admin login flow to reliably redirect to Admin Dashboard after successful authentication in production, preventing the 'Go to Admin Setup or Return to Home' fallback screen from appearing for authenticated admin users",
       "acceptanceCriteria": [
-        "No file upload input or attachment button is visible on the quotation form",
-        "A 'Is your design ready?' question is displayed with two selectable options: 'Yes, my design is ready' and 'No, I need design assistance'",
-        "The selected design status is submitted with the quotation to the backend",
-        "The option is displayed in both English and Telugu based on current language setting",
-        "Admin quotation management page displays the design status for each quotation"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/QuotationRequestPage.tsx",
-          "operation": "modify",
-          "description": "Remove the file attachment input and FileUpload component from the quotation form. Add a radio button group with bilingual labels asking 'Is your design ready?' with two options: 'Yes, my design is ready' (designStatus: 'ready') and 'No, I need design assistance' (designStatus: 'needed'). Update the form submission to pass the designStatus field to createQuotationRequest backend method. Use translations from LanguageContext for both English and Telugu labels."
-        },
-        {
-          "path": "frontend/src/translations/en.ts",
-          "operation": "modify",
-          "description": "Add English translation keys for the design status question and options under the quotation section: designStatusQuestion: 'Is your design ready?', designStatusReady: 'Yes, my design is ready', designStatusNeeded: 'No, I need design assistance'."
-        },
-        {
-          "path": "frontend/src/translations/te.ts",
-          "operation": "modify",
-          "description": "Add Telugu translation keys for the design status question and options under the quotation section: designStatusQuestion (Telugu), designStatusReady (Telugu), designStatusNeeded (Telugu)."
-        },
-        {
-          "path": "frontend/src/pages/admin/QuotationManagementPage.tsx",
-          "operation": "modify",
-          "description": "Add a display field in the quotation detail view that shows the designStatus value for each quotation request. Use bilingual labels to display 'Design Ready' or 'Design Assistance Needed' based on the stored designStatus field from the backend QuotationRequest type."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "operation": "modify",
-          "description": "Display the designStatus field in the quotation card details shown on the customer portal, using bilingual labels from translations."
-        },
-        {
-          "path": "frontend/src/pages/MyQuotationsPage.tsx",
-          "operation": "modify",
-          "description": "Display the designStatus field in the expandable quotation detail sections, using bilingual labels from translations."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Redirect admin users to the Admin Dashboard page immediately after successful email/password login",
-      "acceptanceCriteria": [
-        "After entering correct admin email and password, the user is automatically redirected to the Admin Dashboard page",
-        "No manual navigation step is required after successful login",
-        "Incorrect credentials show an error message and do not redirect",
-        "Biometric and Internet Identity login paths are unaffected"
+        "After successful admin login in production, the user is navigated directly to the Admin Dashboard page.",
+        "The 'Go to Admin Setup or Return to Home' fallback is not shown to already-authenticated admin users.",
+        "The redirect behavior is identical between draft and production environments.",
+        "AdminGuard correctly recognizes the authenticated admin principal/session in production and does not redirect them to setup.",
+        "The admin login page clears any stale auth state before checking admin existence to avoid race conditions."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "After successful email/password authentication (verifyAuthentication returns true), use TanStack Router's navigate function to immediately redirect to '/admin/dashboard' instead of showing any intermediate success state. Ensure this redirect only applies to email/password login and does not affect biometric or Internet Identity authentication flows."
+          "description": "Fix post-login navigation to use programmatic redirect (router.navigate) to '/admin/dashboard' after all authentication methods succeed. Ensure navigation fires only after actor and identity state are fully settled. Add query cache invalidation for 'isAdmin' and 'adminExists' queries immediately after successful login to prevent stale cache from causing false negatives. Wait for actor to be ready before attempting navigation. Remove any premature navigation that occurs before async state updates complete."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Fix AdminGuard to properly wait for actor and identity initialization before evaluating admin status, showing a loading state instead of prematurely rendering the 'admin setup' screen in production",
+      "acceptanceCriteria": [
+        "AdminGuard displays a loading indicator while actor or identity is being initialized.",
+        "AdminGuard does not render the 'admin setup' or 'access denied' UI until the identity and admin status check are fully resolved.",
+        "In production, authenticated admin users are granted access to the Admin Dashboard without seeing the setup screen."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Fix AdminGuard to prevent premature evaluation of admin status before actor/identity initialization completes. Add explicit checks for actorFetching state from useActor hook. Show loading UI when actor is fetching, identity is being loaded, or admin status query is in flight. Only evaluate adminExists and isAdmin after both actor and identity are confirmed ready. Ensure the guard does not render 'admin setup' or 'access denied' UI until all async dependencies are resolved. Add proper loading state tracking that combines actor readiness, identity readiness, and query states."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Improve customer-facing UX with share button, enhanced hero section, animations, consistent button styling, status indicators, and permanent 'Sponsored by Magic Advertising' footer badge",
+      "summary": "Ensure AdminLoginPage uses reliable post-login navigation that fires after actor/identity state is fully settled, preventing race conditions with query cache",
       "acceptanceCriteria": [
-        "Home page has a clear share button visible to customers without scrolling far",
-        "Hero section has a bold headline and primary CTA button",
-        "Service cards and gallery items have visible hover/tap transitions",
-        "All primary action buttons share a consistent filled style across customer pages",
-        "Customer portal shows friendly status progress for their orders",
-        "'Sponsored by Magic Advertising' text is visible in the footer on all pages"
+        "After login succeeds via any method (email/password, biometric, Internet Identity), navigation to Admin Dashboard fires reliably in production.",
+        "Navigation does not occur before the authentication state and actor are ready.",
+        "No stale query cache causes the admin check to return a false negative immediately after login."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/HomePage.tsx",
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Add the existing ShareAppButton component prominently in the hero section, positioned near the main CTA button. Enhance the hero section with a bolder, larger headline using typography utilities (text-4xl or text-5xl), add vibrant accent colors using oklch CSS custom properties (--color-accent, --color-primary), and ensure the primary CTA button uses a filled style (bg-primary with hover states). Reference the generated hero banner image at frontend/public/assets/generated/hero-banner.dim_1200x400.png as the hero background. Use translations from LanguageContext for all text."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Add smooth hover and tap animations to service cards using Tailwind transition utilities (transition-transform, hover:scale-105, active:scale-95). Ensure all main action buttons (e.g., 'Request Quotation') use a consistent filled primary button style."
-        },
-        {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
-          "operation": "modify",
-          "description": "Add smooth hover and tap transitions to gallery project cards using Tailwind utilities (transition-all, hover:shadow-lg, hover:scale-[1.02], active:scale-[0.98])."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "operation": "modify",
-          "description": "Add friendly status messages and progress indicators for each quotation/order card. For example, show step-by-step progress (Submitted → Under Review → Approved → In Progress → Completed) using bilingual labels. Add visual progress bars or step indicators to help customers understand their order journey."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Add a permanent footer badge displaying 'Sponsored by Magic Advertising' using the generated image at frontend/public/assets/generated/magic-advertising-badge.dim_320x64.png. Position it at the bottom of the footer in a visually subtle but permanent manner. Ensure it is visible on all pages and in both language modes. Do not make this badge editable or removable through any admin interface."
-        },
-        {
-          "path": "frontend/src/pages/QuotationRequestPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the submit button uses a consistent filled primary button style (bg-primary with hover states) matching other customer-facing pages."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the login button uses a consistent filled primary button style matching other customer-facing pages."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the registration button uses a consistent filled primary button style matching other customer-facing pages."
-        },
-        {
-          "path": "frontend/src/pages/ContactUsPage.tsx",
-          "operation": "modify",
-          "description": "Ensure any action buttons (e.g., 'Send Message') use a consistent filled primary button style."
-        },
-        {
-          "path": "frontend/src/pages/MyQuotationsPage.tsx",
-          "operation": "modify",
-          "description": "Ensure action buttons (approve, accept, reject) use consistent styling with filled primary style for main actions and outline/ghost for secondary actions."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Ensure fully functional and prominent language toggle between English and Telugu on all pages, with complete translations for all customer-facing content",
-      "acceptanceCriteria": [
-        "Language toggle button is visible in the app header on all screen sizes",
-        "Switching language immediately updates all visible text without a page reload",
-        "All customer-facing pages display fully in Telugu when Telugu is selected",
-        "All customer-facing pages display fully in English when English is selected",
-        "Language preference persists across page navigation and browser refresh",
-        "New quotation design-status option (REQ-1) has translations in both languages"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Ensure the LanguageToggle component is prominently visible in the header on all screen sizes. Verify it is positioned consistently and easily accessible. Ensure the toggle persists across all pages."
-        },
-        {
-          "path": "frontend/src/components/BottomNav.tsx",
-          "operation": "modify",
-          "description": "Add or ensure the LanguageToggle component is visible in the mobile bottom navigation or as a fixed floating button for easy access on mobile devices."
-        },
-        {
-          "path": "frontend/src/translations/en.ts",
-          "operation": "modify",
-          "description": "Review and add any missing English translation keys for customer-facing pages including QuotationRequestPage, CustomerLoginPage, CustomerRegistrationPage, CustomerPortalPage, HomePage, ServicesPage, ContactUsPage, and TestimonialsPage. Ensure all form labels, buttons, status messages, and error messages have translation keys."
-        },
-        {
-          "path": "frontend/src/translations/te.ts",
-          "operation": "modify",
-          "description": "Review and add corresponding Telugu translations for all English keys added or verified in en.ts. Ensure full coverage for all customer-facing pages."
-        },
-        {
-          "path": "frontend/src/pages/QuotationRequestPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text (labels, placeholders, buttons, error messages) uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/ContactUsPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Set permanent app branding to 'Nellore Printing Hub' everywhere and add permanent 'Sponsored by Magic Advertising' footer badge on all pages",
-      "acceptanceCriteria": [
-        "Browser tab title reads 'Nellore Printing Hub'",
-        "App header/logo displays 'Nellore Printing Hub'",
-        "Footer permanently shows 'Sponsored by Magic Advertising' on every page",
-        "The sponsor text is not removable or editable through the admin panel",
-        "Branding is consistent in both English and Telugu language modes"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Change the <title> tag content from 'Nellore Print Hub' to 'Nellore Printing Hub'."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Update the header logo text to display 'Nellore Printing Hub' consistently in both language modes. Add a permanent footer section displaying 'Sponsored by Magic Advertising' using the generated badge image at frontend/public/assets/generated/magic-advertising-badge.dim_320x64.png. Ensure this sponsor badge is hardcoded and not removable or editable through any admin interface. The badge should be visible on every page in a visually subtle but permanent position."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Update the hero section to display 'Nellore Printing Hub' as the main app name in both English and Telugu translations. Ensure consistency with the header branding."
-        },
-        {
-          "path": "frontend/src/pages/AboutPage.tsx",
-          "operation": "modify",
-          "description": "Update any references to the app name to 'Nellore Printing Hub' in both English and Telugu translations."
-        },
-        {
-          "path": "frontend/src/translations/en.ts",
-          "operation": "modify",
-          "description": "Add or update translation keys for app branding: appName: 'Nellore Printing Hub', sponsoredBy: 'Sponsored by Magic Advertising'. Ensure these keys are used consistently across the app."
-        },
-        {
-          "path": "frontend/src/translations/te.ts",
-          "operation": "modify",
-          "description": "Add or update corresponding Telugu translation keys for app branding: appName (Telugu translation of 'Nellore Printing Hub'), sponsoredBy (Telugu translation of 'Sponsored by Magic Advertising')."
+          "description": "Add await for queryClient.invalidateQueries targeting both 'isAdmin' and 'adminExists' query keys immediately after successful authentication in all login methods (email/password, biometric, Internet Identity). Introduce a small delay (e.g., 100-200ms) after invalidation to allow React Query to refetch before navigation. Use router.navigate('/admin/dashboard') with replace option to prevent back-button navigation to login page. Ensure all authentication success handlers follow the same pattern: authenticate → invalidate queries → wait briefly → navigate."
         }
       ]
     }

@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useIsCallerAdmin } from '@/hooks/useAdmin';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
 import { useAdminExists } from '@/hooks/useAdminExists';
+import { useActor } from '@/hooks/useActor';
 import { Loader2, ShieldAlert, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,11 +15,27 @@ interface AdminGuardProps {
 export default function AdminGuard({ children }: AdminGuardProps) {
   const navigate = useNavigate();
   const { identity, isInitializing } = useInternetIdentity();
-  const { data: isAdmin, isLoading: isCheckingAdmin, isFetched } = useIsCallerAdmin();
-  const { adminExists, isLoading: adminExistsLoading } = useAdminExists();
+  const { isFetching: actorFetching } = useActor();
+  const { data: isAdmin, isLoading: isCheckingAdmin, isFetched: adminStatusFetched } = useIsCallerAdmin();
+  const { adminExists, isLoading: adminExistsLoading, isFetched: adminExistsFetched } = useAdminExists();
 
   const isAuthenticated = !!identity;
-  const isLoading = isInitializing || isCheckingAdmin || adminExistsLoading;
+
+  // Show loading while:
+  // 1. Identity is initializing
+  // 2. Actor is being fetched/created
+  // 3. Admin status check is in flight
+  // 4. Admin existence check is in flight
+  // Also keep loading if actor is fetching (not yet ready) to prevent premature evaluation
+  const isLoading =
+    isInitializing ||
+    actorFetching ||
+    isCheckingAdmin ||
+    adminExistsLoading ||
+    // If authenticated but admin status hasn't been fetched yet, keep loading
+    (isAuthenticated && !adminStatusFetched) ||
+    // If admin existence hasn't been fetched yet, keep loading
+    !adminExistsFetched;
 
   if (isLoading) {
     return (
@@ -31,13 +48,13 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  // If user is authenticated and is an admin, show the protected content
-  if (isAuthenticated && isAdmin && isFetched) {
+  // If user is authenticated and is confirmed admin, show the protected content
+  if (isAuthenticated && isAdmin && adminStatusFetched) {
     return <>{children}</>;
   }
 
-  // If no admins exist and user is authenticated, show registration prompt
-  if (isAuthenticated && !adminExists && isFetched) {
+  // If no admins exist yet and user is authenticated, show registration prompt
+  if (isAuthenticated && !adminExists && adminExistsFetched) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -64,8 +81,8 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  // If authenticated but not admin, show access denied
-  if (isAuthenticated && isFetched && !isAdmin) {
+  // If authenticated but confirmed not admin, show access denied
+  if (isAuthenticated && adminStatusFetched && !isAdmin) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -117,5 +134,13 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     );
   }
 
-  return <>{children}</>;
+  // Fallback: keep showing loading while state settles
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+        <p className="text-muted-foreground">Verifying access...</p>
+      </div>
+    </div>
+  );
 }

@@ -1,129 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Quotation form update, admin login redirect, UX improvements, bilingual toggle, and app branding",
-  "projectName": "Nellore Printing Hub",
-  "priority": "normal",
+  "title": "Fix Admin Dashboard redirect after login in production",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "On the 'Request A Quotation' page (QuotationRequestPage.tsx), remove the file attachment input entirely. Replace it with a clearly labeled radio button or toggle option asking: 'Is your design ready?' with two choices — 'Yes, my design is ready' and 'No, I need design assistance'. Store this selection in the quotation submission payload using an appropriate field (e.g., designStatus: 'ready' | 'needed').",
-      "target": "both",
+      "text": "Fix the admin login flow so that after successful authentication (via email/password, biometric, or Internet Identity), the user is reliably redirected to the Admin Dashboard page in production — not shown a 'Go to Admin Setup or Return to Home' fallback screen. The redirect logic must work consistently in both draft and production environments.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "on request A Quotation remove the attach file and just ask a option to customer design is redy or need to"
+          "when i log in on open draft it will goes Admin Dashboard but when i log in on live app web pages not opening Admin Dashboard its showing go to admin setup or retun to home"
         ]
       },
       "acceptanceCriteria": [
-        "No file upload input or attachment button is visible on the quotation form",
-        "A 'Is your design ready?' question is displayed with two selectable options: 'Yes, my design is ready' and 'No, I need design assistance'",
-        "The selected design status is submitted with the quotation to the backend",
-        "The option is displayed in both English and Telugu based on current language setting",
-        "Admin quotation management page displays the design status for each quotation"
+        "After successful admin login in production, the user is navigated directly to the Admin Dashboard page.",
+        "The 'Go to Admin Setup or Return to Home' fallback is not shown to already-authenticated admin users.",
+        "The redirect behavior is identical between draft and production environments.",
+        "AdminGuard correctly recognizes the authenticated admin principal/session in production and does not redirect them to setup.",
+        "The admin login page clears any stale auth state before checking admin existence to avoid race conditions."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "In AdminLoginPage.tsx, after a successful email/password login (verifyAuthentication returns success), immediately redirect the user to the Admin Dashboard page (/admin/dashboard or equivalent admin dashboard route) instead of any intermediate or default page.",
+      "text": "Investigate and fix the AdminGuard component to ensure it does not prematurely evaluate admin status before the actor and identity are fully initialized in production. If the identity or actor is not yet ready, the guard must show a loading state rather than falling through to the 'admin setup' screen.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "after login email and password correct let take the owner to Admin Dashboard"
+          "its showing go to admin setup or retun to home what is problem"
         ]
       },
       "acceptanceCriteria": [
-        "After entering correct admin email and password, the user is automatically redirected to the Admin Dashboard page",
-        "No manual navigation step is required after successful login",
-        "Incorrect credentials show an error message and do not redirect",
-        "Biometric and Internet Identity login paths are unaffected"
+        "AdminGuard displays a loading indicator while actor or identity is being initialized.",
+        "AdminGuard does not render the 'admin setup' or 'access denied' UI until the identity and admin status check are fully resolved.",
+        "In production, authenticated admin users are granted access to the Admin Dashboard without seeing the setup screen."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Improve the overall customer-facing UX and visual appeal of the app to make it more attractive, easier to use, and shareable. Apply the following enhancements: (1) Add a prominent, visually appealing 'Share This App' call-to-action on the Home page using the existing ShareAppButton component. (2) Improve the hero section on HomePage.tsx with a bold tagline, a clear call-to-action button, and vibrant accent colors consistent with the existing print-industry theme. (3) Add smooth hover and tap animations to service cards, gallery items, and navigation elements. (4) Improve button styling across all customer-facing pages for consistency — use filled primary buttons for main actions and outline/ghost for secondary actions. (5) On the customer portal and quotation pages, display friendly status messages and progress indicators to guide customers through the order journey. (6) Add a 'Sponsored by Magic Advertising' footer badge or text on all pages in a visually subtle but permanent manner.",
+      "text": "Fix the AdminLoginPage post-login navigation to use a reliable programmatic redirect (e.g., router.navigate) to the admin dashboard route after all authentication methods succeed, ensuring the navigation fires after actor/identity state is fully settled — not before async state updates complete.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "make easyer to customer happay and atractive to use my app and share"
+          "when i log in on open draft it will goes Admin Dashboard but when i log in on live app web pages not opening Admin Dashboard"
         ]
       },
       "acceptanceCriteria": [
-        "Home page has a clear share button visible to customers without scrolling far",
-        "Hero section has a bold headline and primary CTA button",
-        "Service cards and gallery items have visible hover/tap transitions",
-        "All primary action buttons share a consistent filled style across customer pages",
-        "Customer portal shows friendly status progress for their orders",
-        "'Sponsored by Magic Advertising' text is visible in the footer on all pages"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Ensure a fully functional and prominent language switch between English and Telugu is available on all pages. The LanguageToggle component should be visible in both the header (Layout.tsx) and the bottom navigation or a fixed floating position on mobile. Ensure all customer-facing pages — including QuotationRequestPage, CustomerLoginPage, CustomerRegistrationPage, CustomerPortalPage, HomePage, ServicesPage, ContactUsPage, and TestimonialsPage — use translations from LanguageContext and display correctly in both languages. Add any missing translation keys to both en.ts and te.ts.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "make two language diffrent version and give a option to swich"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Language toggle button is visible in the app header on all screen sizes",
-        "Switching language immediately updates all visible text without a page reload",
-        "All customer-facing pages display fully in Telugu when Telugu is selected",
-        "All customer-facing pages display fully in English when English is selected",
-        "Language preference persists across page navigation and browser refresh",
-        "New quotation design-status option (REQ-1) has translations in both languages"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Set the permanent app branding to 'Nellore Printing Hub' everywhere it appears: browser tab title (index.html), Layout header logo text, HomePage hero, About page, and any other visible app name instances. Add 'Sponsored by Magic Advertising' as a permanent subtitle or badge in the footer of Layout.tsx, visible on every page. This branding must not be editable by admins and must appear consistently in both language modes.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "this app name should be Nellore Printing Hub sponsor by Magic Advertising forever"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Browser tab title reads 'Nellore Printing Hub'",
-        "App header/logo displays 'Nellore Printing Hub'",
-        "Footer permanently shows 'Sponsored by Magic Advertising' on every page",
-        "The sponsor text is not removable or editable through the admin panel",
-        "Branding is consistent in both English and Telugu language modes"
+        "After login succeeds via any method (email/password, biometric, Internet Identity), navigation to Admin Dashboard fires reliably in production.",
+        "Navigation does not occur before the authentication state and actor are ready.",
+        "No stale query cache causes the admin check to return a false negative immediately after login."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files listed in frontend.immutablePaths",
-    "All Motoko logic must remain in backend/main.mo single actor",
-    "Existing admin and customer authentication flows must remain functional",
-    "The 'Sponsored by Magic Advertising' branding must be hardcoded and not admin-configurable"
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Do not change the backend admin authorization logic.",
+    "The fix must not break the existing draft environment behavior."
   ],
   "nonGoals": [
-    "Adding new backend services or external APIs",
-    "Changing the admin user management or invitation system",
-    "Modifying the Internet Identity authentication flow",
-    "Redesigning the admin-facing pages (focus is on customer-facing UX)",
-    "Adding new service types or gallery categories"
+    "Adding new admin features or pages.",
+    "Changing the admin authentication methods.",
+    "Modifying customer-facing login or portal pages."
   ],
   "imageRequirements": {
-    "required": [
-      "Vibrant hero banner for a printing business with bold typography, ink splashes, and warm orange-red accent colors on a dark background (hero-banner.dim_1200x400.png)",
-      "'Sponsored by Magic Advertising' footer badge with a small magic wand icon and elegant typography on a transparent background (magic-advertising-badge.dim_320x64.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

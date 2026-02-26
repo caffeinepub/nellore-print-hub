@@ -1,171 +1,59 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T02:30:45.780Z",
+  "generatedAt": "2026-02-26T02:51:36.340Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 5,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "On the 'Request A Quotation' page (QuotationRequestPage.tsx), remove the file attachment input entirely. Replace it with a clearly labeled radio button or toggle option asking: 'Is your design ready?' with two choices — 'Yes, my design is ready' and 'No, I need design assistance'. Store this selection in the quotation submission payload using an appropriate field (e.g., designStatus: 'ready' | 'needed').",
+        "summary": "Fix the admin login flow so that after successful authentication (via email/password, biometric, or Internet Identity), the user is reliably redirected to the Admin Dashboard page in production — not shown a 'Go to Admin Setup or Return to Home' fallback screen. The redirect logic must work consistently in both draft and production environments.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/QuotationRequestPage.tsx",
-          "frontend/src/translations/en.ts",
-          "frontend/src/translations/te.ts",
-          "frontend/src/pages/admin/QuotationManagementPage.tsx",
-          "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "frontend/src/pages/MyQuotationsPage.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/QuotationRequestPage.tsx",
-          "frontend/src/translations/en.ts",
-          "frontend/src/translations/te.ts",
-          "frontend/src/pages/admin/QuotationManagementPage.tsx",
-          "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "frontend/src/pages/MyQuotationsPage.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "In AdminLoginPage.tsx, after a successful email/password login (verifyAuthentication returns success), immediately redirect the user to the Admin Dashboard page (/admin/dashboard or equivalent admin dashboard route) instead of any intermediate or default page.",
+        "summary": "Investigate and fix the AdminGuard component to ensure it does not prematurely evaluate admin status before the actor and identity are fully initialized in production. If the identity or actor is not yet ready, the guard must show a loading state rather than falling through to the 'admin setup' screen.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
+          "frontend/src/components/AdminGuard.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
+          "frontend/src/components/AdminGuard.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Improve the overall customer-facing UX and visual appeal of the app to make it more attractive, easier to use, and shareable. Apply the following enhancements: (1) Add a prominent, visually appealing 'Share This App' call-to-action on the Home page using the existing ShareAppButton component. (2) Improve the hero section on HomePage.tsx with a bold tagline, a clear call-to-action button, and vibrant accent colors consistent with the existing print-industry theme. (3) Add smooth hover and tap animations to service cards, gallery items, and navigation elements. (4) Improve button styling across all customer-facing pages for consistency — use filled primary buttons for main actions and outline/ghost for secondary actions. (5) On the customer portal and quotation pages, display friendly status messages and progress indicators to guide customers through the order journey. (6) Add a 'Sponsored by Magic Advertising' footer badge or text on all pages in a visually subtle but permanent manner.",
+        "summary": "Fix the AdminLoginPage post-login navigation to use a reliable programmatic redirect (e.g., router.navigate) to the admin dashboard route after all authentication methods succeed, ensuring the navigation fires after actor/identity state is fully settled — not before async state updates complete.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/ServicesPage.tsx",
-          "frontend/src/pages/ProjectGalleryPage.tsx",
-          "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/pages/QuotationRequestPage.tsx",
-          "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
-          "frontend/src/pages/ContactUsPage.tsx",
-          "frontend/src/pages/MyQuotationsPage.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/ServicesPage.tsx",
-          "frontend/src/pages/ProjectGalleryPage.tsx",
-          "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/pages/QuotationRequestPage.tsx",
-          "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "frontend/src/pages/ContactUsPage.tsx",
-          "frontend/src/pages/MyQuotationsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Ensure a fully functional and prominent language switch between English and Telugu is available on all pages. The LanguageToggle component should be visible in both the header (Layout.tsx) and the bottom navigation or a fixed floating position on mobile. Ensure all customer-facing pages — including QuotationRequestPage, CustomerLoginPage, CustomerRegistrationPage, CustomerPortalPage, HomePage, ServicesPage, ContactUsPage, and TestimonialsPage — use translations from LanguageContext and display correctly in both languages. Add any missing translation keys to both en.ts and te.ts.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/translations/en.ts",
-          "frontend/src/translations/te.ts",
-          "frontend/src/pages/QuotationRequestPage.tsx",
-          "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
-          "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/ServicesPage.tsx",
-          "frontend/src/pages/ContactUsPage.tsx",
-          "frontend/src/pages/TestimonialsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/BottomNav.tsx",
-          "frontend/src/translations/en.ts",
-          "frontend/src/translations/te.ts",
-          "frontend/src/pages/QuotationRequestPage.tsx",
-          "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/ServicesPage.tsx",
-          "frontend/src/pages/ContactUsPage.tsx",
-          "frontend/src/pages/TestimonialsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Set the permanent app branding to 'Nellore Printing Hub' everywhere it appears: browser tab title (index.html), Layout header logo text, HomePage hero, About page, and any other visible app name instances. Add 'Sponsored by Magic Advertising' as a permanent subtitle or badge in the footer of Layout.tsx, visible on every page. This branding must not be editable by admins and must appear consistently in both language modes.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/index.html",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/AboutPage.tsx",
-          "frontend/src/translations/en.ts",
-          "frontend/src/translations/te.ts"
-        ],
-        "matchedFiles": [
-          "frontend/index.html",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/AboutPage.tsx",
-          "frontend/src/translations/en.ts",
-          "frontend/src/translations/te.ts"
+          "frontend/src/pages/admin/AdminLoginPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/public/assets/generated/hero-banner.dim_1200x400.png",
-    "frontend/public/assets/generated/magic-advertising-badge.dim_320x64.png",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/BottomNav.tsx",
-    "frontend/src/components/ChatWidget.tsx",
-    "frontend/src/components/LanguageToggle.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/ProfileSetup.tsx",
-    "frontend/src/components/ShareAppButton.tsx",
-    "frontend/src/contexts/LanguageContext.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQuotationFile.ts",
-    "frontend/src/hooks/useQuotations.ts",
-    "frontend/src/pages/AboutPage.tsx",
-    "frontend/src/pages/ContactUsPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/MyQuotationsPage.tsx",
-    "frontend/src/pages/ProjectGalleryPage.tsx",
-    "frontend/src/pages/QuotationConfirmationPage.tsx",
-    "frontend/src/pages/QuotationRequestPage.tsx",
-    "frontend/src/pages/QuotationResponsePage.tsx",
-    "frontend/src/pages/ServicesPage.tsx",
-    "frontend/src/pages/SubmitReviewPage.tsx",
-    "frontend/src/pages/TestimonialsPage.tsx",
+    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/hooks/useAdmin.ts",
+    "frontend/src/hooks/useAdminExists.ts",
     "frontend/src/pages/admin/AdminLoginPage.tsx",
-    "frontend/src/pages/admin/QuotationManagementPage.tsx",
-    "frontend/src/pages/customer/CustomerLoginPage.tsx",
-    "frontend/src/pages/customer/CustomerPortalPage.tsx",
-    "frontend/src/translations/en.ts",
-    "frontend/src/translations/index.ts",
-    "frontend/src/translations/te.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

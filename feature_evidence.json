@@ -2,15 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-on-the-request-a-quotation-page-quotationrequestpage-tsx-remove-the-file-attachment-input-entirely-replace-it-with-a-clearly-labeled-radio-button-or-toggle-option-asking-is-your-design-ready-with-two-choices-yes-my-design-is-ready-and-no-i-need-design-assistance-store-this-selection-in-the-quotation-submission-payload-using-an-appropriate-field-e-g-designstatus-ready-needed",
-      "featureTitle": "On the 'Request A Quotation' page (QuotationRequestPage.tsx), remove the file attachment input entirely. Replace it with a clearly labeled radio button or toggle option asking: 'Is your design ready?' with two choices — 'Yes, my design is ready' and 'No, I need design assistance'. Store this selection in the quotation submission payload using an appropriate field (e.g., designStatus: 'ready' | 'needed').",
+      "featureId": "feature-fix-the-admin-login-flow-so-that-after-successful-authentication-via-email-password-biometric-or-internet-identity-the-user-is-reliably-redirected-to-the-admin-dashboard-page-in-production-not-shown-a-go-to-admin-setup-or-return-to-home-fallback-screen-the-redirect-logic-must-work-consistently-in-both-draft-and-production-environments",
+      "featureTitle": "Fix the admin login flow so that after successful authentication (via email/password, biometric, or Internet Identity), the user is reliably redirected to the Admin Dashboard page in production — not shown a 'Go to Admin Setup or Return to Home' fallback screen. The redirect logic must work consistently in both draft and production environments.",
       "files": [
-        "frontend/src/pages/MyQuotationsPage.tsx",
-        "frontend/src/pages/QuotationRequestPage.tsx",
-        "frontend/src/pages/admin/QuotationManagementPage.tsx",
-        "frontend/src/pages/customer/CustomerPortalPage.tsx",
-        "frontend/src/translations/en.ts",
-        "frontend/src/translations/te.ts"
+        "frontend/src/pages/admin/AdminLoginPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -27,10 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-in-adminloginpage-tsx-after-a-successful-email-password-login-verifyauthentication-returns-success-immediately-redirect-the-user-to-the-admin-dashboard-page-admin-dashboard-or-equivalent-admin-dashboard-route-instead-of-any-intermediate-or-default-page",
-      "featureTitle": "In AdminLoginPage.tsx, after a successful email/password login (verifyAuthentication returns success), immediately redirect the user to the Admin Dashboard page (/admin/dashboard or equivalent admin dashboard route) instead of any intermediate or default page.",
+      "featureId": "feature-investigate-and-fix-the-adminguard-component-to-ensure-it-does-not-prematurely-evaluate-admin-status-before-the-actor-and-identity-are-fully-initialized-in-production-if-the-identity-or-actor-is-not-yet-ready-the-guard-must-show-a-loading-state-rather-than-falling-through-to-the-admin-setup-screen",
+      "featureTitle": "Investigate and fix the AdminGuard component to ensure it does not prematurely evaluate admin status before the actor and identity are fully initialized in production. If the identity or actor is not yet ready, the guard must show a loading state rather than falling through to the 'admin setup' screen.",
       "files": [
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
+        "frontend/src/components/AdminGuard.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -47,18 +42,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-improve-the-overall-customer-facing-ux-and-visual-appeal-of-the-app-to-make-it-more-attractive-easier-to-use-and-shareable-apply-the-following-enhancements-1-add-a-prominent-visually-appealing-share-this-app-call-to-action-on-the-home-page-using-the-existing-shareappbutton-component-2-improve-the-hero-section-on-homepage-tsx-with-a-bold-tagline-a-clear-call-to-action-button-and-vibrant-accent-colors-consistent-with-the-existing-print-industry-theme-3-add-smooth-hover-and-tap-animations-to-service-cards-gallery-items-and-navigation-elements-4-improve-button-styling-across-all-customer-facing-pages-for-consistency-use-filled-primary-buttons-for-main-actions-and-outline-ghost-for-secondary-actions-5-on-the-customer-portal-and-quotation-pages-display-friendly-status-messages-and-progress-indicators-to-guide-customers-through-the-order-journey-6-add-a-sponsored-by-magic-advertising-footer-badge-or-text-on-all-pages-in-a-visually-subtle-but-permanent-manner",
-      "featureTitle": "Improve the overall customer-facing UX and visual appeal of the app to make it more attractive, easier to use, and shareable. Apply the following enhancements: (1) Add a prominent, visually appealing 'Share This App' call-to-action on the Home page using the existing ShareAppButton component. (2) Improve the hero section on HomePage.tsx with a bold tagline, a clear call-to-action button, and vibrant accent colors consistent with the existing print-industry theme. (3) Add smooth hover and tap animations to service cards, gallery items, and navigation elements. (4) Improve button styling across all customer-facing pages for consistency — use filled primary buttons for main actions and outline/ghost for secondary actions. (5) On the customer portal and quotation pages, display friendly status messages and progress indicators to guide customers through the order journey. (6) Add a 'Sponsored by Magic Advertising' footer badge or text on all pages in a visually subtle but permanent manner.",
+      "featureId": "feature-fix-the-adminloginpage-post-login-navigation-to-use-a-reliable-programmatic-redirect-e-g-router-navigate-to-the-admin-dashboard-route-after-all-authentication-methods-succeed-ensuring-the-navigation-fires-after-actor-identity-state-is-fully-settled-not-before-async-state-updates-complete",
+      "featureTitle": "Fix the AdminLoginPage post-login navigation to use a reliable programmatic redirect (e.g., router.navigate) to the admin dashboard route after all authentication methods succeed, ensuring the navigation fires after actor/identity state is fully settled — not before async state updates complete.",
       "files": [
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/pages/ContactUsPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/MyQuotationsPage.tsx",
-        "frontend/src/pages/ProjectGalleryPage.tsx",
-        "frontend/src/pages/QuotationRequestPage.tsx",
-        "frontend/src/pages/ServicesPage.tsx",
-        "frontend/src/pages/customer/CustomerLoginPage.tsx",
-        "frontend/src/pages/customer/CustomerPortalPage.tsx"
+        "frontend/src/pages/admin/AdminLoginPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -71,61 +58,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-a-fully-functional-and-prominent-language-switch-between-english-and-telugu-is-available-on-all-pages-the-languagetoggle-component-should-be-visible-in-both-the-header-layout-tsx-and-the-bottom-navigation-or-a-fixed-floating-position-on-mobile-ensure-all-customer-facing-pages-including-quotationrequestpage-customerloginpage-customerregistrationpage-customerportalpage-homepage-servicespage-contactuspage-and-testimonialspage-use-translations-from-languagecontext-and-display-correctly-in-both-languages-add-any-missing-translation-keys-to-both-en-ts-and-te-ts",
-      "featureTitle": "Ensure a fully functional and prominent language switch between English and Telugu is available on all pages. The LanguageToggle component should be visible in both the header (Layout.tsx) and the bottom navigation or a fixed floating position on mobile. Ensure all customer-facing pages — including QuotationRequestPage, CustomerLoginPage, CustomerRegistrationPage, CustomerPortalPage, HomePage, ServicesPage, ContactUsPage, and TestimonialsPage — use translations from LanguageContext and display correctly in both languages. Add any missing translation keys to both en.ts and te.ts.",
-      "files": [
-        "frontend/src/components/BottomNav.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/pages/ContactUsPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/pages/QuotationRequestPage.tsx",
-        "frontend/src/pages/ServicesPage.tsx",
-        "frontend/src/pages/TestimonialsPage.tsx",
-        "frontend/src/pages/customer/CustomerLoginPage.tsx",
-        "frontend/src/pages/customer/CustomerPortalPage.tsx",
-        "frontend/src/translations/en.ts",
-        "frontend/src/translations/te.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-set-the-permanent-app-branding-to-nellore-printing-hub-everywhere-it-appears-browser-tab-title-index-html-layout-header-logo-text-homepage-hero-about-page-and-any-other-visible-app-name-instances-add-sponsored-by-magic-advertising-as-a-permanent-subtitle-or-badge-in-the-footer-of-layout-tsx-visible-on-every-page-this-branding-must-not-be-editable-by-admins-and-must-appear-consistently-in-both-language-modes",
-      "featureTitle": "Set the permanent app branding to 'Nellore Printing Hub' everywhere it appears: browser tab title (index.html), Layout header logo text, HomePage hero, About page, and any other visible app name instances. Add 'Sponsored by Magic Advertising' as a permanent subtitle or badge in the footer of Layout.tsx, visible on every page. This branding must not be editable by admins and must appear consistently in both language modes.",
-      "files": [
-        "frontend/index.html",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/pages/AboutPage.tsx",
-        "frontend/src/pages/HomePage.tsx",
-        "frontend/src/translations/en.ts",
-        "frontend/src/translations/te.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

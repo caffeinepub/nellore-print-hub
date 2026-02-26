@@ -1,87 +1,32 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T02:30:45.775Z",
-  "summary": "The diff implements most of the requested requirements with good coverage. REQ-1 (design status radio replacing file upload), REQ-2 (admin login redirect), REQ-3 (UX improvements, hero, share button, sponsor badge), REQ-4 (language toggle), and REQ-5 (branding) are largely addressed. However, several specific acceptance criteria have gaps: the QuotationRequestPage.tsx itself is not shown in the diff so the actual form change cannot be confirmed, some customer-facing pages are not shown as modified, and the required badge image asset is not referenced.",
-  "missing_requirements": [
-    {
-      "requirement": "QuotationRequestPage.tsx must remove file attachment input and replace with 'Is your design ready?' radio/toggle — the actual QuotationRequestPage.tsx file is not present in the diff, so the form-level changes cannot be confirmed.",
-      "reason": "QuotationRequestPage.tsx is not listed among the modified files in the diff. Without it, the core REQ-1 UI change (removing file upload, adding radio buttons) cannot be verified.",
-      "evidence": []
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "All customer-facing pages including ServicesPage, TestimonialsPage, and CustomerRegistrationPage must use translations from LanguageContext and display correctly in both languages.",
-      "reason": "ServicesPage.tsx, TestimonialsPage.tsx, and CustomerRegistrationPage.tsx are not listed among the modified files, so full bilingual coverage on those pages cannot be confirmed.",
-      "evidence": [
-        "frontend/src/contexts/LanguageContext.tsx"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Add smooth hover and tap animations to service cards on ServicesPage.",
-      "reason": "ServicesPage.tsx is not in the modified files list, so hover/tap animations on service cards on that page cannot be confirmed.",
-      "evidence": [
-        "frontend/src/pages/ProjectGalleryPage.tsx"
-      ]
-    },
-    {
-      "requirement": "Images required: 'Sponsored by Magic Advertising' footer badge image (magic-advertising-badge.dim_320x64.png) should be used as specified in the build request.",
-      "reason": "The footer in Layout.tsx uses text-based branding rather than the specified badge image asset magic-advertising-badge.dim_320x64.png, which is never referenced in the diff.",
-      "evidence": [
-        "frontend/src/components/Layout.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-26T02:51:36.337Z",
+  "summary": "The diff implements fixes for all three requirements: AdminGuard now shows a loading state while actor/identity initializes (REQ-2), AdminLoginPage uses programmatic navigate after login and invalidates query cache (REQ-3), and useIsCallerAdmin/useAdminExists hooks are updated to wait for full readiness before evaluating (REQ-1/REQ-2). All key acceptance criteria appear addressed.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "A backend migration module (backend/migration.mo) was added as a new file to handle data migration from OldQuotationRequest to NewQuotationRequest.",
-      "reason": "The build request did not request any backend migration module. The constraint states all Motoko logic must remain in backend/main.mo single actor, and the non-goals explicitly exclude adding new backend services.",
+      "description": "Auto-seeding of hardcoded admin credentials in AdminLoginPage when no admin exists",
+      "reason": "The build request does not request any auto-seeding or hardcoding of admin credentials. The logic that automatically seeds the first admin password using hardcoded values was not mentioned in any requirement.",
       "evidence": [
-        "backend/migration.mo"
+        "frontend/src/pages/admin/AdminLoginPage.tsx"
       ]
     },
     {
-      "description": "Admin password 'Munnu1998@' is hardcoded as a plaintext constant in AdminLoginPage.tsx.",
-      "reason": "The build request did not request hardcoding of admin credentials in the frontend source code. No requirement mentions storing plaintext passwords in client-side code.",
+      "description": "Hardcoded admin email and password constants exposed in AdminLoginPage source",
+      "reason": "Constants ADMIN_EMAIL and ADMIN_PASSWORD with real credential values are hardcoded in the login page source. This was not requested by any requirement and represents an unrequested security concern.",
       "evidence": [
         "frontend/src/pages/admin/AdminLoginPage.tsx"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.85,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/components/BottomNav.tsx",
-    "frontend/src/components/ChatWidget.tsx",
-    "frontend/src/components/LanguageToggle.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/ProfileSetup.tsx",
-    "frontend/src/components/ShareAppButton.tsx",
-    "frontend/src/contexts/LanguageContext.tsx",
-    "frontend/src/hooks/useQuotationFile.ts",
-    "frontend/src/hooks/useQuotations.ts",
-    "frontend/src/pages/AboutPage.tsx",
-    "frontend/src/pages/ContactUsPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/MyQuotationsPage.tsx",
-    "frontend/src/pages/ProjectGalleryPage.tsx",
-    "frontend/src/pages/QuotationConfirmationPage.tsx",
-    "frontend/src/pages/QuotationRequestPage.tsx",
-    "frontend/src/pages/QuotationResponsePage.tsx",
-    "frontend/src/pages/ServicesPage.tsx",
-    "frontend/src/pages/SubmitReviewPage.tsx",
-    "frontend/src/pages/TestimonialsPage.tsx",
+    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/hooks/useAdmin.ts",
+    "frontend/src/hooks/useAdminExists.ts",
     "frontend/src/pages/admin/AdminLoginPage.tsx",
-    "frontend/src/pages/admin/QuotationManagementPage.tsx",
-    "frontend/src/pages/customer/CustomerLoginPage.tsx",
-    "frontend/src/pages/customer/CustomerPortalPage.tsx",
-    "frontend/src/translations/en.ts",
-    "frontend/src/translations/index.ts",
-    "frontend/src/translations/te.ts",
     "project_state.json"
   ]
 }

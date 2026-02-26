@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useActor } from './useActor';
 
 export function useAdminExists() {
-  const { actor, isFetching } = useActor();
+  const { actor, isFetching: actorFetching } = useActor();
+
+  const isReady = !!actor && !actorFetching;
 
   const query = useQuery<boolean>({
     queryKey: ['adminExists'],
@@ -16,13 +18,17 @@ export function useAdminExists() {
         return false;
       }
     },
-    enabled: !!actor && !isFetching,
+    enabled: isReady,
     staleTime: 0, // Always refetch to ensure fresh data
-    retry: 1,
+    retry: 2,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   return {
     ...query,
     adminExists: query.data ?? false,
+    isLoading: !isReady || query.isLoading || query.isFetching,
+    isFetched: isReady && query.isFetched,
   };
 }

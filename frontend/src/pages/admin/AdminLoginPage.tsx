@@ -5,6 +5,7 @@ import { useBiometricLogin } from '../../hooks/useBiometricAuth';
 import { useSeedFirstAdminPassword } from '../../hooks/useAdminRegistration';
 import { useAdminExists } from '../../hooks/useAdminExists';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ const ADMIN_PASSWORD = 'Munnu1998@';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,7 +27,7 @@ export default function AdminLoginPage() {
   const biometricLogin = useBiometricLogin();
   const { adminExists, isLoading: checkingAdmin } = useAdminExists();
   const seedAdmin = useSeedFirstAdminPassword();
-  const { login: iiLogin, loginStatus, identity } = useInternetIdentity();
+  const { login: iiLogin, loginStatus, identity, isInitializing } = useInternetIdentity();
 
   // Auto-seed admin credentials if no admin exists
   useEffect(() => {
@@ -34,12 +36,15 @@ export default function AdminLoginPage() {
     }
   }, [adminExists]);
 
-  // Redirect if already authenticated via Internet Identity
+  // Redirect if already authenticated via Internet Identity — wait until not initializing
   useEffect(() => {
-    if (identity) {
-      navigate({ to: '/admin/dashboard' });
+    if (!isInitializing && identity) {
+      // Invalidate admin queries so the guard gets fresh data
+      queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+      navigate({ to: '/admin/dashboard', replace: true });
     }
-  }, [identity, navigate]);
+  }, [identity, isInitializing, navigate, queryClient]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +52,10 @@ export default function AdminLoginPage() {
     try {
       const success = await verifyAuth.mutateAsync({ email, password });
       if (success) {
-        // Redirect to admin dashboard immediately on success
-        navigate({ to: '/admin/dashboard' });
+        // Invalidate stale cache before navigating
+        await queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+        await queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+        navigate({ to: '/admin/dashboard', replace: true });
       } else {
         setError('Invalid credentials. Please check your email and password.');
       }
@@ -61,7 +68,10 @@ export default function AdminLoginPage() {
     setError('');
     try {
       await biometricLogin.mutateAsync(email);
-      navigate({ to: '/admin/dashboard' });
+      // Invalidate stale cache before navigating
+      await queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      await queryClient.invalidateQueries({ queryKey: ['adminExists'] });
+      navigate({ to: '/admin/dashboard', replace: true });
     } catch {
       setError('Biometric login failed. Please try email/password login.');
     }
@@ -71,12 +81,13 @@ export default function AdminLoginPage() {
     setError('');
     try {
       await iiLogin();
+      // Navigation is handled by the useEffect above once identity is set
     } catch {
       setError('Internet Identity login failed.');
     }
   };
 
-  if (checkingAdmin) {
+  if (checkingAdmin || isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

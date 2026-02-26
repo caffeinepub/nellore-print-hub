@@ -8,7 +8,7 @@ import Float "mo:core/Float";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
-import Migration "migration";
+
 import Principal "mo:core/Principal";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
@@ -16,7 +16,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 // Enable data migration via the with clause
-(with migration = Migration.run)
+
 actor {
   include MixinStorage();
 
