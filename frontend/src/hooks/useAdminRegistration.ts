@@ -20,7 +20,7 @@ export function useRegisterInitialAdmin() {
     mutationFn: async ({ email, password }: { email: string; password: string }) => {
       if (!actor) throw new Error('Actor not available');
       const hashedPassword = await sha256(password);
-      await actor.registerInitialAdmin(email, hashedPassword);
+      await actor.registerFirstAdmin(email, hashedPassword);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminExists'] });

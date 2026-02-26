@@ -218,7 +218,7 @@ export interface backendInterface {
      * / Only used for the very first admin setup; cannot be called once an admin exists.
      * / The caller must be a non-anonymous principal (authenticated via Internet Identity).
      */
-    registerInitialAdmin(email: string, hashedPassword: string): Promise<void>;
+    registerFirstAdmin(email: string, hashedPassword: string): Promise<void>;
     respondToNegotiation(quotationId: string, message: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(senderName: string, senderEmail: string, messageText: string): Promise<string>;

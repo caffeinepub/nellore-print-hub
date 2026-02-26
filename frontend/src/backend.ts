@@ -311,7 +311,7 @@ export interface backendInterface {
      * / Only used for the very first admin setup; cannot be called once an admin exists.
      * / The caller must be a non-anonymous principal (authenticated via Internet Identity).
      */
-    registerInitialAdmin(email: string, hashedPassword: string): Promise<void>;
+    registerFirstAdmin(email: string, hashedPassword: string): Promise<void>;
     respondToNegotiation(quotationId: string, message: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(senderName: string, senderEmail: string, messageText: string): Promise<string>;
@@ -1178,17 +1178,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async registerInitialAdmin(arg0: string, arg1: string): Promise<void> {
+    async registerFirstAdmin(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.registerInitialAdmin(arg0, arg1);
+                const result = await this.actor.registerFirstAdmin(arg0, arg1);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.registerInitialAdmin(arg0, arg1);
+            const result = await this.actor.registerFirstAdmin(arg0, arg1);
             return result;
         }
     }

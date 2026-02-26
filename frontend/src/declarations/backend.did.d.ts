@@ -249,7 +249,7 @@ export interface _SERVICE {
    * / Only used for the very first admin setup; cannot be called once an admin exists.
    * / The caller must be a non-anonymous principal (authenticated via Internet Identity).
    */
-  'registerInitialAdmin' : ActorMethod<[string, string], undefined>,
+  'registerFirstAdmin' : ActorMethod<[string, string], undefined>,
   'respondToNegotiation' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendMessage' : ActorMethod<[string, string, string], string>,

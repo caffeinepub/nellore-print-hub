@@ -1,96 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Admin First-Time Registration, Login, and Dashboard Management Flow",
+  "title": "Fix first-time admin registration unauthorized error",
   "projectName": "Nellore Print Hub",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement a first-time admin registration flow: when no admin account exists in the backend, redirect any visit to /admin or /admin/login to /admin/register. The registration page must collect email and password, hash the password with SHA-256, and call the backend's seed/invite admin mutation to create the first admin account. After successful registration, redirect to /admin/login.",
-      "target": "both",
+      "text": "Fix the chicken-and-egg authorization bug in the backend where registering the very first admin fails with 'Unauthorized: Only admins can assign user roles'. The `registerFirstAdmin` function (or equivalent initial admin setup function) must bypass the admin-only auth guard when no admins exist yet in the system. Add a condition: if the admin user count is zero, allow the registration to proceed without requiring an existing admin caller. If one or more admins already exist, the normal admin-only guard must apply.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Need to add admin login rigister first time"
+          "I am doing to register admin id its coming Unauthorized: Only admins can assign user roles why ?"
         ]
       },
       "acceptanceCriteria": [
-        "When no admin exists, navigating to /admin or /admin/login redirects to /admin/register",
-        "The registration form validates that email and password fields are non-empty and that password meets minimum length",
-        "On successful submission, the first admin account is created in the backend and the user is redirected to /admin/login",
-        "After an admin account exists, /admin/register redirects to /admin/login and is no longer accessible directly"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Implement the admin login page at /admin/login that supports email/password authentication. On successful credential verification (using SHA-256 password hashing and the backend verifyAuthentication method), persist the admin session to sessionStorage and redirect to /admin/dashboard. Display a clear error message on failed login.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "after login i can change from admin dashboard"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The login form accepts email and password inputs",
-        "On successful login, admin session is saved in sessionStorage and the user is redirected to /admin/dashboard",
-        "On failed login, an inline error message is displayed without clearing the email field",
-        "The login page is accessible when no admin session exists and redirects to /admin/dashboard if already logged in"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Protect all /admin/* routes with AdminGuard so that only authenticated admins (verified via sessionStorage session) can access the admin dashboard and its sub-pages. Unauthenticated users attempting to access any admin route must be redirected to /admin/login. If no admin exists yet, redirect to /admin/register instead.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "after login i can change from admin dashboard"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Visiting any /admin/* page without a valid session redirects to /admin/login",
-        "Visiting any /admin/* page when no admin account exists redirects to /admin/register",
-        "AdminGuard correctly allows access when a valid admin session is present in sessionStorage",
-        "Logging out clears the sessionStorage session and redirects to /admin/login"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Ensure the admin dashboard page at /admin/dashboard is fully accessible and functional after login, displaying all management section links (quotations, projects, content, media, users, etc.) and a working logout button that clears the session and redirects to /admin/login.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "after login i can change from admin dashboard"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After successful login, the admin is taken to /admin/dashboard",
-        "All management navigation links on the dashboard are clickable and route to their respective admin pages",
-        "The logout button clears sessionStorage and redirects to /admin/login",
-        "The dashboard shows quotation statistics and management options"
+        "When no admins exist in the system, calling the first-admin registration endpoint succeeds without any authorization error.",
+        "The registered principal is stored as an admin and subsequent registrations require an existing admin caller.",
+        "When at least one admin exists, calling the registration endpoint without admin privileges returns an authorization error as expected.",
+        "The frontend AdminRegistrationPage can complete the registration flow end-to-end without receiving an Unauthorized error on a fresh deployment."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "All Motoko logic must remain in backend/main.mo as a single actor",
-    "Password must always be hashed with SHA-256 before being sent to or compared in the backend"
+    "Do not remove or weaken admin authorization guards for any function other than the first-admin bootstrap path.",
+    "The fix must be conditional on zero admins existing — never permanently disable auth checks."
   ],
   "nonGoals": [
-    "Social or OAuth-based admin login",
-    "Multi-role admin permission levels",
-    "Customer-facing registration or login changes",
-    "Real-time dashboard updates or WebSocket integration"
+    "Changing the admin login flow or session management.",
+    "Modifying frontend registration form UI or validation.",
+    "Adding new admin roles or permissions."
   ],
   "imageRequirements": {
     "required": [],

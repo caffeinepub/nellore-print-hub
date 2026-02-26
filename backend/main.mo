@@ -14,10 +14,7 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-// Enable data migration via the with clause
-(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -468,7 +465,7 @@ actor {
   /// Register the first admin user if no admins exist yet.
   /// Only used for the very first admin setup; cannot be called once an admin exists.
   /// The caller must be a non-anonymous principal (authenticated via Internet Identity).
-  public shared ({ caller }) func registerInitialAdmin(email : Text, hashedPassword : Text) : async () {
+  public shared ({ caller }) func registerFirstAdmin(email : Text, hashedPassword : Text) : async () {
     // Block if any admin already exists
     if (adminPrincipals.size() > 0) {
       Runtime.trap("Register first admin can be called only when no admins exist yet");
