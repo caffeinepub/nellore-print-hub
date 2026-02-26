@@ -1,249 +1,108 @@
+import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useQuotationStatistics } from '../../hooks/useQuotationStatistics';
-import { useGetOverdueQuotations } from '../../hooks/useQuotations';
 import AdminGuard from '../../components/AdminGuard';
+import { useQuotationStatistics } from '../../hooks/useQuotationStatistics';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
-  FileText,
-  CheckCircle,
-  XCircle,
-  MessageSquare,
-  Users,
-  Clock,
-  AlertTriangle,
-  Truck,
-  Phone,
-  Images,
-  Image,
-  CreditCard,
-  Wrench,
-  CircleDot,
+  FileText, Clock, CreditCard, Wrench, CheckCircle, XCircle,
+  MessageSquare, BarChart3, Users, Image, Phone, Globe,
+  Info, Video, Home,
 } from 'lucide-react';
 
-function DashboardContent() {
-  const { language } = useLanguage();
+export default function AdminDashboardPage() {
   const navigate = useNavigate();
-  const { data: stats, isLoading } = useQuotationStatistics();
-  const { data: overdueIds } = useGetOverdueQuotations();
-
-  const overdueCount = overdueIds?.length ?? 0;
+  const { data: stats } = useQuotationStatistics();
 
   const statCards = [
-    {
-      label: language === 'te' ? 'డ్రాఫ్ట్' : 'Draft',
-      value: stats ? Number(stats.draft) : 0,
-      icon: CircleDot,
-      color: 'text-gray-500',
-      bg: 'bg-gray-50 dark:bg-gray-950/30',
-    },
-    {
-      label: language === 'te' ? 'కస్టమర్ సమీక్ష' : 'Customer Review',
-      value: stats ? Number(stats.customerPending) : 0,
-      icon: Clock,
-      color: 'text-yellow-500',
-      bg: 'bg-yellow-50 dark:bg-yellow-950/30',
-    },
-    {
-      label: language === 'te' ? 'చెల్లింపు పెండింగ్' : 'Payment Pending',
-      value: stats ? Number(stats.paymentPending) : 0,
-      icon: CreditCard,
-      color: 'text-orange-500',
-      bg: 'bg-orange-50 dark:bg-orange-950/30',
-    },
-    {
-      label: language === 'te' ? 'పని జరుగుతోంది' : 'Work In Progress',
-      value: stats ? Number(stats.workInProgress) : 0,
-      icon: Wrench,
-      color: 'text-blue-500',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
-    },
-    {
-      label: language === 'te' ? 'ఆమోదించబడింది' : 'Accepted',
-      value: stats ? Number(stats.accepted) : 0,
-      icon: CheckCircle,
-      color: 'text-green-500',
-      bg: 'bg-green-50 dark:bg-green-950/30',
-    },
-    {
-      label: language === 'te' ? 'తిరస్కరించబడింది' : 'Rejected',
-      value: stats ? Number(stats.rejected) : 0,
-      icon: XCircle,
-      color: 'text-red-500',
-      bg: 'bg-red-50 dark:bg-red-950/30',
-    },
-    {
-      label: language === 'te' ? 'చర్చలో' : 'Negotiating',
-      value: stats ? Number(stats.negotiating) : 0,
-      icon: MessageSquare,
-      color: 'text-purple-500',
-      bg: 'bg-purple-50 dark:bg-purple-950/30',
-    },
-    {
-      label: language === 'te' ? 'పూర్తయింది' : 'Completed',
-      value: stats ? Number(stats.completed) : 0,
-      icon: FileText,
-      color: 'text-teal-500',
-      bg: 'bg-teal-50 dark:bg-teal-950/30',
-    },
+    { label: 'Draft', teLabel: 'డ్రాఫ్ట్', value: stats?.draft ?? 0n, icon: FileText, color: 'text-muted-foreground' },
+    { label: 'Customer Review', teLabel: 'కస్టమర్ సమీక్ష', value: stats?.customerPending ?? 0n, icon: Clock, color: 'text-yellow-600' },
+    { label: 'Payment Pending', teLabel: 'చెల్లింపు పెండింగ్', value: stats?.paymentPending ?? 0n, icon: CreditCard, color: 'text-orange-600' },
+    { label: 'Work In Progress', teLabel: 'పని జరుగుతోంది', value: stats?.workInProgress ?? 0n, icon: Wrench, color: 'text-blue-600' },
+    { label: 'Completed', teLabel: 'పూర్తయింది', value: stats?.completed ?? 0n, icon: CheckCircle, color: 'text-green-600' },
+    { label: 'Accepted', teLabel: 'అంగీకరించారు', value: stats?.accepted ?? 0n, icon: CheckCircle, color: 'text-emerald-600' },
+    { label: 'Rejected', teLabel: 'తిరస్కరించారు', value: stats?.rejected ?? 0n, icon: XCircle, color: 'text-destructive' },
+    { label: 'Negotiating', teLabel: 'చర్చలు', value: stats?.negotiating ?? 0n, icon: MessageSquare, color: 'text-purple-600' },
   ];
 
-  const quickLinks = [
-    {
-      label: language === 'te' ? 'కోటేషన్లు నిర్వహించండి' : 'Manage Quotations',
-      path: '/admin/quotations',
-      icon: FileText,
-      color: 'text-primary',
-      bg: 'bg-primary/10',
-    },
-    {
-      label: language === 'te' ? 'వినియోగదారులు నిర్వహించండి' : 'Manage Users',
-      path: '/admin/users',
-      icon: Users,
-      color: 'text-violet-500',
-      bg: 'bg-violet-50 dark:bg-violet-950/30',
-    },
-    {
-      label: language === 'te' ? 'డెలివరీ ధర నిర్వహించండి' : 'Manage Delivery Pricing',
-      path: '/admin/delivery-config',
-      icon: Truck,
-      color: 'text-orange-500',
-      bg: 'bg-orange-50 dark:bg-orange-950/30',
-    },
-    {
-      label: language === 'te' ? 'సంప్రదింపు సమాచారం సవరించండి' : 'Edit Contact Info',
-      path: '/admin/contact-info',
-      icon: Phone,
-      color: 'text-teal-500',
-      bg: 'bg-teal-50 dark:bg-teal-950/30',
-    },
-    {
-      label: language === 'te' ? 'ప్రాజెక్ట్ గ్యాలరీ నిర్వహించండి' : 'Manage Project Gallery',
-      path: '/admin/projects',
-      icon: Images,
-      color: 'text-pink-500',
-      bg: 'bg-pink-50 dark:bg-pink-950/30',
-    },
-    {
-      label: language === 'te' ? 'లోగో నిర్వహించండి' : 'Manage Logo',
-      path: '/admin/logo',
-      icon: Image,
-      color: 'text-indigo-500',
-      bg: 'bg-indigo-50 dark:bg-indigo-950/30',
-    },
+  const managementLinks = [
+    { label: 'Quotations', teLabel: 'కోటేషన్లు', icon: FileText, path: '/admin/quotations' },
+    { label: 'Projects', teLabel: 'ప్రాజెక్టులు', icon: Image, path: '/admin/projects' },
+    { label: 'Chat', teLabel: 'చాట్', icon: MessageSquare, path: '/admin/chats' },
+    { label: 'Contact Info', teLabel: 'సంప్రదింపు', icon: Phone, path: '/admin/contact-info' },
+    { label: 'Logo', teLabel: 'లోగో', icon: Globe, path: '/admin/logo' },
+    { label: 'Users', teLabel: 'వినియోగదారులు', icon: Users, path: '/admin/users' },
+    { label: 'Service Media', teLabel: 'సేవా మీడియా', icon: Video, path: '/admin/service-media' },
+    { label: 'Business Hours', teLabel: 'వ్యాపార సమయాలు', icon: Clock, path: '/admin/business-hours' },
+    { label: 'Homepage Content', teLabel: 'హోమ్‌పేజ్ కంటెంట్', icon: Home, path: '/admin/homepage-content' },
+    { label: 'About Content', teLabel: 'అబౌట్ కంటెంట్', icon: Info, path: '/admin/about-content' },
   ];
 
-  return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4 pt-8 pb-6">
-        <h1 className="text-xl font-bold text-foreground">
-          {language === 'te' ? 'అడ్మిన్ డాష్‌బోర్డ్' : 'Admin Dashboard'}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {language === 'te' ? 'మీ వ్యాపారాన్ని నిర్వహించండి' : 'Manage your business'}
-        </p>
-      </div>
-
-      <div className="px-4 py-6 space-y-6 max-w-2xl mx-auto">
-
-        {/* Overdue Alert */}
-        {overdueCount > 0 && (
-          <button
-            onClick={() => navigate({ to: '/admin/quotations' })}
-            className="w-full flex items-center gap-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-2xl p-4 text-left hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors"
-          >
-            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-5 h-5 text-red-500 animate-pulse" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-red-700 dark:text-red-400 text-sm">
-                {language === 'te' ? 'అత్యవసర కోటేషన్లు' : 'Overdue Quotations'}
-              </p>
-              <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">
-                {overdueCount} {language === 'te' ? 'కోటేషన్లు 1 గంట కంటే ఎక్కువ పెండింగ్‌లో ఉన్నాయి' : 'quotations pending for more than 1 hour'}
-              </p>
-            </div>
-            <Clock className="w-4 h-4 text-red-500 flex-shrink-0" />
-          </button>
-        )}
-
-        {/* Stats Grid */}
-        <div>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            {language === 'te' ? 'కోటేషన్ గణాంకాలు' : 'Quotation Statistics'}
-          </h2>
-          {isLoading ? (
-            <div className="grid grid-cols-2 gap-3">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-card border border-border rounded-2xl p-4 animate-pulse">
-                  <div className="h-4 bg-muted rounded w-1/2 mb-2" />
-                  <div className="h-8 bg-muted rounded w-1/3" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {statCards.map((card) => {
-                const Icon = card.icon;
-                return (
-                  <div key={card.label} className={`${card.bg} border border-border rounded-2xl p-4`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon className={`w-4 h-4 ${card.color}`} />
-                      <span className="text-xs text-muted-foreground font-medium">{card.label}</span>
-                    </div>
-                    <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Overdue Count Card */}
-        <div
-          onClick={() => navigate({ to: '/admin/quotations' })}
-          className="cursor-pointer bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center gap-3"
-        >
-          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
-            <Clock className="w-5 h-5 text-amber-500" />
-          </div>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-              {language === 'te' ? 'పెండింగ్ > 1 గంట' : 'Pending > 1 Hour'}
-            </p>
-            <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{overdueCount}</p>
-          </div>
-        </div>
-
-        {/* Quick Links */}
-        <div>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-            {language === 'te' ? 'త్వరిత లింక్లు' : 'Quick Links'}
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            {quickLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <button
-                  key={link.path}
-                  onClick={() => navigate({ to: link.path })}
-                  className={`${link.bg} border border-border rounded-2xl p-4 text-left hover:opacity-80 transition-opacity`}
-                >
-                  <Icon className={`w-5 h-5 ${link.color} mb-2`} />
-                  <p className="text-sm font-medium text-foreground">{link.label}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function AdminDashboardPage() {
   return (
     <AdminGuard>
-      <DashboardContent />
+      <div className="min-h-screen bg-background">
+        <header className="bg-card border-b border-border sticky top-0 z-10">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div>
+              <h1 className="font-bold text-foreground">Admin Dashboard</h1>
+              <p className="text-xs text-muted-foreground">అడ్మిన్ డాష్‌బోర్డ్</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/' })}>
+              View Site / సైట్ చూడండి
+            </Button>
+          </div>
+        </header>
+
+        <main className="max-w-5xl mx-auto px-4 py-6 space-y-8">
+          {/* Stats */}
+          <section>
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              Quotation Statistics / కోటేషన్ గణాంకాలు
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {statCards.map((card) => (
+                <Card key={card.label}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                      <span className="text-2xl font-bold">{Number(card.value)}</span>
+                    </div>
+                    <p className="text-xs font-medium text-foreground">{card.label}</p>
+                    <p className="text-xs text-muted-foreground">{card.teLabel}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+
+          {/* Management Links */}
+          <section>
+            <h2 className="text-lg font-semibold mb-4">
+              Manage / నిర్వహించండి
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {managementLinks.map((link) => (
+                <Card
+                  key={link.path}
+                  className="cursor-pointer hover:shadow-md transition-shadow hover:border-primary/50"
+                  onClick={() => navigate({ to: link.path })}
+                >
+                  <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <link.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{link.label}</p>
+                      <p className="text-xs text-muted-foreground">{link.teLabel}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        </main>
+      </div>
     </AdminGuard>
   );
 }

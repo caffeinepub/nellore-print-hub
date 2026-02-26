@@ -1,9 +1,9 @@
-import Text "mo:core/Text";
-import Map "mo:core/Map";
 import Nat "mo:core/Nat";
-import Int "mo:core/Int";
-import Time "mo:core/Time";
+import Map "mo:core/Map";
+import Text "mo:core/Text";
 import List "mo:core/List";
+import Time "mo:core/Time";
+import Int "mo:core/Int";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
@@ -12,9 +12,7 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -25,19 +23,6 @@ actor {
     name : Text;
     email : Text;
     mobileNumber : Text;
-  };
-
-  public type ServiceType = {
-    #digital;
-    #banner;
-    #offset;
-    #design;
-  };
-
-  public type OfficeLocation = {
-    address : Text;
-    lat : Float;
-    lon : Float;
   };
 
   public type QuotationStatus = {
@@ -51,10 +36,17 @@ actor {
     #negotiating;
   };
 
-  public type NegotiationMessage = {
-    sender : Text;
-    message : Text;
-    timestamp : Int;
+  public type ServiceType = {
+    #digital;
+    #banner;
+    #offset;
+    #design;
+  };
+
+  public type OfficeLocation = {
+    address : Text;
+    lat : Float;
+    lon : Float;
   };
 
   public type QuotationRequest = {
@@ -160,18 +152,46 @@ actor {
     serviceType : Text;
   };
 
-  let userProfiles = Map.empty<Principal, UserProfile>();
-  let quotations = Map.empty<Text, QuotationRequest>();
-  let quotationDetails = Map.empty<Text, QuotationDetails>();
-  let projects = Map.empty<Text, Project>();
-  let reviews = Map.empty<Text, Review>();
-  let chatMessages = Map.empty<Text, ChatMessage>();
+  public type NegotiationMessage = {
+    sender : Text;
+    message : Text;
+    timestamp : Int;
+  };
+
+  public type Customer = {
+    id : Text;
+    email : Text;
+    mobileNumber : Text;
+    passwordHash : Text;
+  };
+
+  public type ServiceImage = {
+    id : Text;
+    serviceType : Text;
+    imageUrl : Text;
+    description : Text;
+  };
+
+  public type VideoClip = {
+    id : Text;
+    serviceType : Text;
+    videoUrl : Text;
+    thumbnailUrl : Text;
+    description : Text;
+  };
+
+  public type AdminContent = {
+    contactInfo : ContactInfo;
+    services : [Text];
+    businessHours : [Text];
+    gallery : [Text];
+    homepageContent : Text;
+    aboutPageContent : Text;
+  };
+
   var nextId = 0;
   var logo : ?Storage.ExternalBlob = null;
   var officeLocation : ?OfficeLocation = null;
-  let adminUsers = Map.empty<Text, AdminInvitationEntry>();
-  let adminPrincipals = Map.empty<Principal, AdminUser>();
-  let emailToPrincipal = Map.empty<Text, Principal>();
   var deliveryConfig : DeliveryConfig = { perKmRate = 1000; minimumFee = 10000 };
   var contactInfo : ContactInfo = {
     email = "magic.nellorehub@gmail.com";
@@ -179,6 +199,20 @@ actor {
     physicalAddress = "Dargamitta, Podalakur Road, Nellore";
     mapsLink = "https://maps.app.goo.gl/TTjDJUpiKHcE6RHX9?g_st=ic2";
   };
+
+  let userProfiles = Map.empty<Principal, UserProfile>();
+  let quotations = Map.empty<Text, QuotationRequest>();
+  let quotationDetails = Map.empty<Text, QuotationDetails>();
+  let projects = Map.empty<Text, Project>();
+  let reviews = Map.empty<Text, Review>();
+  let chatMessages = Map.empty<Text, ChatMessage>();
+  let adminUsers = Map.empty<Text, AdminInvitationEntry>();
+  let adminPrincipals = Map.empty<Principal, AdminUser>();
+  let emailToPrincipal = Map.empty<Text, Principal>();
+  let customers = Map.empty<Text, Customer>();
+  let serviceImages = Map.empty<Text, ServiceImage>();
+  let videoClips = Map.empty<Text, VideoClip>();
+  var adminContent : ?AdminContent = null;
 
   func generateId() : Text {
     let id = nextId;
@@ -1079,5 +1113,174 @@ actor {
 
   public query func getAllProjects() : async [Project] {
     projects.values().toArray();
+  };
+
+  // ── Customer Self-Service Portal ──────────────────────────────────────────
+
+  // Public (guest): register a new customer account.
+  // No Internet Identity required — email/mobile + hashed password.
+  public shared ({ caller }) func registerCustomer(
+    email : Text,
+    mobileNumber : Text,
+    passwordHash : Text,
+  ) : async Text {
+    // Prevent duplicate registrations by email
+    for ((_, existing) in customers.entries()) {
+      if (existing.email == email) {
+        Runtime.trap("A customer with this email already exists");
+      };
+      if (existing.mobileNumber == mobileNumber and mobileNumber != "") {
+        Runtime.trap("A customer with this mobile number already exists");
+      };
+    };
+    let id = generateId();
+    let customer : Customer = {
+      id;
+      email;
+      mobileNumber;
+      passwordHash;
+    };
+    customers.add(id, customer);
+    id;
+  };
+
+  // Public (guest): authenticate a customer using email or mobile number + hashed password.
+  // Returns the customer id on success, traps on failure.
+  public shared ({ caller }) func authenticateCustomer(
+    identifier : Text,
+    passwordHash : Text,
+  ) : async Text {
+    for ((_, customer) in customers.entries()) {
+      if (
+        (customer.email == identifier or customer.mobileNumber == identifier) and
+        customer.passwordHash == passwordHash
+      ) {
+        return customer.id;
+      };
+    };
+    Runtime.trap("Invalid credentials");
+  };
+
+  // Admin-only: get all quotations for a specific customer id.
+  // Admins use this to look up a customer's history from the admin panel.
+  public query ({ caller }) func getCustomerQuotations(customerId : Text) : async [QuotationRequest] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can look up quotations by customer id");
+    };
+    // QuotationRequest.customer is a Principal (Internet Identity user).
+    // Customer portal accounts are separate (email/mobile based).
+    // We match by the email stored in the quotation against the customer record.
+    switch (customers.get(customerId)) {
+      case (?customer) {
+        quotations.values().toArray().filter(
+          func(q) { q.email == customer.email or q.mobileNumber == customer.mobileNumber }
+        );
+      };
+      case (null) {
+        Runtime.trap("Customer not found");
+      };
+    };
+  };
+
+  // ── Service Images & Video Clips ──────────────────────────────────────────
+
+  // Admin-only: add a service sample image.
+  public shared ({ caller }) func addServiceImage(
+    serviceType : Text,
+    imageUrl : Text,
+    description : Text,
+  ) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can add service images");
+    };
+    let id = generateId();
+    let serviceImage : ServiceImage = {
+      id;
+      serviceType;
+      imageUrl;
+      description;
+    };
+    serviceImages.add(id, serviceImage);
+    id;
+  };
+
+  // Admin-only: delete a service sample image.
+  public shared ({ caller }) func deleteServiceImage(imageId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can delete service images");
+    };
+    serviceImages.remove(imageId);
+  };
+
+  // Admin-only: add a video clip / embed for a service.
+  public shared ({ caller }) func addVideoClip(
+    serviceType : Text,
+    videoUrl : Text,
+    thumbnailUrl : Text,
+    description : Text,
+  ) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can add video clips");
+    };
+    let id = generateId();
+    let videoClip : VideoClip = {
+      id;
+      serviceType;
+      videoUrl;
+      thumbnailUrl;
+      description;
+    };
+    videoClips.add(id, videoClip);
+    id;
+  };
+
+  // Admin-only: delete a video clip.
+  public shared ({ caller }) func deleteVideoClip(clipId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can delete video clips");
+    };
+    videoClips.remove(clipId);
+  };
+
+  // Public: anyone may browse service images.
+  public query func getServiceImages() : async [ServiceImage] {
+    serviceImages.values().toArray();
+  };
+
+  // Public: anyone may browse video clips.
+  public query func getVideoClips() : async [VideoClip] {
+    videoClips.values().toArray();
+  };
+
+  // ── Admin Content Editor ──────────────────────────────────────────────────
+
+  // Admin-only: update all dynamic site content.
+  public shared ({ caller }) func updateAdminContent(
+    newContactInfo : ContactInfo,
+    services : [Text],
+    businessHours : [Text],
+    gallery : [Text],
+    homepageContent : Text,
+    aboutPageContent : Text,
+  ) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update site content");
+    };
+    let newAdminContent : AdminContent = {
+      contactInfo = newContactInfo;
+      services;
+      businessHours;
+      gallery;
+      homepageContent;
+      aboutPageContent;
+    };
+    adminContent := ?newAdminContent;
+    // Also keep the top-level contactInfo variable in sync.
+    contactInfo := newContactInfo;
+  };
+
+  // Public: anyone may read the admin-managed site content.
+  public query func getAdminContent() : async ?AdminContent {
+    adminContent;
   };
 };

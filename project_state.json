@@ -1,16 +1,52 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "A printing/services business app with customer portals, bilingual support, rich service showcases, and a fully editable admin panel.",
+  "architectural_notes": [
+    "Customer portal: per-customer login (email or mobile) with individual work order history pages",
+    "Admin panel must support full content editing: contact info, services, business hours, gallery"
+  ],
   "known_issues": [],
   "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Attractive banner printing sample showing a colorful large-format outdoor banner with vivid graphics (print-sample-banner.dim_800x450.png)\n- Business card printing sample showing a premium matte business card with modern design (print-sample-business-card.dim_800x450.png)\n- Flex printing sample showing a bright flex board with Telugu and English text on a storefront (print-sample-flex.dim_800x450.png)\n- Brochure / pamphlet printing sample showing an open tri-fold brochure with vibrant print (print-sample-brochure.dim_800x450.png)",
   "existing_features": [
     {
-      "id": "feature-on-the-adminloginpage-pre-fill-the-email-field-with-magic-nellorehub-gmail-com-and-ensure-the-auto-seeding-logic-first-admin-credential-seed-runs-on-page-load-when-no-admin-exists-so-the-hardcoded-admin-is-immediately-usable-without-any-manual-registration-step",
-      "title": "On the AdminLoginPage, pre-fill the email field with 'magic.nellorehub@gmail.com' and ensure the auto-seeding logic (first-admin credential seed) runs on page load when no admin exists, so the hardcoded admin is immediately usable without any manual registration step.",
+      "id": "feature-implement-a-customer-self-service-portal-customers-register-login-using-their-email-address-or-mobile-number-no-internet-identity-required-each-customer-gets-a-unique-profile-page-that-shows-all-quotation-work-orders-they-have-submitted-to-the-business-including-status-dates-and-any-negotiation-history-the-portal-must-be-accessible-via-a-dedicated-route-e-g-customer-login-and-customer-portal-backend-must-store-customer-credentials-email-or-mobile-hashed-password-and-associate-all-quotations-with-the-logged-in-customer-account",
+      "title": "Implement a customer self-service portal: customers register/login using their email address or mobile number (no Internet Identity required). Each customer gets a unique profile page that shows all quotation/work orders they have submitted to the business, including status, dates, and any negotiation history. The portal must be accessible via a dedicated route (e.g., /customer/login and /customer/portal). Backend must store customer credentials (email or mobile, hashed password) and associate all quotations with the logged-in customer account.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-display-english-and-telugu-text-together-side-by-side-or-stacked-throughout-the-entire-app-for-all-user-facing-labels-headings-buttons-and-content-sections-both-languages-should-be-visible-simultaneously-without-requiring-a-language-toggle-though-the-toggle-can-remain-as-an-optional-preference-update-all-translation-usage-across-pages-homepage-servicespage-aboutpage-contactuspage-projectgallerypage-etc-to-render-both-english-and-telugu-strings-together",
+      "title": "Display English and Telugu text together side-by-side (or stacked) throughout the entire app for all user-facing labels, headings, buttons, and content sections. Both languages should be visible simultaneously without requiring a language toggle, though the toggle can remain as an optional preference. Update all translation usage across pages (HomePage, ServicesPage, AboutPage, ContactUsPage, ProjectGalleryPage, etc.) to render both English and Telugu strings together.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-our-services-section-on-servicespage-and-the-services-preview-on-homepage-remove-all-a-b-c-alphabetic-labels-prefixes-from-service-items-replace-with-visually-attractive-cards-that-display-sample-printing-work-images-short-video-clips-or-video-embed-thumbnails-and-visual-previews-of-printing-outputs-e-g-banners-business-cards-flex-prints-add-a-dedicated-printing-samples-videos-showcase-section-on-the-homepage-featuring-real-sample-images-and-video-content-admin-must-be-able-to-manage-the-service-images-and-video-urls-through-the-admin-panel-see-req-6",
+      "title": "Redesign the Our Services section on ServicesPage and the services preview on HomePage: remove all A/B/C alphabetic labels/prefixes from service items. Replace with visually attractive cards that display sample printing work images, short video clips or video embed thumbnails, and visual previews of printing outputs (e.g., banners, business cards, flex prints). Add a dedicated 'Printing Samples & Videos' showcase section on the HomePage featuring real sample images and video content. Admin must be able to manage the service images and video URLs through the admin panel (see REQ-6).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-projectgallerypage-so-that-each-photo-displays-at-its-natural-aspect-ratio-intrinsic-proportions-use-a-masonry-or-variable-height-grid-layout-so-portrait-landscape-and-square-images-each-render-at-their-correct-proportions-scaled-to-fit-within-a-reasonable-column-width-rather-than-being-cropped-or-forced-into-a-uniform-square-fixed-height-container",
+      "title": "Update ProjectGalleryPage so that each photo displays at its natural aspect ratio (intrinsic proportions). Use a masonry or variable-height grid layout so portrait, landscape, and square images each render at their correct proportions scaled to fit within a reasonable column width, rather than being cropped or forced into a uniform square/fixed-height container.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-comprehensive-admin-content-editor-that-allows-the-admin-to-edit-all-dynamic-content-in-the-app-from-the-admin-panel-this-must-cover-a-contact-details-phone-email-address-whatsapp-number-google-maps-link-b-services-list-add-edit-delete-services-including-name-description-sample-images-and-video-urls-c-business-hours-set-opening-closing-times-per-day-of-the-week-d-project-gallery-add-edit-delete-gallery-projects-with-image-title-category-and-description-e-homepage-content-hero-text-feature-highlights-and-promotional-banners-f-about-page-content-all-editable-content-must-be-persisted-in-the-backend-and-fetched-dynamically-on-the-frontend-no-hardcoded-static-content-extend-the-backend-data-model-to-store-services-business-hours-and-homepage-about-content-as-stable-mutable-records",
+      "title": "Build a comprehensive Admin Content Editor that allows the admin to edit all dynamic content in the app from the admin panel. This must cover: (a) Contact Details (phone, email, address, WhatsApp number, Google Maps link); (b) Services list — add, edit, delete services including name, description, sample images, and video URLs; (c) Business Hours — set opening/closing times per day of the week; (d) Project Gallery — add, edit, delete gallery projects with image, title, category, and description; (e) Homepage content — hero text, feature highlights, and promotional banners; (f) About page content. All editable content must be persisted in the backend and fetched dynamically on the frontend (no hardcoded static content). Extend the backend data model to store services, business hours, and homepage/about content as stable mutable records.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -18,19 +54,36 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Register a permanent admin account with email magic.nellorehub@gmail.com",
+      "summary": "Each customer has their own page/portal — login via email or mobile number — to track their work orders history",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "On the backend, add a mechanism to seed a permanent first admin credential with email 'magic.nellorehub@gmail.com' and the SHA-256 hash of password 'Munnu1998@'. This seed should be applied during canister initialization (or via an idempotent init/upgrade hook) so that the admin account always exists regardless of canister state.",
-      "reqIds": [
-        "REQ-1"
-      ],
+      "summary": "Bilingual support: Telugu and English displayed together throughout the app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Remove A/B/C labels from Our Services section; replace with attractive samples of printing work, videos, and visuals on home page",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Project Gallery photos display at their actual/natural proportions (scaled to fit, not forced to one uniform size)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Admin can edit everything in the app: contact details, services, business hours, Project Gallery, and all other content",
+      "reqIds": [],
       "status": "pending"
     }
   ],
+  "gameProjectType": "none",
   "projectName": "Nellore Print Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0

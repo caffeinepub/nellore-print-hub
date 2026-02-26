@@ -1,35 +1,77 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T00:55:23.319Z",
-  "summary": "The diff implements both REQ-1 and REQ-2 with largely correct approaches. REQ-2 (frontend pre-fill and auto-seed) is fully implemented. REQ-1 has partial coverage: the migration module seeds the permanent admin and the backend main.mo includes the migration hook, but there are concerns about idempotency and the seeding mechanism used (migration vs. init hook). The frontend seeds via inviteAdminUser when no admin exists, which is a separate path from the backend migration seeding. Overall the core requirements appear addressed but with nuances around the backend initialization path.",
+  "generatedAt": "2026-02-26T01:18:42.710Z",
+  "summary": "The diff implements most of the five requirements. REQ-1 (customer portal), REQ-3 (service redesign + media management), REQ-4 (masonry gallery), and REQ-5 (admin content editor) are substantially present. REQ-2 (bilingual text) is partially implemented via a BilingualText component and stacked headings on several pages, but coverage across ALL pages is not confirmed. Several specific REQ-5 sub-requirements are partially or weakly addressed: the admin services management is only a media-upload page without full add/edit/delete of service definitions; no WhatsApp field in contact info; homepage content editor is only a plain textarea rather than structured hero text plus feature highlights plus promotional banners.",
   "missing_requirements": [
     {
-      "id": "REQ-1",
-      "requirement": "The credential is seeded during canister initialization so it persists across upgrades (idempotent init/upgrade hook on the backend).",
-      "reason": "The backend seeding is done via a migration module (Migration.run) that only seeds when adminUsers.isEmpty(). If the permanent admin entry is removed at runtime, a subsequent upgrade would not re-seed it because adminUsers would not be empty. There is no standalone system func init or system func postupgrade that unconditionally ensures the permanent admin exists regardless of canister state. The idempotency guarantee (always exists regardless of canister state) is not fully satisfied.",
+      "id": "REQ-2",
+      "requirement": "Display English and Telugu text simultaneously on ALL pages including AboutPage",
+      "reason": "The BilingualText component is created and some pages are updated, but the diff does not include a modified AboutPage showing bilingual content, meaning full coverage across every page is unconfirmed.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
+        "frontend/src/components/BilingualText.tsx"
       ]
-    }
-  ],
-  "hallucinated_features": [
+    },
     {
-      "description": "The migration module introduces a schema migration from an old AdminInvitationEntry type with non-optional invitedBy Principal to a new type with optional invitedBy, which was not requested.",
-      "reason": "The build request only asked for seeding a permanent admin credential. The migration module also performs a data-model migration converting existing admin records from a non-optional to optional invitedBy field, which is an unrequested schema change.",
+      "id": "REQ-5",
+      "requirement": "Admin can add, edit, and delete services (full service list management) including name, description, sample images, and video URLs",
+      "reason": "The ServiceMediaManagementPage only manages service images and video clip URLs. There is no interface to add, edit, or delete service definitions with name and description fields.",
       "evidence": [
-        "backend/migration.mo"
+        "frontend/src/pages/admin/ServiceMediaManagementPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Contact Details management must include a WhatsApp number field",
+      "reason": "The ContactInfoManagementPage shows fields for email, phone, physicalAddress, and mapsLink but no WhatsApp number field, which was explicitly listed in REQ-5(a).",
+      "evidence": [
+        "frontend/src/pages/admin/ContactInfoManagementPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Homepage content editor must cover structured hero text, feature highlights, and promotional banners rather than just a single promotional text textarea",
+      "reason": "HomepageContentManagementPage provides only a single freeform textarea. There is no structured editing of hero text fields or feature highlight items as required by REQ-5(e).",
+      "evidence": [
+        "frontend/src/pages/admin/HomepageContentManagementPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-1",
+      "requirement": "Backend must associate all quotations with the logged-in customer account by email or mobile number at submission time",
+      "reason": "The backend main.mo is truncated and it is unclear whether the quotation submission logic was updated to link quotations to a customer ID. The getCustomerQuotations hook exists on the frontend but the backend association logic cannot be confirmed.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useCustomerQuotations.ts"
       ]
     }
   ],
+  "hallucinated_features": [],
   "confidence": 0.72,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/hooks/useAdminRegistration.ts",
-    "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/components/BilingualText.tsx",
+    "frontend/src/components/CustomerGuard.tsx",
+    "frontend/src/contexts/CustomerAuthContext.tsx",
+    "frontend/src/hooks/useAdminContent.ts",
+    "frontend/src/hooks/useCustomerQuotations.ts",
+    "frontend/src/hooks/useServiceImages.ts",
+    "frontend/src/hooks/useVideoClips.ts",
+    "frontend/src/pages/ContactUsPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/ProjectGalleryPage.tsx",
+    "frontend/src/pages/ServicesPage.tsx",
+    "frontend/src/pages/admin/AboutContentManagementPage.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/BusinessHoursManagementPage.tsx",
+    "frontend/src/pages/admin/ContactInfoManagementPage.tsx",
+    "frontend/src/pages/admin/HomepageContentManagementPage.tsx",
+    "frontend/src/pages/admin/ServiceMediaManagementPage.tsx",
+    "frontend/src/pages/customer/CustomerLoginPage.tsx",
+    "frontend/src/pages/customer/CustomerPortalPage.tsx",
+    "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
     "project_state.json"
   ]
 }

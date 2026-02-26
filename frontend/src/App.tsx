@@ -22,7 +22,15 @@ import MyQuotationsPage from './pages/MyQuotationsPage';
 import QuotationResponsePage from './pages/QuotationResponsePage';
 import ContactUsPage from './pages/ContactUsPage';
 import ContactInfoManagementPage from './pages/admin/ContactInfoManagementPage';
+import ServiceMediaManagementPage from './pages/admin/ServiceMediaManagementPage';
+import BusinessHoursManagementPage from './pages/admin/BusinessHoursManagementPage';
+import HomepageContentManagementPage from './pages/admin/HomepageContentManagementPage';
+import AboutContentManagementPage from './pages/admin/AboutContentManagementPage';
+import CustomerLoginPage from './pages/customer/CustomerLoginPage';
+import CustomerRegistrationPage from './pages/customer/CustomerRegistrationPage';
+import CustomerPortalPage from './pages/customer/CustomerPortalPage';
 import ProfileSetup from './components/ProfileSetup';
+import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from './hooks/useUserProfile';
@@ -125,6 +133,7 @@ const contactRoute = createRoute({
   component: ContactUsPage,
 });
 
+// Admin routes
 const adminLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/login',
@@ -167,6 +176,13 @@ const adminChatsRoute = createRoute({
   component: ChatManagementPage,
 });
 
+// Also register /admin/chat as an alias so dashboard links work
+const adminChatRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/chat',
+  component: ChatManagementPage,
+});
+
 const adminUsersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/users',
@@ -177,6 +193,49 @@ const adminContactInfoRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/contact-info',
   component: ContactInfoManagementPage,
+});
+
+const adminServiceMediaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/service-media',
+  component: ServiceMediaManagementPage,
+});
+
+const adminBusinessHoursRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/business-hours',
+  component: BusinessHoursManagementPage,
+});
+
+const adminHomepageContentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/homepage-content',
+  component: HomepageContentManagementPage,
+});
+
+const adminAboutContentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/about-content',
+  component: AboutContentManagementPage,
+});
+
+// Customer portal routes
+const customerLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/customer/login',
+  component: CustomerLoginPage,
+});
+
+const customerRegisterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/customer/register',
+  component: CustomerRegistrationPage,
+});
+
+const customerPortalRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/customer/portal',
+  component: CustomerPortalPage,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -199,8 +258,16 @@ const routeTree = rootRoute.addChildren([
   adminProjectsRoute,
   adminLogoRoute,
   adminChatsRoute,
+  adminChatRoute,
   adminUsersRoute,
   adminContactInfoRoute,
+  adminServiceMediaRoute,
+  adminBusinessHoursRoute,
+  adminHomepageContentRoute,
+  adminAboutContentRoute,
+  customerLoginRoute,
+  customerRegisterRoute,
+  customerPortalRoute,
 ]);
 
 const router = createRouter({ routeTree });
@@ -212,5 +279,9 @@ declare module '@tanstack/react-router' {
 }
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <CustomerAuthProvider>
+      <RouterProvider router={router} />
+    </CustomerAuthProvider>
+  );
 }

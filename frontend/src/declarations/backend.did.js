@@ -31,6 +31,20 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const ContactInfo = IDL.Record({
+  'mapsLink' : IDL.Text,
+  'email' : IDL.Text,
+  'physicalAddress' : IDL.Text,
+  'phone' : IDL.Text,
+});
+export const AdminContent = IDL.Record({
+  'aboutPageContent' : IDL.Text,
+  'contactInfo' : ContactInfo,
+  'businessHours' : IDL.Vec(IDL.Text),
+  'homepageContent' : IDL.Text,
+  'services' : IDL.Vec(IDL.Text),
+  'gallery' : IDL.Vec(IDL.Text),
+});
 export const AdminInvitationEntry = IDL.Record({
   'invitedBy' : IDL.Opt(IDL.Principal),
   'email' : IDL.Text,
@@ -105,12 +119,6 @@ export const UserProfile = IDL.Record({
   'mobileNumber' : IDL.Text,
   'email' : IDL.Text,
 });
-export const ContactInfo = IDL.Record({
-  'mapsLink' : IDL.Text,
-  'email' : IDL.Text,
-  'physicalAddress' : IDL.Text,
-  'phone' : IDL.Text,
-});
 export const DeliveryConfig = IDL.Record({
   'minimumFee' : IDL.Int,
   'perKmRate' : IDL.Int,
@@ -127,6 +135,19 @@ export const QuotationDetails = IDL.Record({
   'approved' : IDL.Bool,
   'replyFile' : IDL.Opt(ExternalBlob),
   'price' : IDL.Int,
+});
+export const ServiceImage = IDL.Record({
+  'id' : IDL.Text,
+  'serviceType' : IDL.Text,
+  'description' : IDL.Text,
+  'imageUrl' : IDL.Text,
+});
+export const VideoClip = IDL.Record({
+  'id' : IDL.Text,
+  'serviceType' : IDL.Text,
+  'thumbnailUrl' : IDL.Text,
+  'description' : IDL.Text,
+  'videoUrl' : IDL.Text,
 });
 
 export const idlService = IDL.Service({
@@ -174,9 +195,16 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'addServiceImage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
+  'addVideoClip' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
   'adminAcceptPayment' : IDL.Func([IDL.Text], [], []),
   'approveQuotation' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'authenticateCustomer' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
   'createQuotationRequest' : IDL.Func(
       [
@@ -192,11 +220,14 @@ export const idlService = IDL.Service({
     ),
   'customerApproveQuotation' : IDL.Func([IDL.Text], [], []),
   'deleteProject' : IDL.Func([IDL.Text], [], []),
+  'deleteServiceImage' : IDL.Func([IDL.Text], [], []),
+  'deleteVideoClip' : IDL.Func([IDL.Text], [], []),
   'editProject' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, ServiceType],
       [],
       [],
     ),
+  'getAdminContent' : IDL.Func([], [IDL.Opt(AdminContent)], ['query']),
   'getAdminInvitations' : IDL.Func(
       [],
       [IDL.Vec(AdminInvitationEntry)],
@@ -224,6 +255,11 @@ export const idlService = IDL.Service({
           'replies' : IDL.Vec(ChatMessage),
         }),
       ],
+      ['query'],
+    ),
+  'getCustomerQuotations' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(QuotationRequest)],
       ['query'],
     ),
   'getDeliveryConfig' : IDL.Func([], [DeliveryConfig], ['query']),
@@ -263,11 +299,13 @@ export const idlService = IDL.Service({
     ),
   'getReplyFile' : IDL.Func([IDL.Text], [IDL.Opt(ExternalBlob)], ['query']),
   'getReviewsByRating' : IDL.Func([IDL.Int], [IDL.Vec(Review)], ['query']),
+  'getServiceImages' : IDL.Func([], [IDL.Vec(ServiceImage)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getVideoClips' : IDL.Func([], [IDL.Vec(VideoClip)], ['query']),
   'handleQuotationResponse' : IDL.Func(
       [IDL.Text, QuotationStatus, IDL.Opt(IDL.Text)],
       [],
@@ -278,12 +316,25 @@ export const idlService = IDL.Service({
   'markQuotationCustomerPending' : IDL.Func([IDL.Text], [], []),
   'ownerReply' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'registerBiometric' : IDL.Func([IDL.Text], [], []),
+  'registerCustomer' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
   'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
   'setDeliveryConfig' : IDL.Func([IDL.Int, IDL.Int], [], []),
   'setLogo' : IDL.Func([ExternalBlob], [], []),
   'setOfficeLocation' : IDL.Func([OfficeLocation], [], []),
+  'updateAdminContent' : IDL.Func(
+      [
+        ContactInfo,
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Text),
+        IDL.Text,
+        IDL.Text,
+      ],
+      [],
+      [],
+    ),
   'updateContactInfo' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
       [],
@@ -317,6 +368,20 @@ export const idlFactory = ({ IDL }) => {
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
+  });
+  const ContactInfo = IDL.Record({
+    'mapsLink' : IDL.Text,
+    'email' : IDL.Text,
+    'physicalAddress' : IDL.Text,
+    'phone' : IDL.Text,
+  });
+  const AdminContent = IDL.Record({
+    'aboutPageContent' : IDL.Text,
+    'contactInfo' : ContactInfo,
+    'businessHours' : IDL.Vec(IDL.Text),
+    'homepageContent' : IDL.Text,
+    'services' : IDL.Vec(IDL.Text),
+    'gallery' : IDL.Vec(IDL.Text),
   });
   const AdminInvitationEntry = IDL.Record({
     'invitedBy' : IDL.Opt(IDL.Principal),
@@ -392,12 +457,6 @@ export const idlFactory = ({ IDL }) => {
     'mobileNumber' : IDL.Text,
     'email' : IDL.Text,
   });
-  const ContactInfo = IDL.Record({
-    'mapsLink' : IDL.Text,
-    'email' : IDL.Text,
-    'physicalAddress' : IDL.Text,
-    'phone' : IDL.Text,
-  });
   const DeliveryConfig = IDL.Record({
     'minimumFee' : IDL.Int,
     'perKmRate' : IDL.Int,
@@ -414,6 +473,19 @@ export const idlFactory = ({ IDL }) => {
     'approved' : IDL.Bool,
     'replyFile' : IDL.Opt(ExternalBlob),
     'price' : IDL.Int,
+  });
+  const ServiceImage = IDL.Record({
+    'id' : IDL.Text,
+    'serviceType' : IDL.Text,
+    'description' : IDL.Text,
+    'imageUrl' : IDL.Text,
+  });
+  const VideoClip = IDL.Record({
+    'id' : IDL.Text,
+    'serviceType' : IDL.Text,
+    'thumbnailUrl' : IDL.Text,
+    'description' : IDL.Text,
+    'videoUrl' : IDL.Text,
   });
   
   return IDL.Service({
@@ -461,9 +533,20 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'addServiceImage' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'addVideoClip' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'adminAcceptPayment' : IDL.Func([IDL.Text], [], []),
     'approveQuotation' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'authenticateCustomer' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
     'createQuotationRequest' : IDL.Func(
         [
@@ -479,11 +562,14 @@ export const idlFactory = ({ IDL }) => {
       ),
     'customerApproveQuotation' : IDL.Func([IDL.Text], [], []),
     'deleteProject' : IDL.Func([IDL.Text], [], []),
+    'deleteServiceImage' : IDL.Func([IDL.Text], [], []),
+    'deleteVideoClip' : IDL.Func([IDL.Text], [], []),
     'editProject' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, ServiceType],
         [],
         [],
       ),
+    'getAdminContent' : IDL.Func([], [IDL.Opt(AdminContent)], ['query']),
     'getAdminInvitations' : IDL.Func(
         [],
         [IDL.Vec(AdminInvitationEntry)],
@@ -511,6 +597,11 @@ export const idlFactory = ({ IDL }) => {
             'replies' : IDL.Vec(ChatMessage),
           }),
         ],
+        ['query'],
+      ),
+    'getCustomerQuotations' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(QuotationRequest)],
         ['query'],
       ),
     'getDeliveryConfig' : IDL.Func([], [DeliveryConfig], ['query']),
@@ -550,11 +641,13 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getReplyFile' : IDL.Func([IDL.Text], [IDL.Opt(ExternalBlob)], ['query']),
     'getReviewsByRating' : IDL.Func([IDL.Int], [IDL.Vec(Review)], ['query']),
+    'getServiceImages' : IDL.Func([], [IDL.Vec(ServiceImage)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getVideoClips' : IDL.Func([], [IDL.Vec(VideoClip)], ['query']),
     'handleQuotationResponse' : IDL.Func(
         [IDL.Text, QuotationStatus, IDL.Opt(IDL.Text)],
         [],
@@ -565,12 +658,29 @@ export const idlFactory = ({ IDL }) => {
     'markQuotationCustomerPending' : IDL.Func([IDL.Text], [], []),
     'ownerReply' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'registerBiometric' : IDL.Func([IDL.Text], [], []),
+    'registerCustomer' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
     'setDeliveryConfig' : IDL.Func([IDL.Int, IDL.Int], [], []),
     'setLogo' : IDL.Func([ExternalBlob], [], []),
     'setOfficeLocation' : IDL.Func([OfficeLocation], [], []),
+    'updateAdminContent' : IDL.Func(
+        [
+          ContactInfo,
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Text),
+          IDL.Text,
+          IDL.Text,
+        ],
+        [],
+        [],
+      ),
     'updateContactInfo' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [],

@@ -10,6 +10,14 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AdminContent {
+  'aboutPageContent' : string,
+  'contactInfo' : ContactInfo,
+  'businessHours' : Array<string>,
+  'homepageContent' : string,
+  'services' : Array<string>,
+  'gallery' : Array<string>,
+}
 export interface AdminInvitationEntry {
   'invitedBy' : [] | [Principal],
   'email' : string,
@@ -98,6 +106,12 @@ export interface Review {
   'submissionDate' : bigint,
   'rating' : bigint,
 }
+export interface ServiceImage {
+  'id' : string,
+  'serviceType' : string,
+  'description' : string,
+  'imageUrl' : string,
+}
 export type ServiceType = { 'banner' : null } |
   { 'offset' : null } |
   { 'design' : null } |
@@ -110,6 +124,13 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface VideoClip {
+  'id' : string,
+  'serviceType' : string,
+  'thumbnailUrl' : string,
+  'description' : string,
+  'videoUrl' : string,
+}
 export interface _CaffeineStorageCreateCertificateResult {
   'method' : string,
   'blob_hash' : string,
@@ -149,9 +170,12 @@ export interface _SERVICE {
     [string, string, bigint, [] | [string], ServiceType],
     string
   >,
+  'addServiceImage' : ActorMethod<[string, string, string], string>,
+  'addVideoClip' : ActorMethod<[string, string, string, string], string>,
   'adminAcceptPayment' : ActorMethod<[string], undefined>,
   'approveQuotation' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'authenticateCustomer' : ActorMethod<[string, string], string>,
   'calculateDeliveryFee' : ActorMethod<[bigint], bigint>,
   'createQuotationRequest' : ActorMethod<
     [ServiceType, bigint, string, string, string, [] | [ExternalBlob]],
@@ -159,10 +183,13 @@ export interface _SERVICE {
   >,
   'customerApproveQuotation' : ActorMethod<[string], undefined>,
   'deleteProject' : ActorMethod<[string], undefined>,
+  'deleteServiceImage' : ActorMethod<[string], undefined>,
+  'deleteVideoClip' : ActorMethod<[string], undefined>,
   'editProject' : ActorMethod<
     [string, string, string, string, ServiceType],
     undefined
   >,
+  'getAdminContent' : ActorMethod<[], [] | [AdminContent]>,
   'getAdminInvitations' : ActorMethod<[], Array<AdminInvitationEntry>>,
   'getAdminPrincipals' : ActorMethod<[], Array<AdminUser>>,
   'getAdminUserCount' : ActorMethod<[], bigint>,
@@ -178,6 +205,7 @@ export interface _SERVICE {
     [string],
     { 'messages' : Array<ChatMessage>, 'replies' : Array<ChatMessage> }
   >,
+  'getCustomerQuotations' : ActorMethod<[string], Array<QuotationRequest>>,
   'getDeliveryConfig' : ActorMethod<[], DeliveryConfig>,
   'getLogo' : ActorMethod<[], [] | [ExternalBlob]>,
   'getMyQuotations' : ActorMethod<[], Array<QuotationRequest>>,
@@ -200,7 +228,9 @@ export interface _SERVICE {
   >,
   'getReplyFile' : ActorMethod<[string], [] | [ExternalBlob]>,
   'getReviewsByRating' : ActorMethod<[bigint], Array<Review>>,
+  'getServiceImages' : ActorMethod<[], Array<ServiceImage>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getVideoClips' : ActorMethod<[], Array<VideoClip>>,
   'handleQuotationResponse' : ActorMethod<
     [string, QuotationStatus, [] | [string]],
     undefined
@@ -210,12 +240,17 @@ export interface _SERVICE {
   'markQuotationCustomerPending' : ActorMethod<[string], undefined>,
   'ownerReply' : ActorMethod<[string, string], string>,
   'registerBiometric' : ActorMethod<[string], undefined>,
+  'registerCustomer' : ActorMethod<[string, string, string], string>,
   'respondToNegotiation' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendMessage' : ActorMethod<[string, string, string], string>,
   'setDeliveryConfig' : ActorMethod<[bigint, bigint], undefined>,
   'setLogo' : ActorMethod<[ExternalBlob], undefined>,
   'setOfficeLocation' : ActorMethod<[OfficeLocation], undefined>,
+  'updateAdminContent' : ActorMethod<
+    [ContactInfo, Array<string>, Array<string>, Array<string>, string, string],
+    undefined
+  >,
   'updateContactInfo' : ActorMethod<
     [string, string, string, string],
     undefined

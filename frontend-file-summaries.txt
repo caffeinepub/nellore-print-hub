@@ -1,11 +1,11 @@
 {
   "frontend/src/hooks/useReviews.ts": "React Query hooks for managing customer reviews with optimized caching (5-minute staleTime), converting number ratings to bigint for backend compatibility, and proper cache invalidation on mutations.",
-  "frontend/src/pages/ProjectGalleryPage.tsx": "Public project gallery page (no auth gate) with category filters, project cards that open a detail modal on click, and admin-only upload dialog; fully accessible to unauthenticated visitors.",
+  "frontend/src/pages/ProjectGalleryPage.tsx": "Masonry-layout project gallery with category filters, natural-aspect-ratio images, and project detail modal; fixes the missing `open` prop passed to ProjectDetailModal.",
   "frontend/src/pages/TestimonialsPage.tsx": "Testimonials page with rating filters and review cards; navigates to `/submit-review` with Telugu/English translations.",
   "frontend/src/pages/SubmitReviewPage.tsx": "Review submission form passing `rating` as `number` (not `BigInt`) to `useAddReview`, navigates to `/testimonials` (correct path), with translations.",
   "frontend/src/pages/admin/ProjectManagementPage.tsx": "Admin interface for managing portfolio projects with CRUD operations, image uploads, and category management using the local ExternalBlob utility.",
   "frontend/src/lib/blobStorage.ts": "Utility class for handling blob storage URLs with methods to create blobs from URLs or bytes, track upload progress, and retrieve direct URLs for display with proper TypeScript type compatibility.",
-  "frontend/src/App.tsx": "Main router with all routes including the new `/admin/contact-info` route; manages ProfileSetup open/onComplete state via `RootLayout` component using `useGetCallerUserProfile`.",
+  "frontend/src/App.tsx": "Main router registering all routes including new customer portal routes (/customer/login, /customer/register, /customer/portal), new admin routes (/admin/service-media, /admin/business-hours, /admin/homepage-content, /admin/about-content, /admin/chat), and wrapping the app with CustomerAuthProvider.",
   "frontend/src/components/Layout.tsx": "Main app layout with header, footer, floating FABs, BottomNav, and a ShieldCheck admin icon in the header that navigates to /admin/login for guests or /admin/dashboard for authenticated admins.",
   "frontend/src/hooks/useCompanyLogo.ts": "React Query hooks for fetching and updating company logo using ExternalBlob storage with correct backend method names (getLogo/setLogo).",
   "frontend/src/hooks/useOfficeLocation.ts": "React Query hooks for fetching and setting office location information.",
@@ -17,7 +17,7 @@
   "frontend/src/pages/MyQuotationsPage.tsx": "Customer quotations list with updated status badges for all new statuses (customerPending, paymentPending, workInProgress, completed), an \"Approve Price\" button for customerPending quotations, and contextual info banners for payment and work-in-progress states.",
   "frontend/src/pages/QuotationResponsePage.tsx": "Customer quotation response page updated with \"Approve Price\" action (with confirmation dialog) for customerPending status, payment instructions for paymentPending, work-started message for workInProgress, and completion message for completed status.",
   "frontend/src/components/NegotiationHistory.tsx": "Reusable component displaying negotiation message thread in chat-like interface with sender differentiation.",
-  "frontend/src/pages/admin/AdminDashboardPage.tsx": "Admin dashboard updated with 8 status stat cards covering all new statuses (draft, customerPending, paymentPending, workInProgress, completed, accepted, rejected, negotiating) with distinct icons and color coding.",
+  "frontend/src/pages/admin/AdminDashboardPage.tsx": "Admin dashboard with quotation statistics grid and management quick-links; fixes the import to use the correctly named `useQuotationStatistics` hook and updates chat link to `/admin/chats`.",
   "frontend/src/pages/admin/LogoManagementPage.tsx": "Admin interface for uploading and managing company logo with preview and upload progress tracking using ExternalBlob.",
   "frontend/src/pages/admin/QuotationManagementPage.tsx": "Admin quotation management page with the \"Add Details\" form removed; replaced with a clean workflow: \"Send to Customer for Review\" button for draft quotations and \"Accept Payment & Start Work\" button for paymentPending quotations, with full status badge support for all new statuses.",
   "frontend/src/hooks/useChat.ts": "React Query hooks for chat operations including the new `useGetChatsForCustomer` hook for fetching messages by customer email, alongside existing send/reply/history hooks.",
@@ -39,8 +39,8 @@
   "frontend/src/components/SkeletonCard.tsx": "Reusable skeleton loading component with shimmer animation effects for different card variants (project, review, service, quotation).",
   "frontend/src/components/BottomSheet.tsx": "Mobile-optimized bottom sheet modal component that slides up from the bottom with backdrop overlay and swipe-to-dismiss gesture support.",
   "frontend/src/components/BottomSheetSelect.tsx": "Touch-friendly select input component that opens options in a bottom sheet drawer with large tap targets and haptic feedback.",
-  "frontend/src/pages/HomePage.tsx": "Home page with hero, features, services preview, and CTA sections; navigates to `/request-quote` (correct path) with Telugu/English translations.",
-  "frontend/src/pages/ServicesPage.tsx": "Services page with four service cards and bilingual feature lists; navigates to `/request-quote` (correct path).",
+  "frontend/src/pages/HomePage.tsx": "Home page with hero, features, printing samples, optional video section, services preview, CTA, and customer portal CTA; fixes the `flex`/`block` conflicting classname error on the video anchor element.",
+  "frontend/src/pages/ServicesPage.tsx": "Services page showing four service cards with sample images, bilingual English/Telugu content, feature lists, and quote CTA; replaces deprecated `flex-shrink-0` with `shrink-0`.",
   "frontend/src/pages/QuotationRequestPage.tsx": "Quotation request form using `useCreateQuotation` (correct hook name), `haptics` object, navigates to `/quotation-confirmation/$id` with the returned ID, with translations.",
   "frontend/src/components/ProfileSetup.tsx": "Profile setup modal dialog requiring `open` and `onComplete` props, using `useSaveCallerUserProfile` from the new `useUserProfile` hook with Telugu/English translations.",
   "frontend/src/index.css": "Global styles with OKLCH color system, mobile app utilities including safe-area-bottom, scrollbar-hide, shimmer animation for skeleton loaders, and slide-up animation for bottom sheets.",
@@ -59,5 +59,8 @@
   "frontend/src/pages/DeliveryInfoPage.tsx": "Delivery info page with service area, zones, and fee calculator using `haptics` utility with Telugu/English translations.",
   "frontend/src/pages/admin/ContactInfoManagementPage.tsx": "Admin-only page for managing contact information (email, phone, location) with form validation, pre-populated from backend, wrapped in AdminGuard.",
   "frontend/src/main.tsx": "Application entry point wrapping the app with `LanguageProvider` (outermost), `QueryClientProvider`, and `InternetIdentityProvider`.",
-  "frontend/src/components/ProjectDetailModal.tsx": "New modal component that displays full project details (image, title, description, category, date) when a project card is clicked, accessible to all users including unauthenticated guests, with bilingual support."
+  "frontend/src/components/ProjectDetailModal.tsx": "New modal component that displays full project details (image, title, description, category, date) when a project card is clicked, accessible to all users including unauthenticated guests, with bilingual support.",
+  "frontend/src/pages/admin/BusinessHoursManagementPage.tsx": "Admin page for editing per-day business hours (Mon–Sun) with open/close time inputs and closed toggle; replaces deprecated `flex-shrink-0` with `shrink-0`.",
+  "frontend/src/pages/admin/ServiceMediaManagementPage.tsx": "Admin page with tabs for managing service sample images and video clips (add/delete); replaces deprecated `flex-shrink-0` with `shrink-0`.",
+  "frontend/src/components/CustomerGuard.tsx": "Route guard for customer portal that uses useNavigate + useEffect instead of Navigate component to redirect unauthenticated customers to /customer/login, avoiding TanStack Router's strict path type checking."
 }

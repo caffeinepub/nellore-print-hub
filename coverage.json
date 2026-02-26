@@ -1,50 +1,168 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T00:55:23.322Z",
+  "generatedAt": "2026-02-26T01:18:42.714Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 1,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "On the backend, add a mechanism to seed a permanent first admin credential with email 'magic.nellorehub@gmail.com' and the SHA-256 hash of password 'Munnu1998@'. This seed should be applied during canister initialization (or via an idempotent init/upgrade hook) so that the admin account always exists regardless of canister state.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Implement a customer self-service portal: customers register/login using their email address or mobile number (no Internet Identity required). Each customer gets a unique profile page that shows all quotation/work orders they have submitted to the business, including status, dates, and any negotiation history. The portal must be accessible via a dedicated route (e.g., /customer/login and /customer/portal). Backend must store customer credentials (email or mobile, hashed password) and associate all quotations with the logged-in customer account.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useCustomerAuth.ts",
+          "frontend/src/contexts/CustomerAuthContext.tsx",
+          "frontend/src/pages/customer/CustomerLoginPage.tsx",
+          "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
+          "frontend/src/pages/customer/CustomerPortalPage.tsx",
+          "frontend/src/components/CustomerGuard.tsx",
+          "frontend/src/hooks/useCustomerQuotations.ts",
+          "frontend/src/App.tsx",
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/main.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/contexts/CustomerAuthContext.tsx",
+          "frontend/src/pages/customer/CustomerLoginPage.tsx",
+          "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
+          "frontend/src/pages/customer/CustomerPortalPage.tsx",
+          "frontend/src/components/CustomerGuard.tsx",
+          "frontend/src/hooks/useCustomerQuotations.ts",
+          "frontend/src/App.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "On the AdminLoginPage, pre-fill the email field with 'magic.nellorehub@gmail.com' and ensure the auto-seeding logic (first-admin credential seed) runs on page load when no admin exists, so the hardcoded admin is immediately usable without any manual registration step.",
+        "summary": "Display English and Telugu text together side-by-side (or stacked) throughout the entire app for all user-facing labels, headings, buttons, and content sections. Both languages should be visible simultaneously without requiring a language toggle, though the toggle can remain as an optional preference. Update all translation usage across pages (HomePage, ServicesPage, AboutPage, ContactUsPage, ProjectGalleryPage, etc.) to render both English and Telugu strings together.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx",
-          "frontend/src/hooks/useAdminRegistration.ts"
+          "frontend/src/utils/bilingualText.ts",
+          "frontend/src/components/BilingualText.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/pages/ServicesPage.tsx",
+          "frontend/src/pages/AboutPage.tsx",
+          "frontend/src/pages/ContactUsPage.tsx",
+          "frontend/src/pages/ProjectGalleryPage.tsx",
+          "frontend/src/pages/TestimonialsPage.tsx",
+          "frontend/src/pages/QuotationRequestPage.tsx",
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/components/BottomNav.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx",
-          "frontend/src/hooks/useAdminRegistration.ts"
+          "frontend/src/components/BilingualText.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/pages/ServicesPage.tsx",
+          "frontend/src/pages/ContactUsPage.tsx",
+          "frontend/src/pages/ProjectGalleryPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Redesign the Our Services section on ServicesPage and the services preview on HomePage: remove all A/B/C alphabetic labels/prefixes from service items. Replace with visually attractive cards that display sample printing work images, short video clips or video embed thumbnails, and visual previews of printing outputs (e.g., banners, business cards, flex prints). Add a dedicated 'Printing Samples & Videos' showcase section on the HomePage featuring real sample images and video content. Admin must be able to manage the service images and video URLs through the admin panel (see REQ-6).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ServicesPage.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/hooks/useServiceImages.ts",
+          "frontend/src/hooks/useVideoClips.ts",
+          "frontend/src/pages/admin/ServiceMediaManagementPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/components/ServiceCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ServicesPage.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/hooks/useServiceImages.ts",
+          "frontend/src/hooks/useVideoClips.ts",
+          "frontend/src/pages/admin/ServiceMediaManagementPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update ProjectGalleryPage so that each photo displays at its natural aspect ratio (intrinsic proportions). Use a masonry or variable-height grid layout so portrait, landscape, and square images each render at their correct proportions scaled to fit within a reasonable column width, rather than being cropped or forced into a uniform square/fixed-height container.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ProjectGalleryPage.tsx",
+          "frontend/src/components/ProjectCard.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ProjectGalleryPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Build a comprehensive Admin Content Editor that allows the admin to edit all dynamic content in the app from the admin panel. This must cover: (a) Contact Details (phone, email, address, WhatsApp number, Google Maps link); (b) Services list — add, edit, delete services including name, description, sample images, and video URLs; (c) Business Hours — set opening/closing times per day of the week; (d) Project Gallery — add, edit, delete gallery projects with image, title, category, and description; (e) Homepage content — hero text, feature highlights, and promotional banners; (f) About page content. All editable content must be persisted in the backend and fetched dynamically on the frontend (no hardcoded static content). Extend the backend data model to store services, business hours, and homepage/about content as stable mutable records.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useAdminContent.ts",
+          "frontend/src/pages/admin/BusinessHoursManagementPage.tsx",
+          "frontend/src/pages/admin/HomepageContentManagementPage.tsx",
+          "frontend/src/pages/admin/AboutContentManagementPage.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/pages/AboutPage.tsx",
+          "frontend/src/pages/ContactUsPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/pages/admin/ContactInfoManagementPage.tsx",
+          "frontend/src/pages/admin/ProjectManagementPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useAdminContent.ts",
+          "frontend/src/pages/admin/BusinessHoursManagementPage.tsx",
+          "frontend/src/pages/admin/HomepageContentManagementPage.tsx",
+          "frontend/src/pages/admin/AboutContentManagementPage.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/pages/ContactUsPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/pages/admin/ContactInfoManagementPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/public/assets/generated/print-sample-banner.dim_800x450.png",
+    "frontend/public/assets/generated/print-sample-brochure.dim_800x450.png",
+    "frontend/public/assets/generated/print-sample-business-card.dim_800x450.png",
+    "frontend/public/assets/generated/print-sample-flex.dim_800x450.png",
+    "frontend/src/App.tsx",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/BilingualText.tsx",
+    "frontend/src/components/CustomerGuard.tsx",
+    "frontend/src/contexts/CustomerAuthContext.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useAdminRegistration.ts",
-    "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/src/hooks/useAdminContent.ts",
+    "frontend/src/hooks/useCustomerQuotations.ts",
+    "frontend/src/hooks/useServiceImages.ts",
+    "frontend/src/hooks/useVideoClips.ts",
+    "frontend/src/pages/ContactUsPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/ProjectGalleryPage.tsx",
+    "frontend/src/pages/ServicesPage.tsx",
+    "frontend/src/pages/admin/AboutContentManagementPage.tsx",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/pages/admin/BusinessHoursManagementPage.tsx",
+    "frontend/src/pages/admin/ContactInfoManagementPage.tsx",
+    "frontend/src/pages/admin/HomepageContentManagementPage.tsx",
+    "frontend/src/pages/admin/ServiceMediaManagementPage.tsx",
+    "frontend/src/pages/customer/CustomerLoginPage.tsx",
+    "frontend/src/pages/customer/CustomerPortalPage.tsx",
+    "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
