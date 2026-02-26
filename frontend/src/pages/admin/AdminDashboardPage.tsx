@@ -15,6 +15,9 @@ import {
   Phone,
   Images,
   Image,
+  CreditCard,
+  Wrench,
+  CircleDot,
 } from 'lucide-react';
 
 function DashboardContent() {
@@ -27,11 +30,32 @@ function DashboardContent() {
 
   const statCards = [
     {
-      label: language === 'te' ? 'పెండింగ్' : 'Pending',
-      value: stats ? Number(stats.pending) : 0,
-      icon: FileText,
+      label: language === 'te' ? 'డ్రాఫ్ట్' : 'Draft',
+      value: stats ? Number(stats.draft) : 0,
+      icon: CircleDot,
+      color: 'text-gray-500',
+      bg: 'bg-gray-50 dark:bg-gray-950/30',
+    },
+    {
+      label: language === 'te' ? 'కస్టమర్ సమీక్ష' : 'Customer Review',
+      value: stats ? Number(stats.customerPending) : 0,
+      icon: Clock,
       color: 'text-yellow-500',
       bg: 'bg-yellow-50 dark:bg-yellow-950/30',
+    },
+    {
+      label: language === 'te' ? 'చెల్లింపు పెండింగ్' : 'Payment Pending',
+      value: stats ? Number(stats.paymentPending) : 0,
+      icon: CreditCard,
+      color: 'text-orange-500',
+      bg: 'bg-orange-50 dark:bg-orange-950/30',
+    },
+    {
+      label: language === 'te' ? 'పని జరుగుతోంది' : 'Work In Progress',
+      value: stats ? Number(stats.workInProgress) : 0,
+      icon: Wrench,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/30',
     },
     {
       label: language === 'te' ? 'ఆమోదించబడింది' : 'Accepted',
@@ -51,8 +75,15 @@ function DashboardContent() {
       label: language === 'te' ? 'చర్చలో' : 'Negotiating',
       value: stats ? Number(stats.negotiating) : 0,
       icon: MessageSquare,
-      color: 'text-blue-500',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
+      color: 'text-purple-500',
+      bg: 'bg-purple-50 dark:bg-purple-950/30',
+    },
+    {
+      label: language === 'te' ? 'పూర్తయింది' : 'Completed',
+      value: stats ? Number(stats.completed) : 0,
+      icon: FileText,
+      color: 'text-teal-500',
+      bg: 'bg-teal-50 dark:bg-teal-950/30',
     },
   ];
 
@@ -142,7 +173,7 @@ function DashboardContent() {
           </h2>
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
-              {[...Array(4)].map((_, i) => (
+              {[...Array(8)].map((_, i) => (
                 <div key={i} className="bg-card border border-border rounded-2xl p-4 animate-pulse">
                   <div className="h-4 bg-muted rounded w-1/2 mb-2" />
                   <div className="h-8 bg-muted rounded w-1/3" />

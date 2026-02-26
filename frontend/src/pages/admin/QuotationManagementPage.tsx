@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useGetAllQuotations, useAddQuotationDetails, useApproveQuotation, useGetOverdueQuotations } from '../../hooks/useQuotations';
+import {
+  useGetAllQuotations,
+  useMarkQuotationCustomerPending,
+  useAdminAcceptPayment,
+  useGetOverdueQuotations,
+} from '../../hooks/useQuotations';
 import { useRespondToNegotiation } from '../../hooks/useNegotiation';
 import AdminGuard from '../../components/AdminGuard';
 import NegotiationHistory from '../../components/NegotiationHistory';
@@ -19,40 +24,45 @@ import {
   Download,
   Upload,
   Paperclip,
+  Send,
+  CreditCard,
+  Wrench,
+  CircleDot,
 } from 'lucide-react';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-function QuotationCard({
-  quotation,
-  isOverdue,
-}: {
-  quotation: QuotationRequest;
-  isOverdue: boolean;
-}) {
-  const { language } = useLanguage();
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  const addDetails = useAddQuotationDetails();
-  const approveQuotation = useApproveQuotation();
-  const respondToNegotiation = useRespondToNegotiation();
-
-  const [expanded, setExpanded] = useState(false);
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [terms, setTerms] = useState('');
-  const [negotiationReply, setNegotiationReply] = useState('');
-  const [replyFile, setReplyFile] = useState<File | null>(null);
-  const [replyFileError, setReplyFileError] = useState('');
-  const [uploadingReply, setUploadingReply] = useState(false);
-  const [replyUploadProgress, setReplyUploadProgress] = useState(0);
-
-  const statusConfig = {
-    pendingCustomerResponse: {
-      label: language === 'te' ? 'పెండింగ్' : 'Pending',
+function getStatusConfig(language: string) {
+  return {
+    draft: {
+      label: language === 'te' ? 'డ్రాఫ్ట్' : 'Draft',
+      icon: CircleDot,
+      color: 'text-gray-500',
+      bg: 'bg-gray-50 dark:bg-gray-950/30',
+    },
+    customerPending: {
+      label: language === 'te' ? 'కస్టమర్ సమీక్ష పెండింగ్' : 'Customer Review Pending',
       icon: Clock,
       color: 'text-yellow-500',
       bg: 'bg-yellow-50 dark:bg-yellow-950/30',
+    },
+    paymentPending: {
+      label: language === 'te' ? 'చెల్లింపు పెండింగ్' : 'Payment Pending',
+      icon: CreditCard,
+      color: 'text-orange-500',
+      bg: 'bg-orange-50 dark:bg-orange-950/30',
+    },
+    workInProgress: {
+      label: language === 'te' ? 'పని జరుగుతోంది' : 'Work In Progress',
+      icon: Wrench,
+      color: 'text-blue-500',
+      bg: 'bg-blue-50 dark:bg-blue-950/30',
+    },
+    completed: {
+      label: language === 'te' ? 'పూర్తయింది' : 'Completed',
+      icon: CheckCircle,
+      color: 'text-green-600',
+      bg: 'bg-green-50 dark:bg-green-950/30',
     },
     accepted: {
       label: language === 'te' ? 'ఆమోదించబడింది' : 'Accepted',
@@ -69,26 +79,36 @@ function QuotationCard({
     negotiating: {
       label: language === 'te' ? 'చర్చలో' : 'Negotiating',
       icon: MessageSquare,
-      color: 'text-blue-500',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
+      color: 'text-purple-500',
+      bg: 'bg-purple-50 dark:bg-purple-950/30',
     },
   };
+}
 
+function QuotationCard({
+  quotation,
+  isOverdue,
+}: {
+  quotation: QuotationRequest;
+  isOverdue: boolean;
+}) {
+  const { language } = useLanguage();
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  const markCustomerPending = useMarkQuotationCustomerPending();
+  const acceptPayment = useAdminAcceptPayment();
+  const respondToNegotiation = useRespondToNegotiation();
+
+  const [expanded, setExpanded] = useState(false);
+  const [negotiationReply, setNegotiationReply] = useState('');
+  const [replyFile, setReplyFile] = useState<File | null>(null);
+  const [replyFileError, setReplyFileError] = useState('');
+  const [uploadingReply, setUploadingReply] = useState(false);
+  const [replyUploadProgress, setReplyUploadProgress] = useState(0);
+
+  const statusConfig = getStatusConfig(language);
   const status = statusConfig[quotation.status as keyof typeof statusConfig];
   const StatusIcon = status?.icon ?? Clock;
-
-  const handleAddDetails = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await addDetails.mutateAsync({
-      quotationId: quotation.id,
-      price: BigInt(Math.round(parseFloat(price) * 100)),
-      description,
-      terms,
-    });
-    setPrice('');
-    setDescription('');
-    setTerms('');
-  };
 
   const handleNegotiationReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +157,10 @@ function QuotationCard({
     banner: language === 'te' ? 'అవుట్‌డోర్ ప్రింటింగ్' : 'Outdoor/Indoor Printing',
     offset: language === 'te' ? 'ఆఫ్‌సెట్ ప్రింటింగ్' : 'Offset Printing',
   }[quotation.serviceType as string] ?? quotation.serviceType;
+
+  const isDraft = quotation.status === 'draft';
+  const isPaymentPending = quotation.status === 'paymentPending';
+  const isNegotiating = quotation.status === 'negotiating';
 
   return (
     <div className={`bg-card border rounded-2xl overflow-hidden transition-all ${
@@ -227,7 +251,7 @@ function QuotationCard({
           )}
 
           {/* Negotiation Reply */}
-          {quotation.status === 'negotiating' && (
+          {isNegotiating && (
             <form onSubmit={handleNegotiationReply} className="space-y-2">
               <textarea
                 value={negotiationReply}
@@ -239,53 +263,17 @@ function QuotationCard({
               <button
                 type="submit"
                 disabled={respondToNegotiation.isPending || !negotiationReply.trim()}
-                className="w-full py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold hover:bg-blue-600 transition-colors disabled:opacity-60"
+                className="w-full py-2 bg-purple-500 text-white rounded-xl text-sm font-semibold hover:bg-purple-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {respondToNegotiation.isPending ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mx-auto" />
-                ) : (language === 'te' ? 'సమాధానం పంపండి' : 'Send Reply')}
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                {language === 'te' ? 'సమాధానం పంపండి' : 'Send Reply'}
               </button>
             </form>
           )}
-
-          {/* Add Quotation Details */}
-          <form onSubmit={handleAddDetails} className="space-y-3 border-t border-border pt-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              {language === 'te' ? 'కోటేషన్ వివరాలు జోడించండి' : 'Add Quotation Details'}
-            </p>
-            <input
-              type="number"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              placeholder={language === 'te' ? 'ధర (₹)' : 'Price (₹)'}
-              min="0"
-              step="0.01"
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            />
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder={language === 'te' ? 'వివరణ' : 'Description'}
-              rows={2}
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-            />
-            <textarea
-              value={terms}
-              onChange={e => setTerms(e.target.value)}
-              placeholder={language === 'te' ? 'నిబంధనలు' : 'Terms & Conditions'}
-              rows={2}
-              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-            />
-            <button
-              type="submit"
-              disabled={addDetails.isPending || !price || !description || !terms}
-              className="w-full py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-60"
-            >
-              {addDetails.isPending ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mx-auto" />
-              ) : (language === 'te' ? 'వివరాలు జోడించండి' : 'Add Details')}
-            </button>
-          </form>
 
           {/* Reply File Upload */}
           <div className="border-t border-border pt-3 space-y-2">
@@ -333,19 +321,50 @@ function QuotationCard({
             )}
           </div>
 
-          {/* Approve */}
-          <button
-            onClick={() => approveQuotation.mutate(quotation.id)}
-            disabled={approveQuotation.isPending}
-            className="w-full py-2 bg-green-500 text-white rounded-xl text-sm font-semibold hover:bg-green-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            {approveQuotation.isPending ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-            ) : (
-              <CheckCircle className="w-4 h-4" />
+          {/* Workflow Action Buttons */}
+          <div className="border-t border-border pt-3 space-y-2">
+            {/* Draft → Customer Pending */}
+            {isDraft && (
+              <button
+                onClick={() => markCustomerPending.mutate(quotation.id)}
+                disabled={markCustomerPending.isPending}
+                className="w-full py-2.5 bg-yellow-500 text-white rounded-xl text-sm font-semibold hover:bg-yellow-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {markCustomerPending.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                {language === 'te' ? 'కస్టమర్‌కు పంపండి (సమీక్ష కోసం)' : 'Send to Customer for Review'}
+              </button>
             )}
-            {language === 'te' ? 'ఆమోదించండి' : 'Approve Quotation'}
-          </button>
+
+            {/* Payment Pending → Work In Progress */}
+            {isPaymentPending && (
+              <div className="space-y-2">
+                <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl p-3 flex items-start gap-2">
+                  <CreditCard className="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-orange-700 dark:text-orange-300">
+                    {language === 'te'
+                      ? 'కస్టమర్ ధరను ఆమోదించారు. చెల్లింపు అందుకున్న తర్వాత పని ప్రారంభించండి.'
+                      : 'Customer has approved the price. Accept payment to start work.'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => acceptPayment.mutate(quotation.id)}
+                  disabled={acceptPayment.isPending}
+                  className="w-full py-2.5 bg-green-500 text-white rounded-xl text-sm font-semibold hover:bg-green-600 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {acceptPayment.isPending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  ) : (
+                    <Wrench className="w-4 h-4" />
+                  )}
+                  {language === 'te' ? 'చెల్లింపు అంగీకరించి పని ప్రారంభించండి' : 'Accept Payment & Start Work'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

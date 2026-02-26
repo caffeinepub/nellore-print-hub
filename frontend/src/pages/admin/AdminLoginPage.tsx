@@ -14,13 +14,13 @@ import { useInternetIdentity } from '@/hooks/useInternetIdentity';
 import { useIsCallerAdmin } from '@/hooks/useAdmin';
 import { checkWebAuthnSupport } from '@/utils/webauthn';
 
-// The pre-seeded admin credentials for first-time setup
-const FIRST_ADMIN_EMAIL = 'admin@magicnellore.com';
+// The permanent admin credentials — pre-filled and auto-seeded on first load
+const FIRST_ADMIN_EMAIL = 'magic.nellorehub@gmail.com';
 const FIRST_ADMIN_PASSWORD = 'Munnu1998@';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(FIRST_ADMIN_EMAIL);
   const [password, setPassword] = useState('');
   const verifyMutation = useVerifyEmailPassword();
   const biometricMutation = useBiometricLogin();
@@ -46,8 +46,8 @@ export default function AdminLoginPage() {
     }
   }, [isAuthenticated, isAdmin, isCheckingAdmin, navigate]);
 
-  // Auto-seed the admin password when no admin exists yet
-  // inviteAdminUser has no auth check when adminCount == 0
+  // Auto-seed the permanent admin credentials when no admin exists yet.
+  // inviteAdminUser has no auth check when adminCount == 0.
   useEffect(() => {
     if (!adminExistsLoading && !adminExists && !seedingDone && !seedFirstAdminMutation.isPending) {
       setSeedingDone(true);
@@ -117,13 +117,10 @@ export default function AdminLoginPage() {
       navigate({ to: '/admin/dashboard' });
     } catch (error: any) {
       console.error('Registration error:', error);
-      // Provide a helpful message for the common assignRole error
       if (error.message?.includes('assign user roles') || error.message?.includes('Unauthorized')) {
         toast.error(
           'Registration failed. Please try logging in with email & password using: ' +
-            FIRST_ADMIN_EMAIL +
-            ' / ' +
-            FIRST_ADMIN_PASSWORD
+            FIRST_ADMIN_EMAIL
         );
       } else {
         toast.error(error.message || 'Failed to register as admin');
@@ -134,6 +131,8 @@ export default function AdminLoginPage() {
   const showRegistrationOption = !adminExistsLoading && !adminExists;
   const showInternetIdentityRegistration = showRegistrationOption && isAuthenticated;
   const showInternetIdentityLogin = !isAuthenticated;
+
+  const isSeedingInProgress = seedFirstAdminMutation.isPending;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
@@ -152,6 +151,14 @@ export default function AdminLoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Seeding indicator */}
+          {isSeedingInProgress && (
+            <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg p-3">
+              <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+              <p className="text-xs text-muted-foreground">Setting up admin credentials…</p>
+            </div>
+          )}
+
           {showInternetIdentityRegistration ? (
             <>
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center space-y-2">
@@ -283,7 +290,7 @@ export default function AdminLoginPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="admin@example.com"
+                      placeholder={FIRST_ADMIN_EMAIL}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10 h-11"
@@ -357,21 +364,6 @@ export default function AdminLoginPage() {
                 </>
               )}
             </>
-          )}
-
-          {/* Show first-admin credentials hint when no admin exists */}
-          {showRegistrationOption && (
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 space-y-1">
-              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
-                First-time setup credentials:
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Email: <span className="font-mono font-medium">{FIRST_ADMIN_EMAIL}</span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Password: <span className="font-mono font-medium">{FIRST_ADMIN_PASSWORD}</span>
-              </p>
-            </div>
           )}
 
           <p className="text-xs text-center text-muted-foreground mt-4">

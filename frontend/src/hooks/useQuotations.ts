@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { QuotationRequest, QuotationDetails, ServiceType, QuotationStatus, ExternalBlob } from '../backend';
+import { QuotationRequest, QuotationDetails, ServiceType, ExternalBlob } from '../backend';
 
 export function useGetAllQuotations() {
   const { actor, isFetching } = useActor();
@@ -107,6 +107,55 @@ export function useApproveQuotation() {
   });
 }
 
+export function useMarkQuotationCustomerPending() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (quotationId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.markQuotationCustomerPending(quotationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
+      queryClient.invalidateQueries({ queryKey: ['quotationStatistics'] });
+    },
+  });
+}
+
+export function useCustomerApproveQuotation() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (quotationId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.customerApproveQuotation(quotationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myQuotations'] });
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
+      queryClient.invalidateQueries({ queryKey: ['quotationStatistics'] });
+    },
+  });
+}
+
+export function useAdminAcceptPayment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (quotationId: string) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.adminAcceptPayment(quotationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allQuotations'] });
+      queryClient.invalidateQueries({ queryKey: ['quotationStatistics'] });
+    },
+  });
+}
+
 export function useGetOverdueQuotations() {
   const { actor, isFetching } = useActor();
 
@@ -117,7 +166,7 @@ export function useGetOverdueQuotations() {
       return actor.getPendingQuotationsOlderThan1Hour();
     },
     enabled: !!actor && !isFetching,
-    refetchInterval: 5 * 60 * 1000, // Poll every 5 minutes
+    refetchInterval: 5 * 60 * 1000,
     staleTime: 60 * 1000,
   });
 }

@@ -1,76 +1,60 @@
 {
   "kind": "build_request",
-  "title": "Fix first-admin auto-promotion and set admin password",
+  "title": "Register permanent first admin with hardcoded email and password",
   "projectName": "Nellore Print Hub",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
+      "text": "On the backend, add a mechanism to seed a permanent first admin credential with email 'magic.nellorehub@gmail.com' and the SHA-256 hash of password 'Munnu1998@'. This seed should be applied during canister initialization (or via an idempotent init/upgrade hook) so that the admin account always exists regardless of canister state.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "Unauthorized: Only admins can assign user roles i am the admin i cant log in",
-          "The first person to log in usually gets auto-assigned as admin — but if that's not working, I need to update the code"
+          "rigister as a admin this email and password forever",
+          "Email: magic.nellorehub@gmail.com",
+          "Password: Munnu1998@"
         ]
       },
       "acceptanceCriteria": [
-        "When zero admin accounts exist in the system, the first authenticated caller who attempts admin registration is automatically granted admin privileges without an existing admin needing to approve.",
-        "Subsequent users attempting to self-promote without invitation are rejected with the existing 'Unauthorized' error.",
-        "The fix does not break the existing admin invitation/role-assignment flow for subsequent admins."
+        "The backend stores a hashed credential entry for email 'magic.nellorehub@gmail.com' with the SHA-256 hash of 'Munnu1998@'.",
+        "The credential is seeded during canister initialization so it persists across upgrades.",
+        "Calling verifyAuthentication with the correct email and password returns a successful result.",
+        "Duplicate seeding does not create duplicate entries or overwrite other existing admin records."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-2"
-        ],
-        "quotes": [
-          "make my admin psaaword     Munnu1998@"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On the AdminLoginPage, logging in with the password 'Munnu1998@' (hashed via SHA-256 before the backend call, consistent with useAdminAuth.ts) successfully authenticates the first admin.",
-        "The backend verifyAuthentication method accepts the SHA-256 hash of 'Munnu1998@' as valid credentials for the first admin account.",
-        "The admin can access the AdminDashboardPage after logging in with this password."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
+      "text": "On the AdminLoginPage, pre-fill the email field with 'magic.nellorehub@gmail.com' and ensure the auto-seeding logic (first-admin credential seed) runs on page load when no admin exists, so the hardcoded admin is immediately usable without any manual registration step.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1",
-          "msg-2"
+          "msg-4"
         ],
         "quotes": [
-          "Unauthorized: Only admins can assign user roles i am the admin i cant log in what i need to do"
+          "rigister as a admin this email and password forever",
+          "Email: magic.nellorehub@gmail.com"
         ]
       },
       "acceptanceCriteria": [
-        "When no admin exists, the AdminGuard shows the first-admin registration prompt and submitting it does not produce an 'Unauthorized' error.",
-        "The flow completes and the user is recognized as admin after registration.",
-        "No 'Unauthorized: Only admins can assign user roles' error appears during the first-admin setup flow."
+        "The AdminLoginPage pre-fills the email input with 'magic.nellorehub@gmail.com' on initial render.",
+        "When no admin exists yet, the first-admin seed is triggered automatically on page load.",
+        "After seeding, logging in with email 'magic.nellorehub@gmail.com' and password 'Munnu1998@' succeeds and redirects to the admin dashboard.",
+        "No manual registration step is required for this admin account."
       ]
     }
   ],
   "constraints": [
-    "Do not change the existing SHA-256 password hashing approach used in useAdminAuth.ts.",
-    "Do not break the existing admin invitation flow for adding subsequent admin users.",
-    "All Motoko logic must remain in backend/main.mo."
+    "The password must be stored as a SHA-256 hash on the backend — never as plaintext.",
+    "The seeding must be idempotent: running it multiple times must not create duplicate admin entries.",
+    "Do not remove or break existing admin registration or invitation flows for other admins."
   ],
   "nonGoals": [
-    "Adding new authentication methods (biometric, social login).",
-    "Changing the overall admin role/permission model beyond fixing first-admin auto-promotion.",
-    "Modifying any file under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts."
+    "Changing the login UI design beyond pre-filling the email field.",
+    "Adding any new admin management features.",
+    "Modifying the quotation workflow or any other existing features."
   ],
   "imageRequirements": {
     "required": [],

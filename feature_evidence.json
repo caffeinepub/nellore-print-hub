@@ -2,30 +2,9 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-set-the-first-admin-account-s-password-to-munnu1998-when-the-first-admin-registration-form-is-submitted-or-auto-filled-on-first-login-use-this-password-sha-256-hashed-before-sending-to-the-backend-as-the-admin-credential",
-      "featureTitle": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
+      "featureId": "feature-on-the-adminloginpage-pre-fill-the-email-field-with-magic-nellorehub-gmail-com-and-ensure-the-auto-seeding-logic-first-admin-credential-seed-runs-on-page-load-when-no-admin-exists-so-the-hardcoded-admin-is-immediately-usable-without-any-manual-registration-step",
+      "featureTitle": "On the AdminLoginPage, pre-fill the email field with 'magic.nellorehub@gmail.com' and ensure the auto-seeding logic (first-admin credential seed) runs on page load when no admin exists, so the hardcoded admin is immediately usable without any manual registration step.",
       "files": [
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-adminguard-and-or-adminloginpage-first-admin-registration-flow-so-that-when-no-admin-exists-the-registration-form-pre-seeds-or-clearly-documents-the-initial-admin-password-as-munnu1998-and-the-first-admin-registration-completes-successfully-without-the-unauthorized-error",
-      "featureTitle": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
-      "files": [
-        "frontend/src/components/AdminGuard.tsx",
         "frontend/src/hooks/useAdminRegistration.ts",
         "frontend/src/pages/admin/AdminLoginPage.tsx"
       ],
@@ -39,7 +18,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-3"
+        "REQ-2"
       ],
       "confidence": "high"
     }

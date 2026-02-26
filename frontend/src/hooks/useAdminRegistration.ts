@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
+import { useInternetIdentity } from './useInternetIdentity';
 import { toast } from 'sonner';
 
 async function hashPassword(password: string): Promise<string> {
@@ -12,6 +13,7 @@ async function hashPassword(password: string): Promise<string> {
 
 export function useRegisterFirstAdmin() {
   const { actor } = useActor();
+  const { identity } = useInternetIdentity();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -19,7 +21,11 @@ export function useRegisterFirstAdmin() {
       if (!actor) {
         throw new Error('Actor not available');
       }
-      await actor.registerFirstAdmin();
+      if (!identity) {
+        throw new Error('Not authenticated with Internet Identity');
+      }
+      const principal = identity.getPrincipal();
+      await actor.addInternetIdentityAdmin(principal);
     },
     onSuccess: async () => {
       // Invalidate and refetch all admin-related queries

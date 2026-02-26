@@ -5,7 +5,11 @@ export function useQuotationStatistics() {
   const { actor, isFetching } = useActor();
 
   return useQuery<{
-    pending: bigint;
+    draft: bigint;
+    customerPending: bigint;
+    paymentPending: bigint;
+    workInProgress: bigint;
+    completed: bigint;
     accepted: bigint;
     rejected: bigint;
     negotiating: bigint;
@@ -16,7 +20,7 @@ export function useQuotationStatistics() {
       return actor.getQuotationStatistics();
     },
     enabled: !!actor && !isFetching,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+    staleTime: 30 * 1000,
+    refetchInterval: 30000,
   });
 }

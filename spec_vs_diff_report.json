@@ -1,42 +1,33 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T00:04:30.263Z",
-  "summary": "The diff implements most of the required changes: AdminLoginPage pre-seeds the 'Munnu1998@' password via SHA-256 hashing, AdminGuard shows a first-admin registration prompt, and useAdminRegistration.ts provides hooks for first-admin registration. However, the backend main.mo is truncated and it is unclear whether the auto-promotion logic (no-auth check when adminCount==0) is fully implemented there. The REQ-2 AC requiring the backend verifyAuthentication to accept the SHA-256 hash of 'Munnu1998@' cannot be confirmed from the truncated diff. Additionally, a migration.mo file was added which appears unrelated to the stated requirements.",
+  "generatedAt": "2026-02-26T00:55:23.319Z",
+  "summary": "The diff implements both REQ-1 and REQ-2 with largely correct approaches. REQ-2 (frontend pre-fill and auto-seed) is fully implemented. REQ-1 has partial coverage: the migration module seeds the permanent admin and the backend main.mo includes the migration hook, but there are concerns about idempotency and the seeding mechanism used (migration vs. init hook). The frontend seeds via inviteAdminUser when no admin exists, which is a separate path from the backend migration seeding. Overall the core requirements appear addressed but with nuances around the backend initialization path.",
   "missing_requirements": [
     {
       "id": "REQ-1",
-      "requirement": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
-      "reason": "The backend/main.mo diff is truncated and does not show the implementation of auto-promotion logic (e.g., a registerFirstAdmin function or a no-auth check when adminCount==0). The frontend calls actor.registerFirstAdmin() but whether the backend implements this with the correct no-auth guard cannot be confirmed.",
+      "requirement": "The credential is seeded during canister initialization so it persists across upgrades (idempotent init/upgrade hook on the backend).",
+      "reason": "The backend seeding is done via a migration module (Migration.run) that only seeds when adminUsers.isEmpty(). If the permanent admin entry is removed at runtime, a subsequent upgrade would not re-seed it because adminUsers would not be empty. There is no standalone system func init or system func postupgrade that unconditionally ensures the permanent admin exists regardless of canister state. The idempotency guarantee (always exists regardless of canister state) is not fully satisfied.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useAdminRegistration.ts"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "The backend verifyAuthentication method accepts the SHA-256 hash of 'Munnu1998@' as valid credentials for the first admin account.",
-      "reason": "The backend/main.mo is truncated and does not show the verifyAuthentication method or any logic that would accept the SHA-256 hash of 'Munnu1998@'. While the frontend seeds the password correctly, backend acceptance cannot be confirmed.",
-      "evidence": [
+        "backend/migration.mo",
         "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "A migration.mo module was added to handle schema migration of registrationMethod from variant types to Text types.",
-      "reason": "The build request does not mention any data migration or schema change for registrationMethod fields. This is an unrequested addition.",
+      "description": "The migration module introduces a schema migration from an old AdminInvitationEntry type with non-optional invitedBy Principal to a new type with optional invitedBy, which was not requested.",
+      "reason": "The build request only asked for seeding a permanent admin credential. The migration module also performs a data-model migration converting existing admin records from a non-optional to optional invitedBy field, which is an unrequested schema change.",
       "evidence": [
         "backend/migration.mo"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.72,
   "changed_files": [
     "backend/main.mo",
     "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/AdminGuard.tsx",
     "frontend/src/hooks/useAdminRegistration.ts",
     "frontend/src/pages/admin/AdminLoginPage.tsx",
     "project_state.json"

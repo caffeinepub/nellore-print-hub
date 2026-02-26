@@ -1,82 +1,65 @@
 import Map "mo:core/Map";
-import Principal "mo:core/Principal";
-import Int "mo:core/Int";
+import Time "mo:core/Time";
 import Text "mo:core/Text";
+import Principal "mo:core/Principal";
 
 module {
-  type OldAdminUser = {
-    principal : ?Principal;
-    registrationMethod : {
-      #biometric;
-      #internetIdentity;
-    };
-    registrationTimestamp : Int.Int;
-    active : Bool;
-  };
-
   type OldAdminInvitationEntry = {
     email : Text;
     hashedPassword : Text;
-    registrationMethod : {
-      #biometric;
-      #internetIdentity;
-    };
+    registrationMethod : Text;
     invitedBy : Principal;
-    invitationTimestamp : Int.Int;
+    invitationTimestamp : Int;
   };
 
-  type OldActor = {
-    adminUsers : Map.Map<Text, OldAdminInvitationEntry>;
-    adminPrincipals : Map.Map<Principal, OldAdminUser>;
-  };
-
-  type NewAdminUser = {
-    principal : ?Principal;
-    registrationMethod : Text.Text;
-    registrationTimestamp : Int.Int;
-    active : Bool;
-  };
+  type OldActor = { adminUsers : Map.Map<Text, OldAdminInvitationEntry> };
 
   type NewAdminInvitationEntry = {
     email : Text;
     hashedPassword : Text;
-    registrationMethod : Text.Text;
-    invitedBy : Principal;
-    invitationTimestamp : Int.Int;
+    registrationMethod : Text;
+    invitedBy : ?Principal;
+    invitationTimestamp : Int;
   };
 
-  type NewActor = {
-    adminUsers : Map.Map<Text, NewAdminInvitationEntry>;
-    adminPrincipals : Map.Map<Principal, NewAdminUser>;
+  type NewActor = { adminUsers : Map.Map<Text, NewAdminInvitationEntry> };
+
+  let permanentAdminEmail = "magic.nellorehub@gmail.com";
+  let permanentAdminHashedPassword = "b03ddf3ca2e714a6548e7495e2a03f5e824eaac9837cd7f159c67b90fb4b7342";
+
+  func migrateAdminUsers(oldEntries : Map.Map<Text, OldAdminInvitationEntry>) : Map.Map<Text, NewAdminInvitationEntry> {
+    oldEntries.map<Text, OldAdminInvitationEntry, NewAdminInvitationEntry>(
+      func(_key, oldAdmin) {
+        {
+          email = oldAdmin.email;
+          hashedPassword = oldAdmin.hashedPassword;
+          registrationMethod = oldAdmin.registrationMethod;
+          invitedBy = ?oldAdmin.invitedBy;
+          invitationTimestamp = oldAdmin.invitationTimestamp;
+        };
+      }
+    );
+  };
+
+  func createPermanentAdmin() : Map.Map<Text, NewAdminInvitationEntry> {
+    let map = Map.empty<Text, NewAdminInvitationEntry>();
+    let permanentAdmin : NewAdminInvitationEntry = {
+      email = permanentAdminEmail;
+      hashedPassword = permanentAdminHashedPassword;
+      registrationMethod = "biometric";
+      invitedBy = null;
+      invitationTimestamp = Time.now();
+    };
+    map.add(permanentAdmin.email, permanentAdmin);
+    map;
   };
 
   public func run(old : OldActor) : NewActor {
-    let newAdminUsers = old.adminUsers.map<Text, OldAdminInvitationEntry, NewAdminInvitationEntry>(
-      func(_email, oldEntry) {
-        {
-          oldEntry with
-          registrationMethod = switch (oldEntry.registrationMethod) {
-            case (#biometric) { "biometric" };
-            case (#internetIdentity) { "internetIdentity" };
-          };
-        };
-      }
-    );
-
-    let newAdminPrincipals = old.adminPrincipals.map<Principal, OldAdminUser, NewAdminUser>(
-      func(_p, oldUser) {
-        {
-          oldUser with
-          registrationMethod = switch (oldUser.registrationMethod) {
-            case (#biometric) { "biometric" };
-            case (#internetIdentity) { "internetIdentity" };
-          };
-        };
-      }
-    );
-    {
-      adminUsers = newAdminUsers;
-      adminPrincipals = newAdminPrincipals;
+    let newAdminUsers = if (old.adminUsers.isEmpty()) {
+      createPermanentAdmin();
+    } else {
+      migrateAdminUsers(old.adminUsers);
     };
+    { adminUsers = newAdminUsers };
   };
 };

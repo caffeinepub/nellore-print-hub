@@ -11,7 +11,7 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export interface AdminInvitationEntry {
-  'invitedBy' : Principal,
+  'invitedBy' : [] | [Principal],
   'email' : string,
   'invitationTimestamp' : bigint,
   'hashedPassword' : string,
@@ -81,10 +81,14 @@ export interface QuotationRequest {
   'projectDetails' : string,
   'quotationFileBlob' : [] | [ExternalBlob],
 }
-export type QuotationStatus = { 'rejected' : null } |
+export type QuotationStatus = { 'customerPending' : null } |
+  { 'completed' : null } |
+  { 'rejected' : null } |
+  { 'workInProgress' : null } |
   { 'accepted' : null } |
+  { 'draft' : null } |
   { 'negotiating' : null } |
-  { 'pendingCustomerResponse' : null };
+  { 'paymentPending' : null };
 export interface Review {
   'id' : string,
   'customerName' : string,
@@ -145,6 +149,7 @@ export interface _SERVICE {
     [string, string, bigint, [] | [string], ServiceType],
     string
   >,
+  'adminAcceptPayment' : ActorMethod<[string], undefined>,
   'approveQuotation' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'calculateDeliveryFee' : ActorMethod<[bigint], bigint>,
@@ -152,6 +157,7 @@ export interface _SERVICE {
     [ServiceType, bigint, string, string, string, [] | [ExternalBlob]],
     string
   >,
+  'customerApproveQuotation' : ActorMethod<[string], undefined>,
   'deleteProject' : ActorMethod<[string], undefined>,
   'editProject' : ActorMethod<
     [string, string, string, string, ServiceType],
@@ -182,10 +188,14 @@ export interface _SERVICE {
   'getQuotationStatistics' : ActorMethod<
     [],
     {
-      'pending' : bigint,
+      'customerPending' : bigint,
+      'completed' : bigint,
       'rejected' : bigint,
+      'workInProgress' : bigint,
       'accepted' : bigint,
+      'draft' : bigint,
       'negotiating' : bigint,
+      'paymentPending' : bigint,
     }
   >,
   'getReplyFile' : ActorMethod<[string], [] | [ExternalBlob]>,
@@ -197,9 +207,9 @@ export interface _SERVICE {
   >,
   'inviteAdminUser' : ActorMethod<[string, string], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'markQuotationCustomerPending' : ActorMethod<[string], undefined>,
   'ownerReply' : ActorMethod<[string, string], string>,
   'registerBiometric' : ActorMethod<[string], undefined>,
-  'registerFirstAdmin' : ActorMethod<[], undefined>,
   'respondToNegotiation' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendMessage' : ActorMethod<[string, string, string], string>,

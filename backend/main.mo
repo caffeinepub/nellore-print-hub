@@ -8,12 +8,10 @@ import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
-
-import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-import AccessControl "authorization/access-control";
+import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
-
+import AccessControl "authorization/access-control";
 import Migration "migration";
 
 (with migration = Migration.run)
@@ -23,7 +21,6 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Types
   public type UserProfile = {
     name : Text;
     email : Text;
@@ -44,7 +41,11 @@ actor {
   };
 
   public type QuotationStatus = {
-    #pendingCustomerResponse;
+    #draft;
+    #customerPending;
+    #paymentPending;
+    #workInProgress;
+    #completed;
     #accepted;
     #rejected;
     #negotiating;
@@ -114,7 +115,7 @@ actor {
     email : Text;
     hashedPassword : Text;
     registrationMethod : Text;
-    invitedBy : Principal;
+    invitedBy : ?Principal;
     invitationTimestamp : Int;
   };
 
@@ -419,31 +420,6 @@ actor {
 
   // ── Admin Registration ────────────────────────────────────────────────────
 
-  public shared ({ caller }) func registerFirstAdmin() : async () {
-    var adminCount = 0;
-    for (admin in adminPrincipals.values()) {
-      if (admin.active) { adminCount += 1 };
-    };
-
-    if (adminCount >= 1) {
-      Runtime.trap("Unauthorized: An admin is already registered");
-    };
-
-    if (caller.isAnonymous()) {
-      Runtime.trap("Unauthorized: Anonymous principals cannot become admins");
-    };
-
-    let newAdmin : AdminUser = {
-      principal = ?caller;
-      registrationMethod = "internetIdentity";
-      registrationTimestamp = Time.now();
-      active = true;
-    };
-    adminPrincipals.add(caller, newAdmin);
-
-    AccessControl.assignRole(accessControlState, caller, caller, #admin);
-  };
-
   // Admin-only (once an admin exists): invite a new admin user.
   public shared ({ caller }) func inviteAdminUser(
     email : Text,
@@ -461,7 +437,7 @@ actor {
       email;
       hashedPassword;
       registrationMethod = "biometric";
-      invitedBy = caller;
+      invitedBy = ?caller;
       invitationTimestamp = Time.now();
     };
     adminUsers.add(email, newUser);
@@ -508,7 +484,7 @@ actor {
         };
         adminPrincipals.add(caller, newAdmin);
 
-        AccessControl.assignRole(accessControlState, user.invitedBy, caller, #admin);
+        AccessControl.assignRole(accessControlState, caller, caller, #admin);
 
         emailToPrincipal.add(email, caller);
       };
@@ -575,7 +551,7 @@ actor {
       projectDetails;
       mobileNumber;
       email;
-      status = #pendingCustomerResponse;
+      status = #draft;
       timestamp = Time.now();
       negotiationHistory = [];
       customer = caller;
@@ -583,6 +559,109 @@ actor {
     };
     quotations.add(id, request);
     id;
+  };
+
+  // Admin-only: mark quotation as customer pending (transition for admins to pass completed quote to customer)
+  public shared ({ caller }) func markQuotationCustomerPending(quotationId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can mark quotation as customer pending");
+    };
+    let updatedRequests = List.empty<(Text, QuotationRequest)>();
+    for ((id, request) in quotations.entries()) {
+      let status = if (request.id == quotationId and request.status == #draft) {
+        #customerPending;
+      } else { request.status };
+      let updatedRequest = {
+        id = request.id;
+        serviceType = request.serviceType;
+        deadline = request.deadline;
+        projectDetails = request.projectDetails;
+        mobileNumber = request.mobileNumber;
+        email = request.email;
+        status;
+        timestamp = request.timestamp;
+        negotiationHistory = request.negotiationHistory;
+        customer = request.customer;
+        quotationFileBlob = request.quotationFileBlob;
+      };
+      updatedRequests.add((id, updatedRequest));
+    };
+    quotations.clear();
+    for ((id, newRequest) in updatedRequests.values()) {
+      quotations.add(id, newRequest);
+    };
+  };
+
+  // Customer-only: approve the quotation
+  public shared ({ caller }) func customerApproveQuotation(quotationId : Text) : async () {
+    switch (quotations.get(quotationId)) {
+      case (?request) {
+        if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+          Runtime.trap("Unauthorized: Only authenticated customers can approve quotations");
+        };
+        if (request.customer != caller) {
+          Runtime.trap("Unauthorized: Only the quotation owner can approve");
+        };
+        let updatedRequests = List.empty<(Text, QuotationRequest)>();
+        for ((id, quote) in quotations.entries()) {
+          let status = if (quote.id == quotationId and quote.status == #customerPending) {
+            #paymentPending;
+          } else { quote.status };
+          let updatedRequest = {
+            id = quote.id;
+            serviceType = quote.serviceType;
+            deadline = quote.deadline;
+            projectDetails = quote.projectDetails;
+            mobileNumber = quote.mobileNumber;
+            email = quote.email;
+            status;
+            timestamp = quote.timestamp;
+            negotiationHistory = quote.negotiationHistory;
+            customer = quote.customer;
+            quotationFileBlob = quote.quotationFileBlob;
+          };
+          updatedRequests.add((id, updatedRequest));
+        };
+        quotations.clear();
+        for ((id, newQuote) in updatedRequests.values()) {
+          quotations.add(id, newQuote);
+        };
+      };
+      case (null) {
+        Runtime.trap("Quotation not found");
+      };
+    };
+  };
+
+  // Admin-only: accept payment and transition to work in progress
+  public shared ({ caller }) func adminAcceptPayment(quotationId : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can mark payment received and start work");
+    };
+    let updatedRequests = List.empty<(Text, QuotationRequest)>();
+    for ((id, request) in quotations.entries()) {
+      let status = if (request.id == quotationId and request.status == #paymentPending) {
+        #workInProgress;
+      } else { request.status };
+      let updatedRequest = {
+        id = request.id;
+        serviceType = request.serviceType;
+        deadline = request.deadline;
+        projectDetails = request.projectDetails;
+        mobileNumber = request.mobileNumber;
+        email = request.email;
+        status;
+        timestamp = request.timestamp;
+        negotiationHistory = request.negotiationHistory;
+        customer = request.customer;
+        quotationFileBlob = request.quotationFileBlob;
+      };
+      updatedRequests.add((id, updatedRequest));
+    };
+    quotations.clear();
+    for ((id, newRequest) in updatedRequests.values()) {
+      quotations.add(id, newRequest);
+    };
   };
 
   // Admin-only: view all quotations.
@@ -679,7 +758,19 @@ actor {
             };
           };
           case (#accepted or #rejected) {};
-          case (#pendingCustomerResponse) {
+          case (#customerPending) {
+            Runtime.trap("Invalid status transition");
+          };
+          case (#draft) {
+            Runtime.trap("Invalid status transition");
+          };
+          case (#paymentPending) {
+            Runtime.trap("Invalid status transition");
+          };
+          case (#workInProgress) {
+            Runtime.trap("Invalid status transition");
+          };
+          case (#completed) {
             Runtime.trap("Invalid status transition");
           };
         };
@@ -766,7 +857,11 @@ actor {
 
   // Admin-only: quotation statistics.
   public query ({ caller }) func getQuotationStatistics() : async {
-    pending : Nat;
+    draft : Nat;
+    customerPending : Nat;
+    paymentPending : Nat;
+    workInProgress : Nat;
+    completed : Nat;
     accepted : Nat;
     rejected : Nat;
     negotiating : Nat;
@@ -775,20 +870,37 @@ actor {
       Runtime.trap("Unauthorized: Only admins can view quotation statistics");
     };
 
-    var pending = 0;
+    var draft = 0;
+    var customerPending = 0;
+    var paymentPending = 0;
+    var workInProgress = 0;
+    var completed = 0;
     var accepted = 0;
     var rejected = 0;
     var negotiating = 0;
 
     for (q in quotations.values()) {
       switch (q.status) {
-        case (#pendingCustomerResponse) { pending += 1 };
+        case (#draft) { draft += 1 };
+        case (#customerPending) { customerPending += 1 };
+        case (#paymentPending) { paymentPending += 1 };
+        case (#workInProgress) { workInProgress += 1 };
+        case (#completed) { completed += 1 };
         case (#accepted) { accepted += 1 };
         case (#rejected) { rejected += 1 };
         case (#negotiating) { negotiating += 1 };
       };
     };
-    { pending; accepted; rejected; negotiating };
+    {
+      draft;
+      customerPending;
+      paymentPending;
+      workInProgress;
+      completed;
+      accepted;
+      rejected;
+      negotiating;
+    };
   };
 
   // Admin-only: find quotations pending for more than 1 hour (for reminder badges).
@@ -800,7 +912,7 @@ actor {
     let allQuotations = quotations.toArray();
     let pendingQuotations = allQuotations.filter(
       func((_, quotation)) {
-        quotation.status == #pendingCustomerResponse;
+        quotation.status == #customerPending;
       }
     );
     let oldQuotations = pendingQuotations.filter(

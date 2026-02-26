@@ -1,28 +1,16 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Web application with admin panel, project gallery, contact info management, and admin authentication. First-login auto-promotes to admin with password Munnu1998@.",
-  "architectural_notes": [
-    "Admin password set to Munnu1998@ for claiming admin rights on first login"
-  ],
-  "known_issues": [
-    "First user login not auto-promoted to admin, causing 'Unauthorized: Only admins can assign user roles' error"
-  ],
-  "isFixRequest": true,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-set-the-first-admin-account-s-password-to-munnu1998-when-the-first-admin-registration-form-is-submitted-or-auto-filled-on-first-login-use-this-password-sha-256-hashed-before-sending-to-the-backend-as-the-admin-credential",
-      "title": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
+      "id": "feature-on-the-adminloginpage-pre-fill-the-email-field-with-magic-nellorehub-gmail-com-and-ensure-the-auto-seeding-logic-first-admin-credential-seed-runs-on-page-load-when-no-admin-exists-so-the-hardcoded-admin-is-immediately-usable-without-any-manual-registration-step",
+      "title": "On the AdminLoginPage, pre-fill the email field with 'magic.nellorehub@gmail.com' and ensure the auto-seeding logic (first-admin credential seed) runs on page load when no admin exists, so the hardcoded admin is immediately usable without any manual registration step.",
       "reqIds": [
         "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-adminguard-and-or-adminloginpage-first-admin-registration-flow-so-that-when-no-admin-exists-the-registration-form-pre-seeds-or-clearly-documents-the-initial-admin-password-as-munnu1998-and-the-first-admin-registration-completes-successfully-without-the-unauthorized-error",
-      "title": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
-      "reqIds": [
-        "REQ-3"
       ],
       "version": 1
     }
@@ -30,20 +18,19 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix first-login auto-promotion to admin and set admin password to Munnu1998@",
+      "summary": "Register a permanent admin account with email magic.nellorehub@gmail.com",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
+      "summary": "On the backend, add a mechanism to seed a permanent first admin credential with email 'magic.nellorehub@gmail.com' and the SHA-256 hash of password 'Munnu1998@'. This seed should be applied during canister initialization (or via an idempotent init/upgrade hook) so that the admin account always exists regardless of canister state.",
       "reqIds": [
         "REQ-1"
       ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
   "projectName": "Nellore Print Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0

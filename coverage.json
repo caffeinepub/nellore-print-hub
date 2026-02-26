@@ -1,44 +1,31 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T00:04:30.267Z",
+  "generatedAt": "2026-02-26T00:55:23.322Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 2,
+    "total": 2,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
+        "summary": "On the backend, add a mechanism to seed a permanent first admin credential with email 'magic.nellorehub@gmail.com' and the SHA-256 hash of password 'Munnu1998@'. This seed should be applied during canister initialization (or via an idempotent init/upgrade hook) so that the admin account always exists regardless of canister state.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
+        "summary": "On the AdminLoginPage, pre-fill the email field with 'magic.nellorehub@gmail.com' and ensure the auto-seeding logic (first-admin credential seed) runs on page load when no admin exists, so the hardcoded admin is immediately usable without any manual registration step.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/admin/AdminLoginPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/AdminGuard.tsx",
           "frontend/src/pages/admin/AdminLoginPage.tsx",
           "frontend/src/hooks/useAdminRegistration.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/AdminGuard.tsx",
           "frontend/src/pages/admin/AdminLoginPage.tsx",
           "frontend/src/hooks/useAdminRegistration.ts"
         ]
@@ -54,7 +41,6 @@
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/AdminGuard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useAdminRegistration.ts",

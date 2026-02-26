@@ -43,7 +43,7 @@ export interface AdminUser {
     registrationMethod: string;
 }
 export interface AdminInvitationEntry {
-    invitedBy: Principal;
+    invitedBy?: Principal;
     email: string;
     invitationTimestamp: bigint;
     hashedPassword: string;
@@ -102,10 +102,14 @@ export interface UserProfile {
     email: string;
 }
 export enum QuotationStatus {
+    customerPending = "customerPending",
+    completed = "completed",
     rejected = "rejected",
+    workInProgress = "workInProgress",
     accepted = "accepted",
+    draft = "draft",
     negotiating = "negotiating",
-    pendingCustomerResponse = "pendingCustomerResponse"
+    paymentPending = "paymentPending"
 }
 export enum ServiceType {
     banner = "banner",
@@ -124,10 +128,12 @@ export interface backendInterface {
     addQuotationDetails(quotationId: string, price: bigint, description: string, terms: string): Promise<void>;
     addReplyFile(quotationId: string, file: ExternalBlob): Promise<void>;
     addReview(customerName: string, reviewText: string, rating: bigint, imageUrl: string | null, projectType: ServiceType): Promise<string>;
+    adminAcceptPayment(quotationId: string): Promise<void>;
     approveQuotation(quotationId: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     calculateDeliveryFee(distance: bigint): Promise<bigint>;
     createQuotationRequest(serviceType: ServiceType, deadline: bigint, projectDetails: string, mobileNumber: string, email: string, file: ExternalBlob | null): Promise<string>;
+    customerApproveQuotation(quotationId: string): Promise<void>;
     deleteProject(projectId: string): Promise<void>;
     editProject(projectId: string, imageUrl: string, title: string, description: string, category: ServiceType): Promise<void>;
     getAdminInvitations(): Promise<Array<AdminInvitationEntry>>;
@@ -153,10 +159,14 @@ export interface backendInterface {
     getProjectsByCategory(category: ServiceType): Promise<Array<Project>>;
     getQuotationDetails(quotationId: string): Promise<QuotationDetails | null>;
     getQuotationStatistics(): Promise<{
-        pending: bigint;
+        customerPending: bigint;
+        completed: bigint;
         rejected: bigint;
+        workInProgress: bigint;
         accepted: bigint;
+        draft: bigint;
         negotiating: bigint;
+        paymentPending: bigint;
     }>;
     getReplyFile(quotationId: string): Promise<ExternalBlob | null>;
     getReviewsByRating(rating: bigint): Promise<Array<Review>>;
@@ -164,9 +174,9 @@ export interface backendInterface {
     handleQuotationResponse(quotationId: string, status: QuotationStatus, message: string | null): Promise<void>;
     inviteAdminUser(email: string, hashedPassword: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    markQuotationCustomerPending(quotationId: string): Promise<void>;
     ownerReply(replyToMessageId: string, replyText: string): Promise<string>;
     registerBiometric(email: string): Promise<void>;
-    registerFirstAdmin(): Promise<void>;
     respondToNegotiation(quotationId: string, message: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(senderName: string, senderEmail: string, messageText: string): Promise<string>;

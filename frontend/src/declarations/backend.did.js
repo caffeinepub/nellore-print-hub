@@ -32,7 +32,7 @@ export const UserRole = IDL.Variant({
   'guest' : IDL.Null,
 });
 export const AdminInvitationEntry = IDL.Record({
-  'invitedBy' : IDL.Principal,
+  'invitedBy' : IDL.Opt(IDL.Principal),
   'email' : IDL.Text,
   'invitationTimestamp' : IDL.Int,
   'hashedPassword' : IDL.Text,
@@ -64,10 +64,14 @@ export const Project = IDL.Record({
   'category' : ServiceType,
 });
 export const QuotationStatus = IDL.Variant({
+  'customerPending' : IDL.Null,
+  'completed' : IDL.Null,
   'rejected' : IDL.Null,
+  'workInProgress' : IDL.Null,
   'accepted' : IDL.Null,
+  'draft' : IDL.Null,
   'negotiating' : IDL.Null,
-  'pendingCustomerResponse' : IDL.Null,
+  'paymentPending' : IDL.Null,
 });
 export const NegotiationMessage = IDL.Record({
   'sender' : IDL.Text,
@@ -170,6 +174,7 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'adminAcceptPayment' : IDL.Func([IDL.Text], [], []),
   'approveQuotation' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
@@ -185,6 +190,7 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'customerApproveQuotation' : IDL.Func([IDL.Text], [], []),
   'deleteProject' : IDL.Func([IDL.Text], [], []),
   'editProject' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, ServiceType],
@@ -243,10 +249,14 @@ export const idlService = IDL.Service({
       [],
       [
         IDL.Record({
-          'pending' : IDL.Nat,
+          'customerPending' : IDL.Nat,
+          'completed' : IDL.Nat,
           'rejected' : IDL.Nat,
+          'workInProgress' : IDL.Nat,
           'accepted' : IDL.Nat,
+          'draft' : IDL.Nat,
           'negotiating' : IDL.Nat,
+          'paymentPending' : IDL.Nat,
         }),
       ],
       ['query'],
@@ -265,9 +275,9 @@ export const idlService = IDL.Service({
     ),
   'inviteAdminUser' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'markQuotationCustomerPending' : IDL.Func([IDL.Text], [], []),
   'ownerReply' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'registerBiometric' : IDL.Func([IDL.Text], [], []),
-  'registerFirstAdmin' : IDL.Func([], [], []),
   'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
@@ -309,7 +319,7 @@ export const idlFactory = ({ IDL }) => {
     'guest' : IDL.Null,
   });
   const AdminInvitationEntry = IDL.Record({
-    'invitedBy' : IDL.Principal,
+    'invitedBy' : IDL.Opt(IDL.Principal),
     'email' : IDL.Text,
     'invitationTimestamp' : IDL.Int,
     'hashedPassword' : IDL.Text,
@@ -341,10 +351,14 @@ export const idlFactory = ({ IDL }) => {
     'category' : ServiceType,
   });
   const QuotationStatus = IDL.Variant({
+    'customerPending' : IDL.Null,
+    'completed' : IDL.Null,
     'rejected' : IDL.Null,
+    'workInProgress' : IDL.Null,
     'accepted' : IDL.Null,
+    'draft' : IDL.Null,
     'negotiating' : IDL.Null,
-    'pendingCustomerResponse' : IDL.Null,
+    'paymentPending' : IDL.Null,
   });
   const NegotiationMessage = IDL.Record({
     'sender' : IDL.Text,
@@ -447,6 +461,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'adminAcceptPayment' : IDL.Func([IDL.Text], [], []),
     'approveQuotation' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
@@ -462,6 +477,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'customerApproveQuotation' : IDL.Func([IDL.Text], [], []),
     'deleteProject' : IDL.Func([IDL.Text], [], []),
     'editProject' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, ServiceType],
@@ -520,10 +536,14 @@ export const idlFactory = ({ IDL }) => {
         [],
         [
           IDL.Record({
-            'pending' : IDL.Nat,
+            'customerPending' : IDL.Nat,
+            'completed' : IDL.Nat,
             'rejected' : IDL.Nat,
+            'workInProgress' : IDL.Nat,
             'accepted' : IDL.Nat,
+            'draft' : IDL.Nat,
             'negotiating' : IDL.Nat,
+            'paymentPending' : IDL.Nat,
           }),
         ],
         ['query'],
@@ -542,9 +562,9 @@ export const idlFactory = ({ IDL }) => {
       ),
     'inviteAdminUser' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'markQuotationCustomerPending' : IDL.Func([IDL.Text], [], []),
     'ownerReply' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'registerBiometric' : IDL.Func([IDL.Text], [], []),
-    'registerFirstAdmin' : IDL.Func([], [], []),
     'respondToNegotiation' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'sendMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),

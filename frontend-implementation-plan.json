@@ -1,46 +1,27 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix first-admin auto-promotion and set admin password",
+  "title": "Register permanent first admin with hardcoded email and password",
   "requirements": [
     {
       "id": "REQ-2",
-      "summary": "Set the first admin account's password to 'Munnu1998@' (SHA-256 hashed before sending to backend)",
+      "summary": "Pre-fill admin login email and trigger auto-seeding of hardcoded admin credentials on page load",
       "acceptanceCriteria": [
-        "On the AdminLoginPage, logging in with the password 'Munnu1998@' (hashed via SHA-256 before the backend call, consistent with useAdminAuth.ts) successfully authenticates the first admin.",
-        "The admin can access the AdminDashboardPage after logging in with this password."
+        "The AdminLoginPage pre-fills the email input with 'magic.nellorehub@gmail.com' on initial render.",
+        "When no admin exists yet, the first-admin seed is triggered automatically on page load.",
+        "After seeding, logging in with email 'magic.nellorehub@gmail.com' and password 'Munnu1998@' succeeds and redirects to the admin dashboard.",
+        "No manual registration step is required for this admin account."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Update the AdminLoginPage to pre-fill or document the password field with 'Munnu1998@' during first-admin registration flow. When the first-admin registration is triggered (adminExists === false), either auto-populate the password field or display a prominent note instructing the user to use 'Munnu1998@' as the initial password. Ensure the password is SHA-256 hashed via useAdminAuth before calling the backend's verifyAuthentication method. Verify the authorization component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Update AdminGuard and AdminLoginPage first-admin registration flow to complete successfully without 'Unauthorized' error",
-      "acceptanceCriteria": [
-        "When no admin exists, the AdminGuard shows the first-admin registration prompt and submitting it does not produce an 'Unauthorized' error.",
-        "The flow completes and the user is recognized as admin after registration.",
-        "No 'Unauthorized: Only admins can assign user roles' error appears during the first-admin setup flow."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/AdminGuard.tsx",
-          "operation": "modify",
-          "description": "Review the AdminGuard component's first-admin registration flow. When adminExists is false, ensure the component calls useAdminRegistration's registerFirstAdmin mutation instead of any role-assignment flow that requires prior admin authorization. Remove or bypass any adminCheck guard during the first-admin registration flow. After successful first-admin registration, invalidate admin-related queries (isAdmin, adminExists) so the user is immediately recognized as admin. Verify the authorization component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the first-admin registration flow on AdminLoginPage calls useAdminRegistration's registerFirstAdmin mutation when no admin exists. Do not call any role-assignment or invitation methods during first-admin setup. After successful registration, automatically trigger a login attempt using the pre-seeded password 'Munnu1998@' (SHA-256 hashed). On success, navigate to AdminDashboardPage. Add error handling to display user-friendly messages if registration fails. Verify the authorization component's usage instructions before implementing."
+          "description": "Pre-fill the email input field with 'magic.nellorehub@gmail.com' on component mount. Add useEffect logic that calls the useAdminExists hook on page load; if no admin exists, automatically invoke the seedFirstAdmin mutation from useAdminRegistration to create the hardcoded admin account with email 'magic.nellorehub@gmail.com' and SHA-256 hashed password 'Munnu1998@'. Ensure the seeding is idempotent and does not interfere with existing login flows. Show a loading or seeding indicator while the operation is in progress."
         },
         {
           "path": "frontend/src/hooks/useAdminRegistration.ts",
           "operation": "modify",
-          "description": "Review the useAdminRegistration hook's registerFirstAdmin mutation. Ensure it correctly calls actor.registerFirstAdmin() without requiring prior admin authorization. After successful registration, invalidate ['isAdmin'], ['adminExists'], and ['adminUserCount'] query keys so subsequent checks recognize the new admin. Add comprehensive error handling and return success/failure status. The hook should not call assignRole or inviteAdminUser during first-admin registration."
+          "description": "Ensure the seedFirstAdmin mutation hook correctly hashes the password 'Munnu1998@' using SHA-256 before calling the backend's inviteAdminUser method with email 'magic.nellorehub@gmail.com' and the hashed password. Verify that the mutation handles success and error states appropriately, and that it can be safely called multiple times without creating duplicate entries (idempotency is enforced by the backend)."
         }
       ]
     }
