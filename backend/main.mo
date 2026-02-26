@@ -9,15 +9,15 @@ import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
 
-
 import Principal "mo:core/Principal";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
 // Enable data migration via the with clause
-
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -234,12 +234,10 @@ actor {
 
   // ── App Name Management ───────────────────────────────────────────────
 
-  /// Query the current app name (publicly available).
   public query ({ caller }) func getAppName() : async Text {
     appName;
   };
 
-  /// Set the app name (admin only).
   public shared ({ caller }) func setAppName(name : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set the app name");
@@ -249,7 +247,6 @@ actor {
 
   // ── Chat ──────────────────────────────────────────────────────────────────
 
-  // Anyone (including guests) may send a contact message.
   public shared ({ caller }) func sendMessage(
     senderName : Text,
     senderEmail : Text,
@@ -271,7 +268,6 @@ actor {
     id;
   };
 
-  // Admin-only: reply to a customer message.
   public shared ({ caller }) func ownerReply(
     replyToMessageId : Text,
     replyText : Text,
@@ -315,7 +311,6 @@ actor {
     replyId;
   };
 
-  // Admin-only: view all chat messages.
   public query ({ caller }) func getAllChatMessages() : async [ChatMessage] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only the owner can view all chat messages");
@@ -323,7 +318,6 @@ actor {
     chatMessages.values().toArray();
   };
 
-  // Admin can view any customer's chats; authenticated users can only view their own.
   public query ({ caller }) func getChatsForCustomer(senderEmail : Text) : async [ChatMessage] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       switch (userProfiles.get(caller)) {
@@ -346,7 +340,6 @@ actor {
     );
   };
 
-  // Admin-only: full conversation history for a customer.
   public query ({ caller }) func getCustomerChatHistory(senderEmail : Text) : async {
     messages : [ChatMessage];
     replies : [ChatMessage];
@@ -413,7 +406,6 @@ actor {
 
   // ── Branding / Office ─────────────────────────────────────────────────────
 
-  // Admin-only: set company logo.
   public shared ({ caller }) func setLogo(_logo : Storage.ExternalBlob) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set the company logo");
@@ -421,7 +413,6 @@ actor {
     logo := ?_logo;
   };
 
-  // Admin-only: set office location.
   public shared ({ caller }) func setOfficeLocation(_location : OfficeLocation) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set the office location");
@@ -431,7 +422,6 @@ actor {
 
   // ── Contact Info ──────────────────────────────────────────────────────────
 
-  // Admin-only: update contact info.
   public shared ({ caller }) func updateContactInfo(email : Text, phone : Text, physicalAddress : Text, mapsLink : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can update contact info");
@@ -439,24 +429,20 @@ actor {
     contactInfo := { email; phone; physicalAddress; mapsLink };
   };
 
-  // Public: anyone may read contact info.
   public query func getContactInfo() : async ContactInfo {
     contactInfo;
   };
 
-  // Public: anyone may read the logo.
   public query func getLogo() : async ?Storage.ExternalBlob {
     logo;
   };
 
-  // Public: anyone may read the office location.
   public query func getOfficeLocation() : async ?OfficeLocation {
     officeLocation;
   };
 
   // ── Delivery Config ───────────────────────────────────────────────────────
 
-  // Admin-only: configure delivery pricing.
   public shared ({ caller }) func setDeliveryConfig(perKmRate : Int, minimumFee : Int) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set delivery configuration");
@@ -464,12 +450,10 @@ actor {
     deliveryConfig := { perKmRate; minimumFee };
   };
 
-  // Public: anyone may read delivery config.
   public query func getDeliveryConfig() : async DeliveryConfig {
     deliveryConfig;
   };
 
-  // Public: anyone may calculate a delivery fee.
   public query func calculateDeliveryFee(distance : Int) : async Int {
     let calculatedFee = distance * deliveryConfig.perKmRate;
     if (calculatedFee < deliveryConfig.minimumFee) {
@@ -481,18 +465,49 @@ actor {
 
   // ── Admin Registration ────────────────────────────────────────────────────
 
+  /// Register the first admin user if no admins exist yet.
+  /// Only used for the very first admin setup; cannot be called once an admin exists.
+  /// The caller must be a non-anonymous principal (authenticated via Internet Identity).
+  public shared ({ caller }) func registerInitialAdmin(email : Text, hashedPassword : Text) : async () {
+    // Block if any admin already exists
+    if (adminPrincipals.size() > 0) {
+      Runtime.trap("Register first admin can be called only when no admins exist yet");
+    };
+
+    if (caller.isAnonymous()) {
+      Runtime.trap("Unauthorized: Anonymous principals cannot register as admins");
+    };
+
+    let newAdminInvitation : AdminInvitationEntry = {
+      email;
+      hashedPassword;
+      registrationMethod = "biometric";
+      invitedBy = ?caller;
+      invitationTimestamp = Time.now();
+    };
+
+    adminUsers.add(email, newAdminInvitation);
+
+    let newAdminUser : AdminUser = {
+      principal = ?caller;
+      registrationMethod = "biometric";
+      registrationTimestamp = Time.now();
+      active = true;
+    };
+    adminPrincipals.add(caller, newAdminUser);
+
+    AccessControl.assignRole(accessControlState, caller, caller, #admin);
+    emailToPrincipal.add(email, caller);
+  };
+
   // Admin-only (once an admin exists): invite a new admin user.
   public shared ({ caller }) func inviteAdminUser(
     email : Text,
     hashedPassword : Text,
   ) : async () {
-    var adminCount = 0;
-    for (admin in adminPrincipals.values()) {
-      if (admin.active) { adminCount += 1 };
-    };
-
-    if (adminCount > 0 and not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can invite users");
+    // Once any admin exists, only admins may invite further admins.
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can invite admin users");
     };
     let newUser : AdminInvitationEntry = {
       email;
@@ -592,7 +607,7 @@ actor {
 
   // ── Quotations ────────────────────────────────────────────────────────────
 
-  // Authenticated users only: submit a quotation request (optionally with a file).
+  // Authenticated users only: submit a quotation request.
   public shared ({ caller }) func createQuotationRequest(
     serviceType : ServiceType,
     deadline : Int,
@@ -622,7 +637,6 @@ actor {
     id;
   };
 
-  // Admin-only: mark quotation as customer pending (transition for admins to pass completed quote to customer)
   public shared ({ caller }) func markQuotationCustomerPending(quotationId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can mark quotation as customer pending");
@@ -653,7 +667,6 @@ actor {
     };
   };
 
-  // Customer-only: approve the quotation
   public shared ({ caller }) func customerApproveQuotation(quotationId : Text) : async () {
     switch (quotations.get(quotationId)) {
       case (?request) {
@@ -694,7 +707,6 @@ actor {
     };
   };
 
-  // Admin-only: accept payment and transition to work in progress
   public shared ({ caller }) func adminAcceptPayment(quotationId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can mark payment received and start work");
@@ -725,7 +737,6 @@ actor {
     };
   };
 
-  // Admin-only: view all quotations.
   public query ({ caller }) func getAllQuotations() : async [QuotationRequest] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view all quotations");
@@ -733,7 +744,6 @@ actor {
     quotations.values().toArray();
   };
 
-  // Authenticated users only: view their own quotations.
   public query ({ caller }) func getMyQuotations() : async [QuotationRequest] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can view their quotations");
@@ -741,7 +751,6 @@ actor {
     quotations.values().toArray().filter(func(q) { q.customer == caller });
   };
 
-  // Admin-only: attach pricing / terms to a quotation.
   public shared ({ caller }) func addQuotationDetails(
     quotationId : Text,
     price : Int,
@@ -762,7 +771,6 @@ actor {
     quotationDetails.add(quotationId, details);
   };
 
-  // Admin-only: mark a quotation as approved.
   public shared ({ caller }) func approveQuotation(quotationId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can approve quotations");
@@ -784,7 +792,6 @@ actor {
     };
   };
 
-  // Authenticated users only: accept / reject / negotiate their own quotation.
   public shared ({ caller }) func handleQuotationResponse(
     quotationId : Text,
     status : QuotationStatus,
@@ -857,7 +864,6 @@ actor {
     };
   };
 
-  // Admin-only: add a negotiation message on behalf of admin.
   public shared ({ caller }) func respondToNegotiation(quotationId : Text, message : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can respond to negotiations");
@@ -895,7 +901,6 @@ actor {
     };
   };
 
-  // Admin or the quotation owner may read quotation details.
   public query ({ caller }) func getQuotationDetails(quotationId : Text) : async ?QuotationDetails {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       // Must be an authenticated user who owns this quotation.
@@ -916,7 +921,6 @@ actor {
     quotationDetails.get(quotationId);
   };
 
-  // Admin-only: quotation statistics.
   public query ({ caller }) func getQuotationStatistics() : async {
     draft : Nat;
     customerPending : Nat;
@@ -964,7 +968,6 @@ actor {
     };
   };
 
-  // Admin-only: find quotations pending for more than 1 hour (for reminder badges).
   public query ({ caller }) func getPendingQuotationsOlderThan1Hour() : async [Text] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view pending quotations");
@@ -988,7 +991,6 @@ actor {
     oldQuotationIds.toArray();
   };
 
-  // Admin-only: attach a reply file (design proof, price sheet, etc.) to a quotation response.
   public shared ({ caller }) func addReplyFile(quotationId : Text, file : Storage.ExternalBlob) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can add reply files");
@@ -1011,7 +1013,6 @@ actor {
     };
   };
 
-  // Admin or the quotation owner may download the reply file.
   public query ({ caller }) func getReplyFile(quotationId : Text) : async ?Storage.ExternalBlob {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       // Must be an authenticated user who owns this quotation.
@@ -1037,7 +1038,6 @@ actor {
 
   // ── Projects ──────────────────────────────────────────────────────────────
 
-  // Admin-only: add a portfolio project.
   public shared ({ caller }) func addProject(
     imageUrl : Text,
     title : Text,
@@ -1060,7 +1060,6 @@ actor {
     id;
   };
 
-  // Admin-only: edit a portfolio project.
   public shared ({ caller }) func editProject(
     projectId : Text,
     imageUrl : Text,
@@ -1089,7 +1088,6 @@ actor {
     };
   };
 
-  // Admin-only: delete a portfolio project.
   public shared ({ caller }) func deleteProject(projectId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can delete projects");
@@ -1099,7 +1097,6 @@ actor {
 
   // ── Reviews ───────────────────────────────────────────────────────────────
 
-  // Authenticated users only: submit a review.
   public shared ({ caller }) func addReview(
     customerName : Text,
     reviewText : Text,
@@ -1124,7 +1121,6 @@ actor {
     id;
   };
 
-  // Public: anyone may read reviews.
   public query func getReviewsByRating(rating : Int) : async [Review] {
     reviews.values().toArray().filter(func(r) { r.rating == rating });
   };
@@ -1133,7 +1129,6 @@ actor {
     reviews.values().toArray();
   };
 
-  // Public: anyone may browse the project portfolio.
   public query func getProjectsByCategory(category : ServiceType) : async [Project] {
     projects.values().toArray().filter(func(p) { p.category == category });
   };
@@ -1144,8 +1139,6 @@ actor {
 
   // ── Customer Self-Service Portal ──────────────────────────────────────────
 
-  // Public (guest): register a new customer account.
-  // No Internet Identity required — email/mobile + hashed password.
   public shared ({ caller }) func registerCustomer(
     email : Text,
     mobileNumber : Text,
@@ -1171,8 +1164,6 @@ actor {
     id;
   };
 
-  // Public (guest): authenticate a customer using email or mobile number + hashed password.
-  // Returns the customer id on success, traps on failure.
   public shared ({ caller }) func authenticateCustomer(
     identifier : Text,
     passwordHash : Text,
@@ -1188,15 +1179,10 @@ actor {
     Runtime.trap("Invalid credentials");
   };
 
-  // Admin-only: get all quotations for a specific customer id.
-  // Admins use this to look up a customer's history from the admin panel.
   public query ({ caller }) func getCustomerQuotations(customerId : Text) : async [QuotationRequest] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can look up quotations by customer id");
     };
-    // QuotationRequest.customer is a Principal (Internet Identity user).
-    // Customer portal accounts are separate (email/mobile based).
-    // We match by the email stored in the quotation against the customer record.
     switch (customers.get(customerId)) {
       case (?customer) {
         quotations.values().toArray().filter(
@@ -1211,7 +1197,6 @@ actor {
 
   // ── Service Images & Video Clips ──────────────────────────────────────────
 
-  // Admin-only: add a service sample image.
   public shared ({ caller }) func addServiceImage(
     serviceType : Text,
     imageUrl : Text,
@@ -1231,7 +1216,6 @@ actor {
     id;
   };
 
-  // Admin-only: delete a service sample image.
   public shared ({ caller }) func deleteServiceImage(imageId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can delete service images");
@@ -1239,7 +1223,6 @@ actor {
     serviceImages.remove(imageId);
   };
 
-  // Admin-only: add a video clip / embed for a service.
   public shared ({ caller }) func addVideoClip(
     serviceType : Text,
     videoUrl : Text,
@@ -1261,7 +1244,6 @@ actor {
     id;
   };
 
-  // Admin-only: delete a video clip.
   public shared ({ caller }) func deleteVideoClip(clipId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can delete video clips");
@@ -1269,19 +1251,16 @@ actor {
     videoClips.remove(clipId);
   };
 
-  // Public: anyone may browse service images.
   public query func getServiceImages() : async [ServiceImage] {
     serviceImages.values().toArray();
   };
 
-  // Public: anyone may browse video clips.
   public query func getVideoClips() : async [VideoClip] {
     videoClips.values().toArray();
   };
 
   // ── Admin Content Editor ──────────────────────────────────────────────────
 
-  // Admin-only: update all dynamic site content.
   public shared ({ caller }) func updateAdminContent(
     newContactInfo : ContactInfo,
     services : [Text],
@@ -1306,7 +1285,6 @@ actor {
     contactInfo := newContactInfo;
   };
 
-  // Public: anyone may read the admin-managed site content.
   public query func getAdminContent() : async ?AdminContent {
     adminContent;
   };

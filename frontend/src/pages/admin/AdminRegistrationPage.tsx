@@ -1,232 +1,304 @@
-import { useState } from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { Shield, Eye, EyeOff, Loader2, CheckCircle, AlertCircle, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useInviteAdminUser } from '@/hooks/useAdminInvitations';
-import { haptics } from '@/utils/haptics';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAdminExists } from '@/hooks/useAdminExists';
+import { useRegisterInitialAdmin } from '@/hooks/useAdminRegistration';
+import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { setAdminSession } from '@/utils/sessionStorage';
 
 export default function AdminRegistrationPage() {
   const navigate = useNavigate();
+  const { adminExists, isLoading: checkingAdmin, isFetched } = useAdminExists();
+  const { login, clear, loginStatus, identity, isInitializing } = useInternetIdentity();
+  const registerMutation = useRegisterInitialAdmin();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const inviteMutation = useInviteAdminUser();
+  const isAuthenticated = !!identity;
+  const isLoggingIn = loginStatus === 'logging-in';
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  // If admin already exists, redirect to login
+  useEffect(() => {
+    if (isFetched && adminExists) {
+      navigate({ to: '/admin/login' });
+    }
+  }, [isFetched, adminExists, navigate]);
 
-  const validatePassword = (password: string): boolean => {
-    // Minimum 8 characters, at least one uppercase, one lowercase, one number
-    const minLength = password.length >= 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /[0-9]/.test(password);
-    return minLength && hasUpperCase && hasLowerCase && hasNumber;
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: typeof errors = {};
-
-    if (!email) {
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    if (!email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!validateEmail(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'Please enter a valid email address';
     }
-
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (!validatePassword(password)) {
-      newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number';
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
     }
-
     if (!confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error: any) {
+      if (error?.message === 'User is already authenticated') {
+        await clear();
+        setTimeout(() => login(), 300);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      haptics.error();
+    if (!validate()) return;
+    if (!isAuthenticated) {
+      setErrors({ form: 'Please authenticate with Internet Identity first' });
       return;
     }
 
     try {
-      await inviteMutation.mutateAsync({ email, password });
-      haptics.success();
-      toast.success('Admin account created successfully! Redirecting to login...', {
-        icon: <CheckCircle2 className="h-5 w-5" />,
-      });
+      await registerMutation.mutateAsync({ email, password });
+      setSuccessMessage('Admin account created successfully! Redirecting to login...');
+      setAdminSession(email);
       setTimeout(() => {
-        navigate({ to: '/admin/login' });
-      }, 2000);
+        navigate({ to: '/admin/dashboard' });
+      }, 1500);
     } catch (error: any) {
-      haptics.error();
-      toast.error(error.message || 'Registration failed. Please try again.', {
-        icon: <AlertCircle className="h-5 w-5" />,
-      });
+      const msg = error?.message || 'Registration failed';
+      if (msg.includes('no admins exist')) {
+        setErrors({ form: 'An admin account already exists. Please log in instead.' });
+        setTimeout(() => navigate({ to: '/admin/login' }), 2000);
+      } else {
+        setErrors({ form: msg });
+      }
     }
   };
 
-  const isFormValid = email && password && confirmPassword && Object.keys(errors).length === 0;
+  if (isInitializing || (checkingAdmin && !isFetched)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create Admin Account</CardTitle>
-          <CardDescription className="text-center">
-            Register a new administrator account for your business
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+            <Shield className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Admin Setup</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Create the first administrator account
+          </p>
+        </div>
+
+        {successMessage && (
+          <Alert className="mb-6 border-green-500/30 bg-green-500/10">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-700 dark:text-green-400">
+              {successMessage}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {errors.form && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{errors.form}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-6">
+          {/* Step 1: Internet Identity Authentication */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isAuthenticated ? 'bg-green-500 text-white' : 'bg-primary text-primary-foreground'}`}>
+                {isAuthenticated ? '✓' : '1'}
+              </div>
+              <h2 className="font-semibold text-foreground">Authenticate Identity</h2>
+            </div>
+            <p className="text-sm text-muted-foreground pl-8">
+              You must authenticate with Internet Identity to register as admin.
+            </p>
+            {isAuthenticated ? (
+              <div className="pl-8 flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <CheckCircle className="h-4 w-4" />
+                <span>Authenticated as: <span className="font-mono text-xs">{identity?.getPrincipal().toString().slice(0, 20)}...</span></span>
+              </div>
+            ) : (
+              <div className="pl-8">
+                <Button
+                  type="button"
+                  onClick={handleLogin}
+                  disabled={isLoggingIn}
+                  className="w-full"
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Authenticating...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Authenticate with Internet Identity
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-border" />
+
+          {/* Step 2: Set Admin Credentials */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isAuthenticated ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                2
+              </div>
+              <h2 className={`font-semibold ${isAuthenticated ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Set Admin Credentials
+              </h2>
+            </div>
+
+            <form onSubmit={handleSubmit} className="pl-8 space-y-4">
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Admin Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@example.com"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (errors.email) {
-                      setErrors({ ...errors, email: undefined });
-                    }
+                    if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
                   }}
-                  className={`pl-10 h-11 ${errors.email ? 'border-destructive' : ''}`}
-                  disabled={inviteMutation.isPending}
-                  aria-invalid={!!errors.email}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
+                  placeholder="admin@example.com"
+                  disabled={!isAuthenticated || registerMutation.isPending}
+                  className={errors.email ? 'border-destructive' : ''}
                 />
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email}</p>
+                )}
               </div>
-              {errors.email && (
-                <p id="email-error" className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errors.password) {
-                      setErrors({ ...errors, password: undefined });
-                    }
-                  }}
-                  className={`pl-10 h-11 ${errors.password ? 'border-destructive' : ''}`}
-                  disabled={inviteMutation.isPending}
-                  aria-invalid={!!errors.password}
-                  aria-describedby={errors.password ? 'password-error' : undefined}
-                />
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors((prev) => ({ ...prev, password: '' }));
+                    }}
+                    placeholder="Min. 8 characters"
+                    disabled={!isAuthenticated || registerMutation.isPending}
+                    className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password}</p>
+                )}
               </div>
-              {errors.password && (
-                <p id="password-error" className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.password}
-                </p>
-              )}
-              {!errors.password && password && (
-                <p className="text-xs text-muted-foreground">
-                  Password must be at least 8 characters with uppercase, lowercase, and number
-                </p>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    if (errors.confirmPassword) {
-                      setErrors({ ...errors, confirmPassword: undefined });
-                    }
-                  }}
-                  className={`pl-10 h-11 ${errors.confirmPassword ? 'border-destructive' : ''}`}
-                  disabled={inviteMutation.isPending}
-                  aria-invalid={!!errors.confirmPassword}
-                  aria-describedby={errors.confirmPassword ? 'confirm-password-error' : undefined}
-                />
+              <div className="space-y-1">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  Confirm Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: '' }));
+                    }}
+                    placeholder="Repeat your password"
+                    disabled={!isAuthenticated || registerMutation.isPending}
+                    className={errors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+                )}
               </div>
-              {errors.confirmPassword && (
-                <p id="confirm-password-error" className="text-sm text-destructive flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
 
-            <Button
-              type="submit"
-              className="w-full h-11"
-              disabled={inviteMutation.isPending || !isFormValid}
-            >
-              {inviteMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                'Create Admin Account'
-              )}
-            </Button>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Already have an account?</span>
-            </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={!isAuthenticated || registerMutation.isPending}
+              >
+                {registerMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating Admin Account...
+                  </>
+                ) : (
+                  'Create Admin Account'
+                )}
+              </Button>
+            </form>
           </div>
+        </div>
 
-          <Link to="/admin/login">
-            <Button variant="outline" className="w-full h-11">
-              Back to Login
-            </Button>
-          </Link>
-
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            This will create a new administrator account for your business
-          </p>
-        </CardContent>
-      </Card>
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Already have an account?{' '}
+          <button
+            onClick={() => navigate({ to: '/admin/login' })}
+            className="text-primary hover:underline font-medium"
+          >
+            Sign in
+          </button>
+        </p>
+      </div>
     </div>
   );
 }

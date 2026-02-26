@@ -174,9 +174,6 @@ export interface backendInterface {
     getAllProjects(): Promise<Array<Project>>;
     getAllQuotations(): Promise<Array<QuotationRequest>>;
     getAllReviews(): Promise<Array<Review>>;
-    /**
-     * / Query the current app name (publicly available).
-     */
     getAppName(): Promise<string>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -216,12 +213,15 @@ export interface backendInterface {
     ownerReply(replyToMessageId: string, replyText: string): Promise<string>;
     registerBiometric(email: string): Promise<void>;
     registerCustomer(email: string, mobileNumber: string, passwordHash: string): Promise<string>;
+    /**
+     * / Register the first admin user if no admins exist yet.
+     * / Only used for the very first admin setup; cannot be called once an admin exists.
+     * / The caller must be a non-anonymous principal (authenticated via Internet Identity).
+     */
+    registerInitialAdmin(email: string, hashedPassword: string): Promise<void>;
     respondToNegotiation(quotationId: string, message: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     sendMessage(senderName: string, senderEmail: string, messageText: string): Promise<string>;
-    /**
-     * / Set the app name (admin only).
-     */
     setAppName(name: string): Promise<void>;
     setDeliveryConfig(perKmRate: bigint, minimumFee: bigint): Promise<void>;
     setLogo(_logo: ExternalBlob): Promise<void>;

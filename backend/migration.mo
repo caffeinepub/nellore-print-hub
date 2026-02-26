@@ -1,13 +1,12 @@
+import Principal "mo:core/Principal";
 import Map "mo:core/Map";
-import Nat "mo:core/Nat";
+import List "mo:core/List";
 import Text "mo:core/Text";
 import Float "mo:core/Float";
+import Nat "mo:core/Nat";
+import Time "mo:core/Time";
 import Int "mo:core/Int";
-import List "mo:core/List";
-import Array "mo:core/Array";
-import ExternalBlob "blob-storage/Storage";
-import Iter "mo:core/Iter";
-import Principal "mo:core/Principal";
+import Storage "blob-storage/Storage";
 
 module {
   type UserProfile = {
@@ -40,26 +39,7 @@ module {
     lon : Float;
   };
 
-  type OldQuotationRequest = {
-    id : Text;
-    serviceType : ServiceType;
-    deadline : Int;
-    projectDetails : Text;
-    mobileNumber : Text;
-    email : Text;
-    status : QuotationStatus;
-    timestamp : Int;
-    negotiationHistory : [NegotiationMessage];
-    customer : Principal;
-    quotationFileBlob : ?ExternalBlob.ExternalBlob;
-  };
-
-  type DesignStatus = {
-    #ready;
-    #needed;
-  };
-
-  type NewQuotationRequest = {
+  type QuotationRequest = {
     id : Text;
     serviceType : ServiceType;
     deadline : Int;
@@ -73,13 +53,18 @@ module {
     designStatus : DesignStatus;
   };
 
+  type DesignStatus = {
+    #ready;
+    #needed;
+  };
+
   type QuotationDetails = {
     price : Int;
     description : Text;
     terms : Text;
     approved : Bool;
     approvalTimestamp : ?Int;
-    replyFile : ?ExternalBlob.ExternalBlob;
+    replyFile : ?Storage.ExternalBlob;
   };
 
   type Project = {
@@ -199,14 +184,15 @@ module {
     aboutPageContent : Text;
   };
 
-  type OldActor = {
+  type Actor = {
+    appName : Text;
     nextId : Nat;
-    logo : ?ExternalBlob.ExternalBlob;
+    logo : ?Storage.ExternalBlob;
     officeLocation : ?OfficeLocation;
     deliveryConfig : DeliveryConfig;
     contactInfo : ContactInfo;
     userProfiles : Map.Map<Principal, UserProfile>;
-    quotations : Map.Map<Text, OldQuotationRequest>;
+    quotations : Map.Map<Text, QuotationRequest>;
     quotationDetails : Map.Map<Text, QuotationDetails>;
     projects : Map.Map<Text, Project>;
     reviews : Map.Map<Text, Review>;
@@ -220,38 +206,7 @@ module {
     adminContent : ?AdminContent;
   };
 
-  type NewActor = {
-    nextId : Nat;
-    logo : ?ExternalBlob.ExternalBlob;
-    officeLocation : ?OfficeLocation;
-    deliveryConfig : DeliveryConfig;
-    contactInfo : ContactInfo;
-    userProfiles : Map.Map<Principal, UserProfile>;
-    quotations : Map.Map<Text, NewQuotationRequest>;
-    quotationDetails : Map.Map<Text, QuotationDetails>;
-    projects : Map.Map<Text, Project>;
-    reviews : Map.Map<Text, Review>;
-    chatMessages : Map.Map<Text, ChatMessage>;
-    adminUsers : Map.Map<Text, AdminInvitationEntry>;
-    adminPrincipals : Map.Map<Principal, AdminUser>;
-    emailToPrincipal : Map.Map<Text, Principal>;
-    customers : Map.Map<Text, Customer>;
-    serviceImages : Map.Map<Text, ServiceImage>;
-    videoClips : Map.Map<Text, VideoClip>;
-    adminContent : ?AdminContent;
-  };
-
-  public func run(old : OldActor) : NewActor {
-    let newQuotations = old.quotations.map<Text, OldQuotationRequest, NewQuotationRequest>(
-      func(_id, oldRequest) {
-        {
-          oldRequest with
-          designStatus = #ready;
-        };
-      }
-    );
-    {
-      old with quotations = newQuotations;
-    };
+  public func run(state : Actor) : Actor {
+    state;
   };
 };

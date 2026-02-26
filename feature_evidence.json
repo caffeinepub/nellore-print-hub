@@ -2,10 +2,16 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-is-your-design-ready-option-selector-on-the-quotationrequestpage-so-that-clicking-yes-no-options-visually-updates-the-selected-state-and-correctly-stores-the-chosen-value-the-toggle-must-respond-to-user-interaction-and-reflect-the-active-selection-with-proper-styling",
-      "featureTitle": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
+      "featureId": "feature-implement-a-first-time-admin-registration-flow-when-no-admin-account-exists-in-the-backend-redirect-any-visit-to-admin-or-admin-login-to-admin-register-the-registration-page-must-collect-email-and-password-hash-the-password-with-sha-256-and-call-the-backend-s-seed-invite-admin-mutation-to-create-the-first-admin-account-after-successful-registration-redirect-to-admin-login",
+      "featureTitle": "Implement a first-time admin registration flow: when no admin account exists in the backend, redirect any visit to /admin or /admin/login to /admin/register. The registration page must collect email and password, hash the password with SHA-256, and call the backend's seed/invite admin mutation to create the first admin account. After successful registration, redirect to /admin/login.",
       "files": [
-        "frontend/src/pages/QuotationRequestPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/hooks/useAdminAuth.ts",
+        "frontend/src/hooks/useAdminExists.ts",
+        "frontend/src/hooks/useAdminRegistration.ts",
+        "frontend/src/pages/admin/AdminLoginPage.tsx",
+        "frontend/src/pages/admin/AdminRegistrationPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,11 +28,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-the-admin-authentication-and-routing-logic-so-that-on-the-live-production-app-a-valid-admin-login-via-email-password-correctly-redirects-to-the-admin-dashboard-instead-of-showing-go-to-admin-setup-or-return-to-home-investigate-the-adminguard-and-adminloginpage-components-ensure-session-storage-keys-and-values-are-written-and-read-consistently-and-that-the-admin-exists-check-and-credential-verification-work-correctly-in-production-not-just-in-draft-preview-the-fix-must-make-email-password-admin-login-work-reliably-on-the-deployed-app",
-      "featureTitle": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
+      "featureId": "feature-implement-the-admin-login-page-at-admin-login-that-supports-email-password-authentication-on-successful-credential-verification-using-sha-256-password-hashing-and-the-backend-verifyauthentication-method-persist-the-admin-session-to-sessionstorage-and-redirect-to-admin-dashboard-display-a-clear-error-message-on-failed-login",
+      "featureTitle": "Implement the admin login page at /admin/login that supports email/password authentication. On successful credential verification (using SHA-256 password hashing and the backend verifyAuthentication method), persist the admin session to sessionStorage and redirect to /admin/dashboard. Display a clear error message on failed login.",
       "files": [
-        "frontend/src/components/AdminGuard.tsx",
-        "frontend/src/pages/admin/AdminLoginPage.tsx"
+        "frontend/src/pages/admin/AdminLoginPage.tsx",
+        "frontend/src/utils/sessionStorage.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,10 +49,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-clearly-visible-standalone-admin-login-link-or-button-on-the-main-site-e-g-in-the-footer-or-as-a-small-discreet-link-on-the-homepage-so-admins-can-always-navigate-directly-to-admin-login-without-needing-to-know-the-url-this-provides-a-reliable-alternative-entry-point-to-the-admin-area",
-      "featureTitle": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+      "featureId": "feature-protect-all-admin-routes-with-adminguard-so-that-only-authenticated-admins-verified-via-sessionstorage-session-can-access-the-admin-dashboard-and-its-sub-pages-unauthenticated-users-attempting-to-access-any-admin-route-must-be-redirected-to-admin-login-if-no-admin-exists-yet-redirect-to-admin-register-instead",
+      "featureTitle": "Protect all /admin/* routes with AdminGuard so that only authenticated admins (verified via sessionStorage session) can access the admin dashboard and its sub-pages. Unauthenticated users attempting to access any admin route must be redirected to /admin/login. If no admin exists yet, redirect to /admin/register instead.",
       "files": [
-        "frontend/src/components/Layout.tsx"
+        "frontend/src/components/AdminGuard.tsx",
+        "frontend/src/pages/admin/AdminDashboardPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -59,6 +66,27 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-admin-dashboard-page-at-admin-dashboard-is-fully-accessible-and-functional-after-login-displaying-all-management-section-links-quotations-projects-content-media-users-etc-and-a-working-logout-button-that-clears-the-session-and-redirects-to-admin-login",
+      "featureTitle": "Ensure the admin dashboard page at /admin/dashboard is fully accessible and functional after login, displaying all management section links (quotations, projects, content, media, users, etc.) and a working logout button that clears the session and redirects to /admin/login.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/admin/AdminDashboardPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

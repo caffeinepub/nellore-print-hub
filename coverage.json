@@ -1,61 +1,99 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T06:26:49.846Z",
+  "generatedAt": "2026-02-26T09:49:43.083Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 4,
+    "implemented": 4,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
+        "summary": "Implement a first-time admin registration flow: when no admin account exists in the backend, redirect any visit to /admin or /admin/login to /admin/register. The registration page must collect email and password, hash the password with SHA-256, and call the backend's seed/invite admin mutation to create the first admin account. After successful registration, redirect to /admin/login.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/QuotationRequestPage.tsx"
+          "frontend/src/pages/admin/AdminRegistrationPage.tsx",
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/hooks/useAdminRegistration.ts",
+          "frontend/src/hooks/useAdminAuth.ts",
+          "frontend/src/hooks/useAdminExists.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/QuotationRequestPage.tsx"
+          "frontend/src/pages/admin/AdminRegistrationPage.tsx",
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/hooks/useAdminRegistration.ts",
+          "frontend/src/hooks/useAdminAuth.ts",
+          "frontend/src/hooks/useAdminExists.ts"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
+        "summary": "Implement the admin login page at /admin/login that supports email/password authentication. On successful credential verification (using SHA-256 password hashing and the backend verifyAuthentication method), persist the admin session to sessionStorage and redirect to /admin/dashboard. Display a clear error message on failed login.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/admin/AdminLoginPage.tsx",
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/utils/sessionStorage.ts"
         ],
         "matchedFiles": [
           "frontend/src/pages/admin/AdminLoginPage.tsx",
-          "frontend/src/components/AdminGuard.tsx"
+          "frontend/src/utils/sessionStorage.ts"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+        "summary": "Protect all /admin/* routes with AdminGuard so that only authenticated admins (verified via sessionStorage session) can access the admin dashboard and its sub-pages. Unauthenticated users attempting to access any admin route must be redirected to /admin/login. If no admin exists yet, redirect to /admin/register instead.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/Layout.tsx"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/Layout.tsx"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/admin/AdminDashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Ensure the admin dashboard page at /admin/dashboard is fully accessible and functional after login, displaying all management section links (quotations, projects, content, media, users, etc.) and a working logout button that clears the session and redirects to /admin/login.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "frontend/src/App.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
     "frontend/src/components/AdminGuard.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/pages/QuotationRequestPage.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useAdminAuth.ts",
+    "frontend/src/hooks/useAdminExists.ts",
+    "frontend/src/hooks/useAdminRegistration.ts",
+    "frontend/src/pages/admin/AdminDashboardPage.tsx",
     "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/src/pages/admin/AdminRegistrationPage.tsx",
+    "frontend/src/utils/sessionStorage.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

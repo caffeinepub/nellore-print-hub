@@ -1,77 +1,96 @@
 {
   "kind": "build_request",
-  "title": "Fix design-ready toggle and admin login/authentication on live app",
+  "title": "Admin First-Time Registration, Login, and Dashboard Management Flow",
   "projectName": "Nellore Print Hub",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
-      "target": "frontend",
+      "text": "Implement a first-time admin registration flow: when no admin account exists in the backend, redirect any visit to /admin or /admin/login to /admin/register. The registration page must collect email and password, hash the password with SHA-256, and call the backend's seed/invite admin mutation to create the first admin account. After successful registration, redirect to /admin/login.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "Is your design ready? Option was not changing fix that"
+          "Need to add admin login rigister first time"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking 'Yes' highlights the Yes option and deselects No",
-        "Clicking 'No' highlights the No option and deselects Yes",
-        "The selected value is correctly passed when the quotation form is submitted",
-        "The toggle state is visually distinct (e.g., filled/colored vs. outline) for selected vs. unselected"
+        "When no admin exists, navigating to /admin or /admin/login redirects to /admin/register",
+        "The registration form validates that email and password fields are non-empty and that password meets minimum length",
+        "On successful submission, the first admin account is created in the backend and the user is redirected to /admin/login",
+        "After an admin account exists, /admin/register redirects to /admin/login and is no longer accessible directly"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
+      "text": "Implement the admin login page at /admin/login that supports email/password authentication. On successful credential verification (using SHA-256 password hashing and the backend verifyAuthentication method), persist the admin session to sessionStorage and redirect to /admin/dashboard. Display a clear error message on failed login.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "when i log in on live app web pages not opening Admin Dashboard its showing go to admin setup or retun to home",
-          "i cant login with my gmail and password"
+          "after login i can change from admin dashboard"
         ]
       },
       "acceptanceCriteria": [
-        "Entering valid admin email and password on the live app redirects to /admin/dashboard",
-        "AdminGuard correctly reads the session and grants access to admin routes after login",
-        "The 'Go to Admin Setup' page is NOT shown to a user who has successfully authenticated with valid admin credentials",
-        "If no admin exists yet, the setup page is shown; if admin exists and credentials are valid, the dashboard is shown",
-        "Admin login via email/password works on the deployed/live app URL, not just in draft mode"
+        "The login form accepts email and password inputs",
+        "On successful login, admin session is saved in sessionStorage and the user is redirected to /admin/dashboard",
+        "On failed login, an inline error message is displayed without clearing the email field",
+        "The login page is accessible when no admin session exists and redirects to /admin/dashboard if already logged in"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+      "text": "Protect all /admin/* routes with AdminGuard so that only authenticated admins (verified via sessionStorage session) can access the admin dashboard and its sub-pages. Unauthenticated users attempting to access any admin route must be redirected to /admin/login. If no admin exists yet, redirect to /admin/register instead.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-1"
         ],
         "quotes": [
-          "if not clear make another way to login admin page"
+          "after login i can change from admin dashboard"
         ]
       },
       "acceptanceCriteria": [
-        "A link or button labeled 'Admin Login' is visible on the live site (e.g., in the footer)",
-        "Clicking it navigates to the /admin/login route",
-        "The link is unobtrusive and does not disrupt the customer-facing design"
+        "Visiting any /admin/* page without a valid session redirects to /admin/login",
+        "Visiting any /admin/* page when no admin account exists redirects to /admin/register",
+        "AdminGuard correctly allows access when a valid admin session is present in sessionStorage",
+        "Logging out clears the sessionStorage session and redirects to /admin/login"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Ensure the admin dashboard page at /admin/dashboard is fully accessible and functional after login, displaying all management section links (quotations, projects, content, media, users, etc.) and a working logout button that clears the session and redirects to /admin/login.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "after login i can change from admin dashboard"
+        ]
+      },
+      "acceptanceCriteria": [
+        "After successful login, the admin is taken to /admin/dashboard",
+        "All management navigation links on the dashboard are clickable and route to their respective admin pages",
+        "The logout button clears sessionStorage and redirects to /admin/login",
+        "The dashboard shows quotation statistics and management options"
       ]
     }
   ],
   "constraints": [
-    "Do not change the backend admin credential storage or hashing logic unless it is confirmed to be the root cause of the login failure",
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "All Motoko logic must remain in backend/main.mo as a single actor",
+    "Password must always be hashed with SHA-256 before being sent to or compared in the backend"
   ],
   "nonGoals": [
-    "Adding new admin features or dashboard sections",
-    "Changing the Internet Identity login flow",
-    "Modifying customer-facing authentication",
-    "Redesigning the admin dashboard layout"
+    "Social or OAuth-based admin login",
+    "Multi-role admin permission levels",
+    "Customer-facing registration or login changes",
+    "Real-time dashboard updates or WebSocket integration"
   ],
   "imageRequirements": {
     "required": [],

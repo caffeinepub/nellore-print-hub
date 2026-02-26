@@ -1,13 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the "Is your design ready?" toggle on the quotation page, fix admin login/authentication so it works correctly on the live app, and add a visible Admin Login link on the main site.
+**Goal:** Add a complete admin authentication flow (first-time registration, login, route protection, and dashboard access) for the Nellore Print Hub application.
 
 **Planned changes:**
-- Fix the Yes/No option selector on the QuotationRequestPage so clicking either option visually updates the selected state and stores the correct value for form submission
-- Fix AdminGuard and AdminLoginPage so that valid email/password login on the live/deployed app correctly redirects to /admin/dashboard instead of showing the setup page
-- Ensure session storage keys and values are written and read consistently between AdminLoginPage and AdminGuard
-- Ensure the admin-exists check and credential verification work correctly in production
-- Add a discreet "Admin Login" link in the site footer (or HomePage) that navigates to /admin/login
+- Add `/admin/register` page that collects email and password, hashes the password with SHA-256, and calls the backend seed/invite admin mutation to create the first admin account; redirects to `/admin/login` on success
+- When no admin account exists, redirect any visit to `/admin` or `/admin/login` to `/admin/register`; once an admin exists, `/admin/register` redirects to `/admin/login`
+- Add `/admin/login` page that authenticates with email/password (SHA-256 hashed), persists session to `sessionStorage`, redirects to `/admin/dashboard` on success, and shows an inline error on failure
+- Implement `AdminGuard` to protect all `/admin/*` routes: unauthenticated users are redirected to `/admin/login`, and users with no admin account are redirected to `/admin/register`
+- Ensure `/admin/dashboard` is accessible after login, displays all management section links and statistics, and includes a logout button that clears `sessionStorage` and redirects to `/admin/login`
+- Add backend support (in `backend/main.mo`) for checking if an admin exists, seeding/inviting the first admin, and verifying admin credentials
 
-**User-visible outcome:** Admins can log in with their email and password on the live app and be taken directly to the Admin Dashboard. The quotation form's design-ready toggle correctly highlights the selected option. A visible Admin Login link is available on the main site for easy access to the admin area.
+**User-visible outcome:** Admins can register the first account, log in securely, and access the full admin dashboard. All admin pages are protected from unauthenticated access.

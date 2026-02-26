@@ -1,40 +1,67 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Print hub web application (nellore-print-hub) with admin dashboard functionality. Fixing UI option toggle and admin login/authentication issues.",
-  "architectural_notes": [],
-  "known_issues": [
-    "'Is your design ready?' option toggle not responding to user interaction",
-    "Admin login on live app redirects to 'go to admin setup or return to home' instead of Admin Dashboard — authentication or routing issue on production"
+  "summary": "Project with admin authentication and dashboard management functionality.",
+  "architectural_notes": [
+    "Admin authentication includes first-time registration and subsequent login flows",
+    "Admin dashboard is only accessible after successful login"
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-is-your-design-ready-option-selector-on-the-quotationrequestpage-so-that-clicking-yes-no-options-visually-updates-the-selected-state-and-correctly-stores-the-chosen-value-the-toggle-must-respond-to-user-interaction-and-reflect-the-active-selection-with-proper-styling",
-      "title": "Fix the 'Is your design ready?' option selector on the QuotationRequestPage so that clicking Yes/No options visually updates the selected state and correctly stores the chosen value. The toggle must respond to user interaction and reflect the active selection with proper styling.",
+      "id": "feature-implement-a-first-time-admin-registration-flow-when-no-admin-account-exists-in-the-backend-redirect-any-visit-to-admin-or-admin-login-to-admin-register-the-registration-page-must-collect-email-and-password-hash-the-password-with-sha-256-and-call-the-backend-s-seed-invite-admin-mutation-to-create-the-first-admin-account-after-successful-registration-redirect-to-admin-login",
+      "title": "Implement a first-time admin registration flow: when no admin account exists in the backend, redirect any visit to /admin or /admin/login to /admin/register. The registration page must collect email and password, hash the password with SHA-256, and call the backend's seed/invite admin mutation to create the first admin account. After successful registration, redirect to /admin/login.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-the-admin-authentication-and-routing-logic-so-that-on-the-live-production-app-a-valid-admin-login-via-email-password-correctly-redirects-to-the-admin-dashboard-instead-of-showing-go-to-admin-setup-or-return-to-home-investigate-the-adminguard-and-adminloginpage-components-ensure-session-storage-keys-and-values-are-written-and-read-consistently-and-that-the-admin-exists-check-and-credential-verification-work-correctly-in-production-not-just-in-draft-preview-the-fix-must-make-email-password-admin-login-work-reliably-on-the-deployed-app",
-      "title": "Fix the admin authentication and routing logic so that on the live production app, a valid admin login (via email/password) correctly redirects to the Admin Dashboard instead of showing 'Go to Admin Setup' or 'Return to Home'. Investigate the AdminGuard and AdminLoginPage components: ensure session storage keys and values are written and read consistently, and that the admin-exists check and credential verification work correctly in production (not just in draft/preview). The fix must make email/password admin login work reliably on the deployed app.",
+      "id": "feature-implement-the-admin-login-page-at-admin-login-that-supports-email-password-authentication-on-successful-credential-verification-using-sha-256-password-hashing-and-the-backend-verifyauthentication-method-persist-the-admin-session-to-sessionstorage-and-redirect-to-admin-dashboard-display-a-clear-error-message-on-failed-login",
+      "title": "Implement the admin login page at /admin/login that supports email/password authentication. On successful credential verification (using SHA-256 password hashing and the backend verifyAuthentication method), persist the admin session to sessionStorage and redirect to /admin/dashboard. Display a clear error message on failed login.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-clearly-visible-standalone-admin-login-link-or-button-on-the-main-site-e-g-in-the-footer-or-as-a-small-discreet-link-on-the-homepage-so-admins-can-always-navigate-directly-to-admin-login-without-needing-to-know-the-url-this-provides-a-reliable-alternative-entry-point-to-the-admin-area",
-      "title": "Add a clearly visible, standalone 'Admin Login' link or button on the main site (e.g., in the footer or as a small discreet link on the HomePage) so admins can always navigate directly to /admin/login without needing to know the URL. This provides a reliable alternative entry point to the admin area.",
+      "id": "feature-protect-all-admin-routes-with-adminguard-so-that-only-authenticated-admins-verified-via-sessionstorage-session-can-access-the-admin-dashboard-and-its-sub-pages-unauthenticated-users-attempting-to-access-any-admin-route-must-be-redirected-to-admin-login-if-no-admin-exists-yet-redirect-to-admin-register-instead",
+      "title": "Protect all /admin/* routes with AdminGuard so that only authenticated admins (verified via sessionStorage session) can access the admin dashboard and its sub-pages. Unauthenticated users attempting to access any admin route must be redirected to /admin/login. If no admin exists yet, redirect to /admin/register instead.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-ensure-the-admin-dashboard-page-at-admin-dashboard-is-fully-accessible-and-functional-after-login-displaying-all-management-section-links-quotations-projects-content-media-users-etc-and-a-working-logout-button-that-clears-the-session-and-redirects-to-admin-login",
+      "title": "Ensure the admin dashboard page at /admin/dashboard is fully accessible and functional after login, displaying all management section links (quotations, projects, content, media, users, etc.) and a working logout button that clears the session and redirects to /admin/login.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Admin first-time registration flow",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Admin login authentication",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Admin dashboard with ability to make changes after login",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
   "gameProjectType": "none",
   "projectName": "Nellore Print Hub",
   "clarification_mode": "instant",

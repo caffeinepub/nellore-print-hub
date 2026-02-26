@@ -199,9 +199,6 @@ export interface _SERVICE {
   'getAllProjects' : ActorMethod<[], Array<Project>>,
   'getAllQuotations' : ActorMethod<[], Array<QuotationRequest>>,
   'getAllReviews' : ActorMethod<[], Array<Review>>,
-  /**
-   * / Query the current app name (publicly available).
-   */
   'getAppName' : ActorMethod<[], string>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -247,12 +244,15 @@ export interface _SERVICE {
   'ownerReply' : ActorMethod<[string, string], string>,
   'registerBiometric' : ActorMethod<[string], undefined>,
   'registerCustomer' : ActorMethod<[string, string, string], string>,
+  /**
+   * / Register the first admin user if no admins exist yet.
+   * / Only used for the very first admin setup; cannot be called once an admin exists.
+   * / The caller must be a non-anonymous principal (authenticated via Internet Identity).
+   */
+  'registerInitialAdmin' : ActorMethod<[string, string], undefined>,
   'respondToNegotiation' : ActorMethod<[string, string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'sendMessage' : ActorMethod<[string, string, string], string>,
-  /**
-   * / Set the app name (admin only).
-   */
   'setAppName' : ActorMethod<[string], undefined>,
   'setDeliveryConfig' : ActorMethod<[bigint, bigint], undefined>,
   'setLogo' : ActorMethod<[ExternalBlob], undefined>,

@@ -1,162 +1,196 @@
 import React from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, Link } from '@tanstack/react-router';
 import {
   FileText,
   Image,
-  Users,
-  Phone,
-  LogOut,
-  BarChart3,
-  Clock,
-  CheckCircle,
-  XCircle,
   MessageSquare,
+  Users,
+  Settings,
+  BarChart3,
+  Package,
+  Star,
+  MapPin,
+  Clock,
   Video,
-  Building2,
+  LogOut,
+  Shield,
   Type,
-  Printer,
-  Sparkles,
 } from 'lucide-react';
-import AdminGuard from '../../components/AdminGuard';
-import { useQuotationStatistics } from '../../hooks/useQuotationStatistics';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { useQueryClient } from '@tanstack/react-query';
-import { useGetAppName } from '../../hooks/useAppName';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useQuotationStatistics } from '@/hooks/useQuotationStatistics';
+import { clearAdminSession } from '@/utils/sessionStorage';
 
-function AdminDashboardContent() {
+const managementSections = [
+  {
+    title: 'Quotations',
+    description: 'Manage customer quotation requests',
+    icon: FileText,
+    href: '/admin/quotations',
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10',
+  },
+  {
+    title: 'Projects',
+    description: 'Manage portfolio projects',
+    icon: Package,
+    href: '/admin/projects',
+    color: 'text-purple-500',
+    bg: 'bg-purple-500/10',
+  },
+  {
+    title: 'Reviews',
+    description: 'View customer reviews',
+    icon: Star,
+    href: '/admin/reviews',
+    color: 'text-yellow-500',
+    bg: 'bg-yellow-500/10',
+  },
+  {
+    title: 'Chat',
+    description: 'Respond to customer messages',
+    icon: MessageSquare,
+    href: '/admin/chat',
+    color: 'text-green-500',
+    bg: 'bg-green-500/10',
+  },
+  {
+    title: 'Users',
+    description: 'Manage admin users',
+    icon: Users,
+    href: '/admin/users',
+    color: 'text-orange-500',
+    bg: 'bg-orange-500/10',
+  },
+  {
+    title: 'Logo',
+    description: 'Update company logo',
+    icon: Image,
+    href: '/admin/logo',
+    color: 'text-pink-500',
+    bg: 'bg-pink-500/10',
+  },
+  {
+    title: 'Contact Info',
+    description: 'Update contact details',
+    icon: MapPin,
+    href: '/admin/contact',
+    color: 'text-red-500',
+    bg: 'bg-red-500/10',
+  },
+  {
+    title: 'Business Hours',
+    description: 'Set operating hours',
+    icon: Clock,
+    href: '/admin/business-hours',
+    color: 'text-teal-500',
+    bg: 'bg-teal-500/10',
+  },
+  {
+    title: 'Service Media',
+    description: 'Manage service images & videos',
+    icon: Video,
+    href: '/admin/service-media',
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-500/10',
+  },
+  {
+    title: 'App Name',
+    description: 'Update application name',
+    icon: Type,
+    href: '/admin/app-name',
+    color: 'text-cyan-500',
+    bg: 'bg-cyan-500/10',
+  },
+];
+
+export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const { data: stats, isLoading: statsLoading } = useQuotationStatistics();
-  const { clear } = useInternetIdentity();
-  const queryClient = useQueryClient();
-  const { data: appName } = useGetAppName();
 
-  const displayName = appName || 'Nellore Print Hub';
-
-  const handleLogout = async () => {
-    await clear();
-    queryClient.clear();
-    navigate({ to: '/' });
+  const handleLogout = () => {
+    clearAdminSession();
+    navigate({ to: '/admin/login' });
   };
 
   const statCards = [
-    { label: 'Draft', value: stats?.draft ?? 0, icon: FileText, color: 'text-slate-500', bg: 'bg-slate-50 dark:bg-slate-900/30' },
-    { label: 'Pending Review', value: stats?.customerPending ?? 0, icon: Clock, color: 'text-[oklch(0.55_0.16_68)]', bg: 'bg-[oklch(0.94_0.06_75)] dark:bg-[oklch(0.22_0.05_75)]' },
-    { label: 'Payment Pending', value: stats?.paymentPending ?? 0, icon: BarChart3, color: 'text-[oklch(0.42_0.12_195)]', bg: 'bg-[oklch(0.92_0.05_195)] dark:bg-[oklch(0.20_0.05_195)]' },
-    { label: 'In Progress', value: stats?.workInProgress ?? 0, icon: Printer, color: 'text-[oklch(0.45_0.14_270)]', bg: 'bg-[oklch(0.92_0.04_270)] dark:bg-[oklch(0.20_0.04_270)]' },
-    { label: 'Completed', value: stats?.completed ?? 0, icon: CheckCircle, color: 'text-[oklch(0.45_0.14_145)]', bg: 'bg-[oklch(0.92_0.06_145)] dark:bg-[oklch(0.20_0.06_145)]' },
-    { label: 'Negotiating', value: stats?.negotiating ?? 0, icon: MessageSquare, color: 'text-[oklch(0.50_0.14_30)]', bg: 'bg-[oklch(0.94_0.05_30)] dark:bg-[oklch(0.22_0.05_30)]' },
-    { label: 'Accepted', value: stats?.accepted ?? 0, icon: CheckCircle, color: 'text-[oklch(0.42_0.14_160)]', bg: 'bg-[oklch(0.92_0.06_160)] dark:bg-[oklch(0.20_0.06_160)]' },
-    { label: 'Rejected', value: stats?.rejected ?? 0, icon: XCircle, color: 'text-[oklch(0.50_0.20_25)]', bg: 'bg-[oklch(0.94_0.05_25)] dark:bg-[oklch(0.22_0.05_25)]' },
-  ];
-
-  const managementLinks = [
-    { path: '/admin/quotations', label: 'Quotations', sublabel: 'కోటేషన్లు', icon: FileText, desc: 'Manage customer quotation requests' },
-    { path: '/admin/projects', label: 'Portfolio', sublabel: 'పోర్ట్‌ఫోలియో', icon: Image, desc: 'Add and manage portfolio projects' },
-    { path: '/admin/logo', label: 'Logo', sublabel: 'లోగో', icon: Printer, desc: 'Upload and update company logo' },
-    { path: '/admin/app-name', label: 'App Name', sublabel: 'యాప్ పేరు', icon: Type, desc: 'Change the application display name' },
-    { path: '/admin/contact', label: 'Contact Info', sublabel: 'సంప్రదింపు', icon: Phone, desc: 'Update contact information' },
-    { path: '/admin/users', label: 'Admin Users', sublabel: 'అడ్మిన్ వినియోగదారులు', icon: Users, desc: 'Manage admin accounts' },
-    { path: '/admin/service-media', label: 'Service Media', sublabel: 'సేవా మీడియా', icon: Video, desc: 'Manage service images and videos' },
-    { path: '/admin/business-hours', label: 'Business Hours', sublabel: 'వ్యాపార సమయాలు', icon: Clock, desc: 'Set operating hours' },
-    { path: '/admin/chats', label: 'Customer Chats', sublabel: 'చాట్‌లు', icon: MessageSquare, desc: 'View and reply to customer messages' },
+    { label: 'Draft', value: stats?.draft ?? 0, color: 'text-muted-foreground' },
+    { label: 'Pending Review', value: stats?.customerPending ?? 0, color: 'text-blue-500' },
+    { label: 'Payment Pending', value: stats?.paymentPending ?? 0, color: 'text-yellow-500' },
+    { label: 'In Progress', value: stats?.workInProgress ?? 0, color: 'text-orange-500' },
+    { label: 'Completed', value: stats?.completed ?? 0, color: 'text-green-500' },
+    { label: 'Negotiating', value: stats?.negotiating ?? 0, color: 'text-purple-500' },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-[oklch(0.20_0.07_205)] text-white border-b border-[oklch(0.28_0.07_205)]">
-        <div className="max-w-7xl mx-auto px-4 py-5 flex items-center justify-between">
+      <header className="bg-primary text-primary-foreground shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded bg-[oklch(0.68_0.18_72)] flex items-center justify-center">
-              <Printer className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
+              <Shield className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="font-heading text-lg font-bold text-white leading-none">{displayName}</h1>
-              <p className="text-[10px] text-[oklch(0.78_0.18_78)] uppercase tracking-widest flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5" />
-                Admin Dashboard
-              </p>
+              <h1 className="text-lg font-bold leading-tight">Nellore Print Hub</h1>
+              <p className="text-xs text-primary-foreground/70">Admin Dashboard</p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors"
+            className="text-primary-foreground hover:bg-primary-foreground/20 gap-2"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="h-4 w-4" />
             <span className="hidden sm:inline">Logout</span>
-          </button>
+          </Button>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            Quotation Statistics
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {statCards.map((card) => {
-              const Icon = card.icon;
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Quotation Statistics */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Quotation Overview</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {statCards.map((stat) => (
+              <Card key={stat.label} className="text-center">
+                <CardContent className="pt-4 pb-3 px-3">
+                  <p className={`text-2xl font-bold ${stat.color}`}>
+                    {statsLoading ? '—' : String(stat.value)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Management Sections */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Management</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {managementSections.map((section) => {
+              const Icon = section.icon;
               return (
-                <div
-                  key={card.label}
-                  className={`${card.bg} border border-border rounded-xl p-4 shadow-card`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{card.label}</span>
-                    <Icon className={`w-4 h-4 ${card.color}`} />
-                  </div>
-                  {statsLoading ? (
-                    <div className="h-7 w-12 bg-muted rounded animate-pulse" />
-                  ) : (
-                    <div className={`text-2xl font-bold ${card.color}`}>{Number(card.value)}</div>
-                  )}
-                </div>
+                <Link key={section.title} to={section.href}>
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer group border-border hover:border-primary/30">
+                    <CardContent className="p-5 flex items-start gap-4">
+                      <div className={`w-10 h-10 rounded-xl ${section.bg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`h-5 w-5 ${section.color}`} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground text-sm">{section.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{section.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>
-        </div>
-
-        {/* Management Links */}
-        <div>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
-            Management
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {managementLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <button
-                  key={link.path}
-                  onClick={() => navigate({ to: link.path as any })}
-                  className="group flex items-start gap-4 p-4 bg-card border border-border rounded-xl shadow-card hover:border-[oklch(0.42_0.12_195)] hover:shadow-card-hover transition-all text-left"
-                >
-                  <div className="h-10 w-10 rounded-lg bg-[oklch(0.20_0.07_205)] flex items-center justify-center shrink-0 group-hover:bg-[oklch(0.68_0.18_72)] transition-colors">
-                    <Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-semibold text-foreground text-sm leading-tight">
-                      {link.label}
-                      <span className="text-muted-foreground font-normal ml-1.5 text-xs">/ {link.sublabel}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{link.desc}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
-  );
-}
-
-export default function AdminDashboardPage() {
-  return (
-    <AdminGuard>
-      <AdminDashboardContent />
-    </AdminGuard>
   );
 }

@@ -1,61 +1,118 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix design-ready toggle and admin login/authentication on live app",
+  "title": "Admin First-Time Registration, Login, and Dashboard Management Flow",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix the 'Is your design ready?' option selector on QuotationRequestPage so clicking Yes/No options visually updates the selected state and correctly stores the chosen value",
+      "summary": "Implement first-time admin registration flow with redirect logic and SHA-256 password hashing",
       "acceptanceCriteria": [
-        "Clicking 'Yes' highlights the Yes option and deselects No",
-        "Clicking 'No' highlights the No option and deselects Yes",
-        "The selected value is correctly passed when the quotation form is submitted",
-        "The toggle state is visually distinct (e.g., filled/colored vs. outline) for selected vs. unselected"
+        "When no admin exists, navigating to /admin or /admin/login redirects to /admin/register",
+        "The registration form validates that email and password fields are non-empty and that password meets minimum length",
+        "On successful submission, the first admin account is created in the backend and the user is redirected to /admin/login",
+        "After an admin account exists, /admin/register redirects to /admin/login and is no longer accessible directly"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "path": "frontend/src/pages/admin/AdminRegistrationPage.tsx",
           "operation": "modify",
-          "description": "Fix the design status toggle by ensuring the designStatus state is properly updated when a user clicks Yes or No. Update the button click handlers to set designStatus to 'ready' or 'needed' respectively. Ensure the visual styling (background color, border, text color) reflects the active selection by comparing each button's value against the current designStatus state. Add proper Tailwind classes for selected (filled background with primary color) vs. unselected (outline/border only) states."
+          "description": "Add redirect logic to check if admin exists on page load. If an admin already exists, redirect to /admin/login. Update the form to validate email format and password length (minimum 8 characters). Ensure password is hashed with SHA-256 before calling the registerInitialAdmin mutation (using the useAdminRegistration hook). On successful registration, redirect to /admin/login with a success message. Display inline validation errors for empty or invalid fields."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "operation": "modify",
+          "description": "Add redirect logic on page load to check if any admin exists using useAdminExists hook. If no admin exists, redirect to /admin/register. Ensure the email/password authentication method hashes the password with SHA-256 before calling verifyAuthentication. On successful login, store the session (email and a session token or flag) in sessionStorage and redirect to /admin/dashboard. Display clear inline error messages on failed login attempts without clearing the email field. Add a check to redirect to /admin/dashboard if a valid session already exists in sessionStorage."
+        },
+        {
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Update AdminGuard to first check sessionStorage for a valid email/password session. If a session exists, allow access. If no session exists, check if any admin exists using useAdminExists hook. If no admin exists, redirect to /admin/register. If an admin exists but the user is not authenticated, redirect to /admin/login. Ensure the guard supports both email/password and Internet Identity authentication methods by checking sessionStorage first, then falling back to Internet Identity verification."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Ensure the /admin/register route is registered and accessible when no admin exists. Verify that all /admin/* routes are wrapped with AdminGuard. Add route configuration so that /admin redirects to /admin/dashboard if authenticated, or to the appropriate login/registration page if not."
+        },
+        {
+          "path": "frontend/src/hooks/useAdminRegistration.ts",
+          "operation": "modify",
+          "description": "Verify that the registerInitialAdmin mutation (using the backend method registerInitialAdmin) accepts email and hashed password parameters. Ensure the hook hashes the password with SHA-256 before sending it to the backend. Add error handling for registration failures (e.g., admin already exists, invalid email format). The mutation should invalidate the adminExists query on success so that subsequent checks reflect the new admin account."
+        },
+        {
+          "path": "frontend/src/hooks/useAdminAuth.ts",
+          "operation": "modify",
+          "description": "Ensure the useAdminAuth hook provides a mutation that hashes the password with SHA-256 and calls the backend's verifyAuthentication method with email and hashed password. Return a boolean or session token on success. Add error handling for authentication failures."
+        },
+        {
+          "path": "frontend/src/hooks/useAdminExists.ts",
+          "operation": "modify",
+          "description": "Verify that the useAdminExists hook queries the backend's getAdminUserCount method and returns a boolean indicating whether any admin users exist. Ensure the query result is cached appropriately and can be invalidated by other mutations (e.g., after admin registration)."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Fix admin authentication and routing logic so valid admin login via email/password correctly redirects to Admin Dashboard instead of showing setup or home prompts",
+      "summary": "Implement admin login page with email/password authentication, session persistence, and error handling",
       "acceptanceCriteria": [
-        "Entering valid admin email and password on the live app redirects to /admin/dashboard",
-        "AdminGuard correctly reads the session and grants access to admin routes after login",
-        "The 'Go to Admin Setup' page is NOT shown to a user who has successfully authenticated with valid admin credentials",
-        "If no admin exists yet, the setup page is shown; if admin exists and credentials are valid, the dashboard is shown",
-        "Admin login via email/password works on the deployed/live app URL, not just in draft mode"
+        "The login form accepts email and password inputs",
+        "On successful login, admin session is saved in sessionStorage and the user is redirected to /admin/dashboard",
+        "On failed login, an inline error message is displayed without clearing the email field",
+        "The login page is accessible when no admin session exists and redirects to /admin/dashboard if already logged in"
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Review and fix the email/password authentication flow to ensure that after successful backend verification, both the admin email and a verified session flag are stored consistently in sessionStorage (e.g., 'adminEmail' and 'adminAuthenticated'). After setting sessionStorage, invalidate all React Query caches using queryClient.invalidateQueries() to ensure AdminGuard and useAdminExists hooks re-fetch. Add explicit navigation to '/admin/dashboard' using navigate() after successful authentication. Ensure the authentication mutation's onSuccess handler waits for cache invalidation to complete before navigating."
+          "description": "Enhance the email/password authentication method to use useAdminAuth hook for credential verification. Hash the password with SHA-256 before calling verifyAuthentication. On success, store the session data (email and timestamp) in sessionStorage under a key like 'adminSession'. Redirect to /admin/dashboard. On failure, display an inline error message (e.g., 'Invalid email or password') and keep the email field populated. Add a useEffect to check sessionStorage on mount and redirect to /admin/dashboard if a valid session exists. Ensure the form supports Enter key submission."
         },
         {
-          "path": "frontend/src/components/AdminGuard.tsx",
-          "operation": "modify",
-          "description": "Fix the AdminGuard logic to correctly detect authenticated admin sessions by checking both sessionStorage keys ('adminEmail' and 'adminAuthenticated') and Internet Identity principal. Ensure the guard does not redirect an authenticated email/password admin to the setup page. If sessionStorage contains 'adminAuthenticated' === 'true' and a valid 'adminEmail', treat the user as authenticated and skip the admin-exists check. Only redirect to setup if no admin exists AND the user is not already authenticated via email/password. Ensure the guard reads sessionStorage values synchronously before making routing decisions."
+          "path": "frontend/src/utils/sessionStorage.ts",
+          "operation": "create",
+          "description": "Create a utility module for managing admin session storage. Export functions: setAdminSession(email: string) to store session data with timestamp, getAdminSession() to retrieve and validate the session (returns email or null), clearAdminSession() to remove the session, and isAdminSessionValid() to check if a session exists and is not expired. Use sessionStorage with key 'adminSession' and store JSON with email and timestamp fields."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add a clearly visible, standalone 'Admin Login' link in the footer so admins can navigate directly to /admin/login",
+      "summary": "Protect all /admin/* routes with AdminGuard and implement session-based authentication checks",
       "acceptanceCriteria": [
-        "A link or button labeled 'Admin Login' is visible on the live site (e.g., in the footer)",
-        "Clicking it navigates to the /admin/login route",
-        "The link is unobtrusive and does not disrupt the customer-facing design"
+        "Visiting any /admin/* page without a valid session redirects to /admin/login",
+        "Visiting any /admin/* page when no admin account exists redirects to /admin/register",
+        "AdminGuard correctly allows access when a valid admin session is present in sessionStorage",
+        "Logging out clears the sessionStorage session and redirects to /admin/login"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Layout.tsx",
+          "path": "frontend/src/components/AdminGuard.tsx",
           "operation": "modify",
-          "description": "Add a small, discreet 'Admin Login' link in the footer section below the existing contact info and social links. Use a muted text color (text-gray-500 or similar) and small font size to keep it unobtrusive. Wire the link to navigate to '/admin/login' using TanStack Router's Link component. Position it at the bottom-right or center of the footer to avoid disrupting the main customer-facing content."
+          "description": "Refactor AdminGuard to implement a multi-step authentication check: (1) Check sessionStorage for a valid email/password session using the sessionStorage utility. If valid, render children. (2) If no session, query useAdminExists to check if any admin exists. If no admin exists, redirect to /admin/register. (3) If an admin exists but no session, check Internet Identity authentication as a fallback. If not authenticated via II either, redirect to /admin/login. Use the useNavigate hook for redirects. Add loading states to prevent flickering during checks."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Add a logout button in the dashboard header or sidebar that calls clearAdminSession() from the sessionStorage utility and then navigates to /admin/login. Ensure the button is clearly labeled (e.g., 'Logout' or 'Sign Out'). Add haptic feedback on click. Verify that all management section links are present and functional (quotations, projects, content, media, users, etc.)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Ensure admin dashboard is fully accessible after login with working navigation and logout functionality",
+      "acceptanceCriteria": [
+        "After successful login, the admin is taken to /admin/dashboard",
+        "All management navigation links on the dashboard are clickable and route to their respective admin pages",
+        "The logout button clears sessionStorage and redirects to /admin/login",
+        "The dashboard shows quotation statistics and management options"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Verify that the dashboard page renders all management section links (Quotations, Projects, Content, Media, Users, etc.) and that each link navigates to the correct admin sub-page. Ensure the logout button (added in REQ-3) is visible and functional. Confirm that the dashboard displays quotation statistics using the useQuotationStatistics hook. Add any missing navigation links or adjust layout for clarity. Ensure the page is wrapped by AdminGuard in the route configuration."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Verify that the /admin/dashboard route is correctly configured with AdminGuard protection. Ensure that after login, the user is redirected to /admin/dashboard. Add a default /admin route that redirects to /admin/dashboard for authenticated users or to /admin/login for unauthenticated users."
         }
       ]
     }
