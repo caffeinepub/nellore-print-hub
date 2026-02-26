@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { ExternalBlob } from '../backend';
 
@@ -9,9 +9,8 @@ export function useGetQuotationFile(quotationId: string | null) {
     queryKey: ['quotationFile', quotationId],
     queryFn: async () => {
       if (!actor || !quotationId) return null;
-      const quotations = await actor.getAllQuotations();
-      const quotation = quotations.find(q => q.id === quotationId);
-      return quotation?.quotationFileBlob ?? null;
+      // quotationFileBlob was removed from QuotationRequest; use getReplyFile instead
+      return actor.getReplyFile(quotationId);
     },
     enabled: !!actor && !isFetching && !!quotationId,
   });

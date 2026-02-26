@@ -1,17 +1,15 @@
 import React from 'react';
 import { CheckCircle, Heart } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getTranslations } from '../translations';
 
 export default function AboutPage() {
-  const { language } = useLanguage();
-  const t = getTranslations(language);
+  const { t } = useLanguage();
 
   const benefits = [
-    { title: t.about.benefit1Title, desc: t.about.benefit1Desc },
-    { title: t.about.benefit2Title, desc: t.about.benefit2Desc },
-    { title: t.about.benefit3Title, desc: t.about.benefit3Desc },
-    { title: t.about.benefit4Title, desc: t.about.benefit4Desc },
+    { title: t('about.benefit1Title'), desc: t('about.benefit1Desc') },
+    { title: t('about.benefit2Title'), desc: t('about.benefit2Desc') },
+    { title: t('about.benefit3Title'), desc: t('about.benefit3Desc') },
+    { title: t('about.benefit4Title'), desc: t('about.benefit4Desc') },
   ];
 
   return (
@@ -23,9 +21,9 @@ export default function AboutPage() {
       >
         <div className="absolute inset-0 bg-background/70" />
         <div className="relative z-10 text-center px-6 py-10">
-          <h1 className="text-3xl font-extrabold text-foreground mb-3">{t.about.title}</h1>
-          <p className="text-lg font-medium text-foreground mb-1">{t.about.heroText}</p>
-          <p className="text-muted-foreground">{t.about.heroSubtext}</p>
+          <h1 className="text-3xl font-extrabold text-foreground mb-3">{t('about.title')}</h1>
+          <p className="text-lg font-medium text-foreground mb-1">{t('about.heroText')}</p>
+          <p className="text-muted-foreground">{t('about.heroSubtext')}</p>
         </div>
       </section>
 
@@ -51,8 +49,8 @@ export default function AboutPage() {
         <div className="flex justify-center mb-3">
           <Heart className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold mb-3">{t.about.commitmentTitle}</h2>
-        <p className="opacity-90">{t.about.commitmentText}</p>
+        <h2 className="text-xl font-bold mb-3">{t('about.commitmentTitle')}</h2>
+        <p className="opacity-90">{t('about.commitmentText')}</p>
       </section>
     </div>
   );

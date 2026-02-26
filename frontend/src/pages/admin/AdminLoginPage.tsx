@@ -1,376 +1,208 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useVerifyEmailPassword } from '../../hooks/useAdminAuth';
+import { useBiometricLogin } from '../../hooks/useBiometricAuth';
+import { useSeedFirstAdminPassword } from '../../hooks/useAdminRegistration';
+import { useAdminExists } from '../../hooks/useAdminExists';
+import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Fingerprint, Loader2, Lock, Mail, UserPlus, LogIn, ShieldCheck } from 'lucide-react';
-import { toast } from 'sonner';
-import { useVerifyEmailPassword } from '@/hooks/useAdminAuth';
-import { useBiometricLogin } from '@/hooks/useBiometricAuth';
-import { useAdminExists } from '@/hooks/useAdminExists';
-import { useRegisterFirstAdmin, useSeedFirstAdminPassword } from '@/hooks/useAdminRegistration';
-import { useInternetIdentity } from '@/hooks/useInternetIdentity';
-import { useIsCallerAdmin } from '@/hooks/useAdmin';
-import { checkWebAuthnSupport } from '@/utils/webauthn';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Shield, Mail, Lock, Fingerprint, AlertCircle } from 'lucide-react';
 
-// The permanent admin credentials — pre-filled and auto-seeded on first load
-const FIRST_ADMIN_EMAIL = 'magic.nellorehub@gmail.com';
-const FIRST_ADMIN_PASSWORD = 'Munnu1998@';
+const ADMIN_EMAIL = 'magic.nellorehub@gmail.com';
+const ADMIN_PASSWORD = 'Munnu1998@';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState(FIRST_ADMIN_EMAIL);
+  const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState('');
-  const verifyMutation = useVerifyEmailPassword();
-  const biometricMutation = useBiometricLogin();
-  const registerFirstAdminMutation = useRegisterFirstAdmin();
-  const seedFirstAdminMutation = useSeedFirstAdminPassword();
-  const [biometricSupported, setBiometricSupported] = useState(false);
-  const [seedingDone, setSeedingDone] = useState(false);
-  const { adminExists, isLoading: adminExistsLoading } = useAdminExists();
-  const { identity, login, isLoggingIn } = useInternetIdentity();
-  const { data: isAdmin, isLoading: isCheckingAdmin } = useIsCallerAdmin();
+  const [error, setError] = useState('');
 
-  const isAuthenticated = !!identity;
+  const verifyAuth = useVerifyEmailPassword();
+  const biometricLogin = useBiometricLogin();
+  const { adminExists, isLoading: checkingAdmin } = useAdminExists();
+  const seedAdmin = useSeedFirstAdminPassword();
+  const { login: iiLogin, loginStatus, identity } = useInternetIdentity();
 
-  // Check biometric support on mount
+  // Auto-seed admin credentials if no admin exists
   useEffect(() => {
-    checkWebAuthnSupport().then(setBiometricSupported);
-  }, []);
+    if (adminExists === false && !seedAdmin.isPending && !seedAdmin.isSuccess) {
+      seedAdmin.mutate({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+    }
+  }, [adminExists]);
 
-  // Redirect to dashboard if already an admin
+  // Redirect if already authenticated via Internet Identity
   useEffect(() => {
-    if (isAuthenticated && isAdmin && !isCheckingAdmin) {
+    if (identity) {
       navigate({ to: '/admin/dashboard' });
     }
-  }, [isAuthenticated, isAdmin, isCheckingAdmin, navigate]);
+  }, [identity, navigate]);
 
-  // Auto-seed the permanent admin credentials when no admin exists yet.
-  // inviteAdminUser has no auth check when adminCount == 0.
-  useEffect(() => {
-    if (!adminExistsLoading && !adminExists && !seedingDone && !seedFirstAdminMutation.isPending) {
-      setSeedingDone(true);
-      seedFirstAdminMutation.mutate(
-        { email: FIRST_ADMIN_EMAIL, password: FIRST_ADMIN_PASSWORD },
-        {
-          onError: () => {
-            // Silently ignore — may already be seeded or actor not ready yet
-            setSeedingDone(false);
-          },
-        }
-      );
-    }
-  }, [adminExists, adminExistsLoading, seedingDone, seedFirstAdminMutation]);
-
-  const handleEmailPasswordLogin = async (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      toast.error('Please enter both email and password');
-      return;
-    }
-
+    setError('');
     try {
-      await verifyMutation.mutateAsync({ email, password });
-      toast.success('Login successful!');
-      navigate({ to: '/admin/dashboard' });
-    } catch (error: any) {
-      toast.error(error.message || 'Login failed. Please check your credentials.');
+      const success = await verifyAuth.mutateAsync({ email, password });
+      if (success) {
+        // Redirect to admin dashboard immediately on success
+        navigate({ to: '/admin/dashboard' });
+      } else {
+        setError('Invalid credentials. Please check your email and password.');
+      }
+    } catch {
+      setError('Login failed. Please try again.');
     }
   };
 
   const handleBiometricLogin = async () => {
-    if (!email) {
-      toast.error('Please enter your email address first');
-      return;
-    }
-
+    setError('');
     try {
-      await biometricMutation.mutateAsync(email);
-      toast.success('Biometric authentication successful!');
+      await biometricLogin.mutateAsync(email);
       navigate({ to: '/admin/dashboard' });
-    } catch (error: any) {
-      toast.error(error.message || 'Biometric authentication failed');
+    } catch {
+      setError('Biometric login failed. Please try email/password login.');
     }
   };
 
-  const handleInternetIdentityLogin = async () => {
+  const handleIILogin = async () => {
+    setError('');
     try {
-      await login();
-    } catch (error: any) {
-      if (error.message !== 'User is already authenticated') {
-        toast.error(error.message || 'Login failed');
-      }
+      await iiLogin();
+    } catch {
+      setError('Internet Identity login failed.');
     }
   };
 
-  const handleRegisterFirstAdmin = async () => {
-    if (!isAuthenticated) {
-      toast.error('Please login with Internet Identity first');
-      return;
-    }
-
-    try {
-      await registerFirstAdminMutation.mutateAsync();
-      toast.success('You are now the admin! Redirecting...');
-      navigate({ to: '/admin/dashboard' });
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      if (error.message?.includes('assign user roles') || error.message?.includes('Unauthorized')) {
-        toast.error(
-          'Registration failed. Please try logging in with email & password using: ' +
-            FIRST_ADMIN_EMAIL
-        );
-      } else {
-        toast.error(error.message || 'Failed to register as admin');
-      }
-    }
-  };
-
-  const showRegistrationOption = !adminExistsLoading && !adminExists;
-  const showInternetIdentityRegistration = showRegistrationOption && isAuthenticated;
-  const showInternetIdentityLogin = !isAuthenticated;
-
-  const isSeedingInProgress = seedFirstAdminMutation.isPending;
+  if (checkingAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <ShieldCheck className="h-6 w-6 text-primary" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/50 p-4">
+      <div className="w-full max-w-md">
+        {/* Logo / Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+            <Shield className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
-          <CardDescription className="text-center">
-            {showInternetIdentityRegistration
-              ? 'Register as the first administrator'
-              : 'Enter your credentials to access the admin panel'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Seeding indicator */}
-          {isSeedingInProgress && (
-            <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-lg p-3">
-              <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
-              <p className="text-xs text-muted-foreground">Setting up admin credentials…</p>
-            </div>
-          )}
+          <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
+          <p className="text-muted-foreground text-sm mt-1">Nellore Printing Hub — Owner Access</p>
+        </div>
 
-          {showInternetIdentityRegistration ? (
-            <>
-              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center space-y-2">
-                <UserPlus className="h-8 w-8 mx-auto text-primary" />
-                <p className="text-sm font-medium">No admin accounts exist yet</p>
-                <p className="text-xs text-muted-foreground">
-                  You're logged in with Internet Identity. Click below to register as the first
-                  administrator.
-                </p>
+        {seedAdmin.isPending && (
+          <Alert className="mb-4">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <AlertDescription>Setting up admin credentials...</AlertDescription>
+          </Alert>
+        )}
+
+        <Card className="shadow-xl border-0">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Sign In</CardTitle>
+            <CardDescription>Enter your credentials to access the admin dashboard</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleEmailLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" /> Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  required
+                />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="flex items-center gap-2">
+                  <Lock className="w-4 h-4" /> Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <Button
-                onClick={handleRegisterFirstAdmin}
-                className="w-full h-11"
-                disabled={registerFirstAdminMutation.isPending}
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                disabled={verifyAuth.isPending}
               >
-                {registerFirstAdminMutation.isPending ? (
+                {verifyAuth.isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Registering...
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing in...
                   </>
                 ) : (
-                  <>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Register as First Admin
-                  </>
+                  'Sign In'
                 )}
               </Button>
+            </form>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or use email & password
-                  </span>
-                </div>
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
               </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
 
-              {/* Email/password fallback for first admin */}
-              <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="email-reg">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email-reg"
-                      type="email"
-                      placeholder={FIRST_ADMIN_EMAIL}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-11"
-                      disabled={verifyMutation.isPending}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-reg">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password-reg"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 h-11"
-                      disabled={verifyMutation.isPending}
-                    />
-                  </div>
-                </div>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full h-11"
-                  disabled={verifyMutation.isPending}
-                >
-                  {verifyMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    'Login with Email'
-                  )}
-                </Button>
-              </form>
-            </>
-          ) : (
-            <>
-              {showInternetIdentityLogin && (
-                <>
-                  <Button
-                    onClick={handleInternetIdentityLogin}
-                    className="w-full h-11"
-                    disabled={isLoggingIn}
-                  >
-                    {isLoggingIn ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Logging in...
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Login with Internet Identity
-                      </>
-                    )}
-                  </Button>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        Or use email
-                      </span>
-                    </div>
-                  </div>
-                </>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleBiometricLogin}
+              disabled={biometricLogin.isPending}
+            >
+              {biometricLogin.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Fingerprint className="w-4 h-4 mr-2" />
               )}
+              Biometric Login
+            </Button>
 
-              <form onSubmit={handleEmailPasswordLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder={FIRST_ADMIN_EMAIL}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-11"
-                      disabled={verifyMutation.isPending || biometricMutation.isPending}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 h-11"
-                      disabled={verifyMutation.isPending || biometricMutation.isPending}
-                    />
-                  </div>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full h-11"
-                  disabled={verifyMutation.isPending || biometricMutation.isPending}
-                >
-                  {verifyMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Logging in...
-                    </>
-                  ) : (
-                    'Login with Email'
-                  )}
-                </Button>
-              </form>
-
-              {biometricSupported && (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">Or</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-11"
-                    onClick={handleBiometricLogin}
-                    disabled={verifyMutation.isPending || biometricMutation.isPending || !email}
-                  >
-                    {biometricMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Authenticating...
-                      </>
-                    ) : (
-                      <>
-                        <Fingerprint className="mr-2 h-4 w-4" />
-                        Login with Biometrics
-                      </>
-                    )}
-                  </Button>
-                </>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleIILogin}
+              disabled={loginStatus === 'logging-in'}
+            >
+              {loginStatus === 'logging-in' ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Shield className="w-4 h-4 mr-2" />
               )}
-            </>
-          )}
+              Internet Identity
+            </Button>
+          </CardContent>
+        </Card>
 
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            Only authorized administrators can access this area
-          </p>
-        </CardContent>
-      </Card>
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Nellore Printing Hub · Sponsored by Magic Advertising
+        </p>
+      </div>
     </div>
   );
 }

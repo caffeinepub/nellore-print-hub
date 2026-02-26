@@ -49,6 +49,8 @@ export interface ContactInfo {
   'phone' : string,
 }
 export interface DeliveryConfig { 'minimumFee' : bigint, 'perKmRate' : bigint }
+export type DesignStatus = { 'needed' : null } |
+  { 'ready' : null };
 export type ExternalBlob = Uint8Array;
 export interface NegotiationMessage {
   'sender' : string,
@@ -84,10 +86,10 @@ export interface QuotationRequest {
   'mobileNumber' : string,
   'deadline' : bigint,
   'email' : string,
+  'designStatus' : DesignStatus,
   'negotiationHistory' : Array<NegotiationMessage>,
   'timestamp' : bigint,
   'projectDetails' : string,
-  'quotationFileBlob' : [] | [ExternalBlob],
 }
 export type QuotationStatus = { 'customerPending' : null } |
   { 'completed' : null } |
@@ -178,7 +180,7 @@ export interface _SERVICE {
   'authenticateCustomer' : ActorMethod<[string, string], string>,
   'calculateDeliveryFee' : ActorMethod<[bigint], bigint>,
   'createQuotationRequest' : ActorMethod<
-    [ServiceType, bigint, string, string, string, [] | [ExternalBlob]],
+    [ServiceType, bigint, string, string, string, DesignStatus],
     string
   >,
   'customerApproveQuotation' : ActorMethod<[string], undefined>,

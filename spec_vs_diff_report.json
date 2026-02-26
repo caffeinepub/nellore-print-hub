@@ -1,77 +1,87 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T01:18:42.710Z",
-  "summary": "The diff implements most of the five requirements. REQ-1 (customer portal), REQ-3 (service redesign + media management), REQ-4 (masonry gallery), and REQ-5 (admin content editor) are substantially present. REQ-2 (bilingual text) is partially implemented via a BilingualText component and stacked headings on several pages, but coverage across ALL pages is not confirmed. Several specific REQ-5 sub-requirements are partially or weakly addressed: the admin services management is only a media-upload page without full add/edit/delete of service definitions; no WhatsApp field in contact info; homepage content editor is only a plain textarea rather than structured hero text plus feature highlights plus promotional banners.",
+  "generatedAt": "2026-02-26T02:30:45.775Z",
+  "summary": "The diff implements most of the requested requirements with good coverage. REQ-1 (design status radio replacing file upload), REQ-2 (admin login redirect), REQ-3 (UX improvements, hero, share button, sponsor badge), REQ-4 (language toggle), and REQ-5 (branding) are largely addressed. However, several specific acceptance criteria have gaps: the QuotationRequestPage.tsx itself is not shown in the diff so the actual form change cannot be confirmed, some customer-facing pages are not shown as modified, and the required badge image asset is not referenced.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Display English and Telugu text simultaneously on ALL pages including AboutPage",
-      "reason": "The BilingualText component is created and some pages are updated, but the diff does not include a modified AboutPage showing bilingual content, meaning full coverage across every page is unconfirmed.",
+      "requirement": "QuotationRequestPage.tsx must remove file attachment input and replace with 'Is your design ready?' radio/toggle — the actual QuotationRequestPage.tsx file is not present in the diff, so the form-level changes cannot be confirmed.",
+      "reason": "QuotationRequestPage.tsx is not listed among the modified files in the diff. Without it, the core REQ-1 UI change (removing file upload, adding radio buttons) cannot be verified.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "All customer-facing pages including ServicesPage, TestimonialsPage, and CustomerRegistrationPage must use translations from LanguageContext and display correctly in both languages.",
+      "reason": "ServicesPage.tsx, TestimonialsPage.tsx, and CustomerRegistrationPage.tsx are not listed among the modified files, so full bilingual coverage on those pages cannot be confirmed.",
       "evidence": [
-        "frontend/src/components/BilingualText.tsx"
+        "frontend/src/contexts/LanguageContext.tsx"
       ]
     },
     {
-      "id": "REQ-5",
-      "requirement": "Admin can add, edit, and delete services (full service list management) including name, description, sample images, and video URLs",
-      "reason": "The ServiceMediaManagementPage only manages service images and video clip URLs. There is no interface to add, edit, or delete service definitions with name and description fields.",
+      "id": "REQ-3",
+      "requirement": "Add smooth hover and tap animations to service cards on ServicesPage.",
+      "reason": "ServicesPage.tsx is not in the modified files list, so hover/tap animations on service cards on that page cannot be confirmed.",
       "evidence": [
-        "frontend/src/pages/admin/ServiceMediaManagementPage.tsx"
+        "frontend/src/pages/ProjectGalleryPage.tsx"
       ]
     },
     {
-      "id": "REQ-5",
-      "requirement": "Contact Details management must include a WhatsApp number field",
-      "reason": "The ContactInfoManagementPage shows fields for email, phone, physicalAddress, and mapsLink but no WhatsApp number field, which was explicitly listed in REQ-5(a).",
+      "requirement": "Images required: 'Sponsored by Magic Advertising' footer badge image (magic-advertising-badge.dim_320x64.png) should be used as specified in the build request.",
+      "reason": "The footer in Layout.tsx uses text-based branding rather than the specified badge image asset magic-advertising-badge.dim_320x64.png, which is never referenced in the diff.",
       "evidence": [
-        "frontend/src/pages/admin/ContactInfoManagementPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Homepage content editor must cover structured hero text, feature highlights, and promotional banners rather than just a single promotional text textarea",
-      "reason": "HomepageContentManagementPage provides only a single freeform textarea. There is no structured editing of hero text fields or feature highlight items as required by REQ-5(e).",
-      "evidence": [
-        "frontend/src/pages/admin/HomepageContentManagementPage.tsx"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "Backend must associate all quotations with the logged-in customer account by email or mobile number at submission time",
-      "reason": "The backend main.mo is truncated and it is unclear whether the quotation submission logic was updated to link quotations to a customer ID. The getCustomerQuotations hook exists on the frontend but the backend association logic cannot be confirmed.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useCustomerQuotations.ts"
+        "frontend/src/components/Layout.tsx"
       ]
     }
   ],
-  "hallucinated_features": [],
+  "hallucinated_features": [
+    {
+      "description": "A backend migration module (backend/migration.mo) was added as a new file to handle data migration from OldQuotationRequest to NewQuotationRequest.",
+      "reason": "The build request did not request any backend migration module. The constraint states all Motoko logic must remain in backend/main.mo single actor, and the non-goals explicitly exclude adding new backend services.",
+      "evidence": [
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "description": "Admin password 'Munnu1998@' is hardcoded as a plaintext constant in AdminLoginPage.tsx.",
+      "reason": "The build request did not request hardcoding of admin credentials in the frontend source code. No requirement mentions storing plaintext passwords in client-side code.",
+      "evidence": [
+        "frontend/src/pages/admin/AdminLoginPage.tsx"
+      ]
+    }
+  ],
   "confidence": 0.72,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/BilingualText.tsx",
-    "frontend/src/components/CustomerGuard.tsx",
-    "frontend/src/contexts/CustomerAuthContext.tsx",
-    "frontend/src/hooks/useAdminContent.ts",
-    "frontend/src/hooks/useCustomerQuotations.ts",
-    "frontend/src/hooks/useServiceImages.ts",
-    "frontend/src/hooks/useVideoClips.ts",
+    "frontend/index.html",
+    "frontend/src/components/BottomNav.tsx",
+    "frontend/src/components/ChatWidget.tsx",
+    "frontend/src/components/LanguageToggle.tsx",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/components/ProfileSetup.tsx",
+    "frontend/src/components/ShareAppButton.tsx",
+    "frontend/src/contexts/LanguageContext.tsx",
+    "frontend/src/hooks/useQuotationFile.ts",
+    "frontend/src/hooks/useQuotations.ts",
+    "frontend/src/pages/AboutPage.tsx",
     "frontend/src/pages/ContactUsPage.tsx",
     "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/MyQuotationsPage.tsx",
     "frontend/src/pages/ProjectGalleryPage.tsx",
+    "frontend/src/pages/QuotationConfirmationPage.tsx",
+    "frontend/src/pages/QuotationRequestPage.tsx",
+    "frontend/src/pages/QuotationResponsePage.tsx",
     "frontend/src/pages/ServicesPage.tsx",
-    "frontend/src/pages/admin/AboutContentManagementPage.tsx",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
-    "frontend/src/pages/admin/BusinessHoursManagementPage.tsx",
-    "frontend/src/pages/admin/ContactInfoManagementPage.tsx",
-    "frontend/src/pages/admin/HomepageContentManagementPage.tsx",
-    "frontend/src/pages/admin/ServiceMediaManagementPage.tsx",
+    "frontend/src/pages/SubmitReviewPage.tsx",
+    "frontend/src/pages/TestimonialsPage.tsx",
+    "frontend/src/pages/admin/AdminLoginPage.tsx",
+    "frontend/src/pages/admin/QuotationManagementPage.tsx",
     "frontend/src/pages/customer/CustomerLoginPage.tsx",
     "frontend/src/pages/customer/CustomerPortalPage.tsx",
-    "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
+    "frontend/src/translations/en.ts",
+    "frontend/src/translations/index.ts",
+    "frontend/src/translations/te.ts",
     "project_state.json"
   ]
 }

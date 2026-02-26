@@ -1,48 +1,42 @@
 import React from 'react';
 import { Share2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { useLanguage } from '../contexts/LanguageContext';
-import { getTranslations } from '../translations';
 import { haptics } from '../utils/haptics';
+import { Button } from '@/components/ui/button';
 
-export default function ShareAppButton({ className = '' }: { className?: string }) {
-  const { language } = useLanguage();
-  const t = getTranslations(language);
+interface ShareAppButtonProps {
+  className?: string;
+  label?: string;
+}
 
+export default function ShareAppButton({ className, label }: ShareAppButtonProps) {
   const handleShare = async () => {
     haptics.tap();
     const shareData = {
-      title: 'Nellore Print Hub',
-      text: 'Check out Nellore Print Hub - Your trusted printing partner!',
+      title: 'Nellore Printing Hub',
+      text: 'Check out Nellore Printing Hub — Premium quality printing services in Nellore! Sponsored by Magic Advertising.',
       url: window.location.origin,
     };
 
-    if (navigator.share) {
-      try {
+    try {
+      if (navigator.share) {
         await navigator.share(shareData);
-        toast.success(t.common.shareSuccess);
-      } catch {
-        // User cancelled or error — no toast needed
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        alert('Link copied to clipboard!');
       }
-    } else {
-      try {
-        await navigator.clipboard.writeText(window.location.origin);
-        toast.success(t.common.linkCopied);
-      } catch {
-        toast.error('Could not copy link.');
-      }
+    } catch (err) {
+      // User cancelled or error
     }
   };
 
   return (
-    <button
+    <Button
+      variant="outline"
       onClick={handleShare}
-      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-border bg-background hover:bg-muted transition-colors text-sm font-medium text-foreground ${className}`}
-      aria-label={t.common.shareApp}
-      title={t.common.shareApp}
+      className={className}
     >
-      <Share2 className="w-4 h-4" />
-      <span className="hidden sm:inline">{t.common.shareApp}</span>
-    </button>
+      <Share2 className="w-4 h-4 mr-2" />
+      {label || 'Share'}
+    </Button>
   );
 }

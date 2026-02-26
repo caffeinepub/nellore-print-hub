@@ -1,154 +1,132 @@
 import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useGetServiceImages } from '../hooks/useServiceImages';
-import { useGetVideoClips } from '../hooks/useVideoClips';
-import { useGetAdminContent } from '../hooks/useAdminContent';
+import { useLanguage } from '../contexts/LanguageContext';
+import ShareAppButton from '../components/ShareAppButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  Printer, ArrowRight, Play,
-  Zap, Shield, Palette, Monitor
+  Printer,
+  Star,
+  ArrowRight,
+  CheckCircle,
+  Zap,
+  Award,
+  Users,
+  Phone,
+  ChevronRight,
 } from 'lucide-react';
 
-const STATIC_SAMPLES = [
-  {
-    src: '/assets/generated/print-sample-banner.dim_800x450.png',
-    label: 'Banner Printing',
-    teLabel: 'బ్యానర్ ప్రింటింగ్',
-  },
-  {
-    src: '/assets/generated/print-sample-business-card.dim_800x450.png',
-    label: 'Business Cards',
-    teLabel: 'బిజినెస్ కార్డులు',
-  },
-  {
-    src: '/assets/generated/print-sample-flex.dim_800x450.png',
-    label: 'Flex Printing',
-    teLabel: 'ఫ్లెక్స్ ప్రింటింగ్',
-  },
-  {
-    src: '/assets/generated/print-sample-brochure.dim_800x450.png',
-    label: 'Brochures',
-    teLabel: 'బ్రోచర్లు',
-  },
-];
-
-const FEATURES = [
-  { icon: Zap, en: 'Fast Turnaround', te: 'వేగవంతమైన డెలివరీ', desc: 'Same day & express printing available', teDesc: 'అదే రోజు ప్రింటింగ్ అందుబాటులో ఉంది' },
-  { icon: Shield, en: 'Quality Assured', te: 'నాణ్యత హామీ', desc: 'Premium materials & vibrant colors', teDesc: 'ప్రీమియం మెటీరియల్స్ & వైబ్రెంట్ రంగులు' },
-  { icon: Palette, en: 'Custom Design', te: 'కస్టమ్ డిజైన్', desc: 'Professional design services included', teDesc: 'ప్రొఫెషనల్ డిజైన్ సేవలు అందుబాటులో' },
-  { icon: Monitor, en: 'Digital & Offset', te: 'డిజిటల్ & ఆఫ్‌సెట్', desc: 'All printing technologies under one roof', teDesc: 'అన్ని ప్రింటింగ్ సేవలు ఒకే చోట' },
-];
-
 export default function HomePage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
-  const { data: serviceImages } = useGetServiceImages();
-  const { data: videoClips } = useGetVideoClips();
-  const { data: adminContent } = useGetAdminContent();
 
-  const allSampleImages = serviceImages && serviceImages.length > 0
-    ? serviceImages.map((img) => ({ src: img.imageUrl, label: img.serviceType, teLabel: img.description }))
-    : STATIC_SAMPLES;
+  const features = [
+    { icon: Zap, title: t('language') === 'te' ? 'వేగవంతమైన డెలివరీ' : 'Fast Delivery', desc: t('language') === 'te' ? 'సమయానికి డెలివరీ హామీ' : 'On-time delivery guaranteed' },
+    { icon: Award, title: t('language') === 'te' ? 'అత్యుత్తమ నాణ్యత' : 'Premium Quality', desc: t('language') === 'te' ? 'అత్యుత్తమ ముద్రణ నాణ్యత' : 'Best-in-class print quality' },
+    { icon: Users, title: t('language') === 'te' ? 'నిపుణుల బృందం' : 'Expert Team', desc: t('language') === 'te' ? 'అనుభవజ్ఞులైన నిపుణులు' : 'Experienced professionals' },
+    { icon: Phone, title: t('language') === 'te' ? '24/7 మద్దతు' : '24/7 Support', desc: t('language') === 'te' ? 'ఎల్లప్పుడూ మీకు సహాయం' : 'Always here to help you' },
+  ];
+
+  const services = [
+    { icon: '/assets/generated/digital-icon.dim_256x256.png', name: t('digitalPrinting'), color: 'from-blue-500/20 to-blue-600/10' },
+    { icon: '/assets/generated/flex-icon.dim_256x256.png', name: t('bannerPrinting'), color: 'from-green-500/20 to-green-600/10' },
+    { icon: '/assets/generated/offset-icon.dim_256x256.png', name: t('offsetPrinting'), color: 'from-orange-500/20 to-orange-600/10' },
+    { icon: '/assets/generated/design-icon.dim_256x256.png', name: t('designServices'), color: 'from-purple-500/20 to-purple-600/10' },
+  ];
+
+  const printSamples = [
+    { src: '/assets/generated/print-sample-business-card.dim_800x450.png', label: t('language') === 'te' ? 'బిజినెస్ కార్డులు' : 'Business Cards' },
+    { src: '/assets/generated/print-sample-brochure.dim_800x450.png', label: t('language') === 'te' ? 'బ్రోచర్లు' : 'Brochures' },
+    { src: '/assets/generated/print-sample-flex.dim_800x450.png', label: t('language') === 'te' ? 'ఫ్లెక్స్ బ్యానర్లు' : 'Flex Banners' },
+    { src: '/assets/generated/print-sample-banner.dim_800x450.png', label: t('language') === 'te' ? 'బ్యానర్లు' : 'Banners' },
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10 pt-8 pb-12 px-4">
-        <div
-          className="absolute inset-0 opacity-10 bg-cover bg-center"
-          style={{ backgroundImage: "url('/assets/generated/hero-bg.dim_1920x1080.png')" }}
-        />
-        <div className="relative max-w-4xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-4 text-xs">
-            Nellore's Premier Printing Hub / నెల్లూరు ప్రీమియర్ ప్రింటింగ్ హబ్
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-tight mb-2">
-            Magic Hub Nellore
+      <section
+        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden"
+        style={{
+          backgroundImage: 'url(/assets/generated/hero-banner.dim_1200x400.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/75 to-accent/80" />
+
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white rounded-full px-4 py-2 text-sm font-medium mb-6 border border-white/30">
+            <Star className="w-4 h-4 fill-yellow-300 text-yellow-300" />
+            {t('language') === 'te' ? 'నెల్లూరు #1 ప్రింటింగ్ సేవ' : 'Nellore\'s #1 Printing Service'}
+          </div>
+
+          {/* Main Title */}
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-4 leading-tight drop-shadow-lg">
+            {t('heroTitle')}
           </h1>
-          <p className="text-lg text-primary font-semibold mb-1">మేజిక్ హబ్ నెల్లూరు</p>
-          <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto mb-2">
-            Your one-stop printing & design solution
-          </p>
-          <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-8">
-            మీ అన్ని ప్రింటింగ్ & డిజైన్ అవసరాలకు ఒకే చోట పరిష్కారం
+
+          {/* Subtitle */}
+          <p className="text-xl md:text-2xl text-white/90 font-semibold mb-3">
+            {t('heroSubtitle')}
           </p>
 
-          {/* Promo Banner from Admin */}
-          {adminContent?.homepageContent && (
-            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6 text-sm text-foreground max-w-2xl mx-auto">
-              <p className="whitespace-pre-wrap">{adminContent.homepageContent}</p>
-            </div>
-          )}
+          {/* Description */}
+          <p className="text-base md:text-lg text-white/80 mb-8 max-w-2xl mx-auto leading-relaxed">
+            {t('heroDescription')}
+          </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" onClick={() => navigate({ to: '/request-quote' })} className="gap-2">
-              <Printer className="w-5 h-5" />
-              Get Quote / కోటేషన్ పొందండి
-              <ArrowRight className="w-4 h-4" />
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button
+              size="lg"
+              className="bg-white text-primary hover:bg-white/90 font-bold text-lg px-8 py-6 rounded-full shadow-2xl hover:shadow-white/25 transition-all hover:scale-105 active:scale-95"
+              onClick={() => navigate({ to: '/request-quote' })}
+            >
+              <Printer className="w-5 h-5 mr-2" />
+              {t('getQuote')}
+              <ChevronRight className="w-5 h-5 ml-1" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate({ to: '/gallery' })}>
-              View Gallery / గ్యాలరీ చూడండి
+
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-white text-white hover:bg-white/20 font-semibold text-lg px-8 py-6 rounded-full backdrop-blur-sm transition-all hover:scale-105 active:scale-95"
+              onClick={() => navigate({ to: '/gallery' })}
+            >
+              {t('viewGallery')}
             </Button>
+
+            {/* Share Button */}
+            <ShareAppButton
+              className="border-2 border-white/60 text-white hover:bg-white/20 font-semibold px-6 py-6 rounded-full backdrop-blur-sm transition-all hover:scale-105 active:scale-95"
+              label={t('shareApp')}
+            />
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center pt-2">
+            <div className="w-1.5 h-3 bg-white/70 rounded-full animate-pulse" />
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-10 px-4 bg-card/50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground">Why Choose Us?</h2>
-            <p className="text-primary font-medium">మాను ఎందుకు ఎంచుకోవాలి?</p>
-          </div>
+      {/* Features Strip */}
+      <section className="bg-primary text-primary-foreground py-6">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {FEATURES.map((f) => (
-              <Card key={f.en} className="text-center hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                    <f.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="font-semibold text-sm text-foreground">{f.en}</p>
-                  <p className="text-xs text-primary mb-1">{f.te}</p>
-                  <p className="text-xs text-muted-foreground">{f.desc}</p>
-                  <p className="text-xs text-muted-foreground/70">{f.teDesc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Printing Samples */}
-      <section className="py-10 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground">Our Printing Samples</h2>
-            <p className="text-primary font-medium">మా ప్రింటింగ్ నమూనాలు</p>
-            <p className="text-muted-foreground text-sm mt-1">
-              See the quality of our work / మా పని నాణ్యత చూడండి
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {allSampleImages.map((sample, i) => (
-              <div
-                key={i}
-                className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
-                onClick={() => navigate({ to: '/gallery' })}
-              >
-                <img
-                  src={sample.src}
-                  alt={sample.label}
-                  className="w-full aspect-video object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/assets/generated/print-sample-banner.dim_800x450.png';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                  <div>
-                    <p className="text-white text-sm font-semibold">{sample.label}</p>
-                    <p className="text-white/80 text-xs">{sample.teLabel}</p>
-                  </div>
+            {features.map((f, i) => (
+              <div key={i} className="flex items-center gap-3 p-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  <f.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{f.title}</p>
+                  <p className="text-xs text-primary-foreground/70">{f.desc}</p>
                 </div>
               </div>
             ))}
@@ -156,150 +134,166 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Video Section */}
-      {videoClips && videoClips.length > 0 && (
-        <section className="py-10 px-4 bg-card/50">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-foreground">Watch Our Work</h2>
-              <p className="text-primary font-medium">మా పని చూడండి</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {videoClips.map((clip) => (
-                <div key={clip.id} className="group relative overflow-hidden rounded-xl shadow-md">
-                  {clip.thumbnailUrl ? (
-                    <div className="relative aspect-video">
-                      <img
-                        src={clip.thumbnailUrl}
-                        alt={clip.description}
-                        className="w-full h-full object-cover"
-                      />
-                      <a
-                        href={clip.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/50 transition-colors"
-                      >
-                        <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                          <Play className="w-6 h-6 text-primary ml-1" />
-                        </div>
-                      </a>
-                    </div>
-                  ) : (
-                    <a
-                      href={clip.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-video bg-muted flex items-center justify-center rounded-xl hover:bg-muted/80 transition-colors"
-                    >
-                      <div className="text-center">
-                        <Play className="w-10 h-10 text-primary mx-auto mb-2" />
-                        <p className="text-sm font-medium">{clip.description}</p>
-                        <p className="text-xs text-muted-foreground">{clip.serviceType}</p>
-                      </div>
-                    </a>
-                  )}
-                  {clip.description && (
-                    <div className="p-3">
-                      <p className="text-sm font-medium">{clip.description}</p>
-                      <p className="text-xs text-muted-foreground">{clip.serviceType}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Services Preview */}
-      <section className="py-10 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground">Our Services</h2>
-            <p className="text-primary font-medium">మా సేవలు</p>
+      <section className="py-16 px-4 bg-background">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-3 text-primary border-primary">
+              {t('servicesTitle')}
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+              {t('servicesSubtitle')}
+            </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: '/assets/generated/digital-icon.dim_256x256.png', en: 'Digital Printing', te: 'డిజిటల్ ప్రింటింగ్' },
-              { icon: '/assets/generated/flex-icon.dim_256x256.png', en: 'Banner / Flex', te: 'బ్యానర్ / ఫ్లెక్స్' },
-              { icon: '/assets/generated/offset-icon.dim_256x256.png', en: 'Offset Printing', te: 'ఆఫ్‌సెట్ ప్రింటింగ్' },
-              { icon: '/assets/generated/design-icon.dim_256x256.png', en: 'Design Services', te: 'డిజైన్ సేవలు' },
-            ].map((svc) => (
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {services.map((service, i) => (
               <Card
-                key={svc.en}
-                className="cursor-pointer hover:shadow-lg transition-all hover:border-primary/50 group"
+                key={i}
+                className={`cursor-pointer hover:shadow-lg transition-all hover:scale-105 active:scale-95 border-0 bg-gradient-to-br ${service.color} overflow-hidden`}
                 onClick={() => navigate({ to: '/services' })}
               >
                 <CardContent className="p-4 text-center">
-                  <img
-                    src={svc.icon}
-                    alt={svc.en}
-                    className="w-16 h-16 mx-auto mb-3 group-hover:scale-110 transition-transform"
-                  />
-                  <p className="font-semibold text-sm text-foreground">{svc.en}</p>
-                  <p className="text-xs text-primary">{svc.te}</p>
+                  <img src={service.icon} alt={service.name} className="w-16 h-16 mx-auto mb-3 object-contain" />
+                  <p className="font-semibold text-sm text-foreground">{service.name}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
-          <div className="text-center mt-6">
-            <Button variant="outline" onClick={() => navigate({ to: '/services' })}>
-              View All Services / అన్ని సేవలు చూడండి
-              <ArrowRight className="w-4 h-4 ml-2" />
+
+          <div className="text-center">
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 rounded-full"
+              onClick={() => navigate({ to: '/services' })}
+            >
+              {t('learnMore')} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-12 px-4 bg-primary text-primary-foreground">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-2">Ready to Print?</h2>
-          <p className="text-primary-foreground/80 font-medium mb-1">ప్రింట్ చేయడానికి సిద్ధంగా ఉన్నారా?</p>
-          <p className="text-primary-foreground/70 text-sm mb-6">
-            Get a free quote today. Fast, quality printing in Nellore.
-            <span className="block">ఈరోజే ఉచిత కోటేషన్ పొందండి. నెల్లూరులో వేగవంతమైన, నాణ్యమైన ప్రింటింగ్.</span>
+      {/* Print Samples */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-foreground mb-2">
+              {t('language') === 'te' ? 'మా పని నమూనాలు' : 'Our Print Samples'}
+            </h2>
+            <p className="text-muted-foreground">
+              {t('language') === 'te' ? 'అత్యుత్తమ నాణ్యత ముద్రణ' : 'Premium quality printing'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {printSamples.map((sample, i) => (
+              <div
+                key={i}
+                className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                onClick={() => navigate({ to: '/gallery' })}
+              >
+                <img
+                  src={sample.src}
+                  alt={sample.label}
+                  className="w-full aspect-video object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                  <span className="text-white text-sm font-semibold">{sample.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 px-4 bg-gradient-to-r from-primary to-accent text-white">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            {t('language') === 'te' ? 'ఈరోజే మీ ప్రాజెక్ట్ ప్రారంభించండి!' : 'Start Your Project Today!'}
+          </h2>
+          <p className="text-white/80 text-lg mb-8">
+            {t('language') === 'te'
+              ? 'ఉచిత కోటేషన్ పొందండి మరియు మీ ముద్రణ అవసరాలను మాకు అప్పగించండి'
+              : 'Get a free quote and let us handle all your printing needs'}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              variant="secondary"
+              className="bg-white text-primary hover:bg-white/90 font-bold px-8 rounded-full shadow-lg hover:scale-105 active:scale-95 transition-all"
               onClick={() => navigate({ to: '/request-quote' })}
             >
-              Request Quote / కోటేషన్ అడగండి
+              <Printer className="w-5 h-5 mr-2" />
+              {t('getQuote')}
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+              className="border-2 border-white text-white hover:bg-white/20 font-semibold px-8 rounded-full transition-all hover:scale-105 active:scale-95"
               onClick={() => navigate({ to: '/contact' })}
             >
-              Contact Us / సంప్రదించండి
+              {t('contactTitle')}
             </Button>
           </div>
         </div>
       </section>
 
       {/* Customer Portal CTA */}
-      <section className="py-8 px-4 bg-card/50">
-        <div className="max-w-2xl mx-auto text-center">
-          <h3 className="text-lg font-semibold text-foreground mb-1">
-            Track Your Orders
-            <span className="block text-sm font-normal text-muted-foreground">మీ ఆర్డర్లు ట్రాక్ చేయండి</span>
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Register or login to view your quotation history and order status.
-            <span className="block text-xs">మీ కోటేషన్ చరిత్ర మరియు ఆర్డర్ స్థితి చూడటానికి నమోదు చేయండి లేదా లాగిన్ అవ్వండి.</span>
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button onClick={() => navigate({ to: '/customer/login' })}>
-              Customer Login / కస్టమర్ లాగిన్
-            </Button>
-            <Button variant="outline" onClick={() => navigate({ to: '/customer/register' })}>
-              Register / నమోదు చేయండి
-            </Button>
+      <section className="py-12 px-4 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-0 shadow-lg bg-gradient-to-r from-accent/10 to-primary/10 overflow-hidden">
+            <CardContent className="p-8 flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-2xl font-bold text-foreground mb-2">
+                  {t('language') === 'te' ? 'మీ ఆర్డర్లను ట్రాక్ చేయండి' : 'Track Your Orders'}
+                </h3>
+                <p className="text-muted-foreground">
+                  {t('language') === 'te'
+                    ? 'కస్టమర్ పోర్టల్‌లో లాగిన్ చేసి మీ కోటేషన్లు మరియు ఆర్డర్లను నిర్వహించండి'
+                    : 'Login to the customer portal to manage your quotations and orders'}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full px-6"
+                  onClick={() => navigate({ to: '/customer/login' })}
+                >
+                  {t('login')}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/10 font-semibold rounded-full px-6"
+                  onClick={() => navigate({ to: '/customer/register' })}
+                >
+                  {t('register')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Testimonials Preview */}
+      <section className="py-12 px-4 bg-muted/20">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="flex justify-center gap-1 mb-4">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Star key={s} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+            ))}
           </div>
+          <p className="text-xl font-semibold text-foreground mb-2">
+            {t('language') === 'te' ? '"అద్భుతమైన నాణ్యత మరియు వేగవంతమైన సేవ!"' : '"Amazing quality and fast service!"'}
+          </p>
+          <p className="text-muted-foreground mb-6">
+            {t('language') === 'te' ? '— సంతృప్తి చెందిన కస్టమర్' : '— Happy Customer, Nellore'}
+          </p>
+          <Button
+            variant="outline"
+            className="border-primary text-primary hover:bg-primary/10 rounded-full"
+            onClick={() => navigate({ to: '/testimonials' })}
+          >
+            {t('language') === 'te' ? 'అన్ని సమీక్షలు చూడండి' : 'View All Reviews'}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </section>
     </div>

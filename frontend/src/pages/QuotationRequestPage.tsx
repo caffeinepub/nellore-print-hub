@@ -1,264 +1,241 @@
-import { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCreateQuotation } from '../hooks/useQuotations';
-import { useGetCallerUserProfile } from '../hooks/useUserProfile';
+import { ServiceType, DesignStatus } from '../backend';
 import { haptics } from '../utils/haptics';
-import { ServiceType, ExternalBlob } from '../backend';
-import { Paperclip, X, Upload, FileText } from 'lucide-react';
-
-// Extended service options for display (maps to backend types)
-const extendedServiceOptions = [
-  { value: ServiceType.design, labelEn: 'Design Services', labelTe: 'డిజైన్ సేవలు' },
-  { value: ServiceType.digital, labelEn: 'Digital Printing', labelTe: 'డిజిటల్ ప్రింటింగ్' },
-  { value: ServiceType.banner, labelEn: 'Outdoor Printing', labelTe: 'అవుట్‌డోర్ ప్రింటింగ్' },
-  { value: ServiceType.banner, labelEn: 'Indoor Printing', labelTe: 'ఇండోర్ ప్రింటింగ్' },
-  { value: ServiceType.banner, labelEn: 'Screen Printing & Personalization', labelTe: 'స్క్రీన్ ప్రింటింగ్ & వ్యక్తిగతీకరణ' },
-  { value: ServiceType.offset, labelEn: 'Offset Printing', labelTe: 'ఆఫ్‌సెట్ ప్రింటింగ్' },
-];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Printer, CheckCircle, Palette, Clock, Phone, Mail, Loader2 } from 'lucide-react';
 
 export default function QuotationRequestPage() {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const createQuotation = useCreateQuotation();
-  const { data: userProfile } = useGetCallerUserProfile();
 
-  const [serviceType, setServiceType] = useState('');
+  const [serviceType, setServiceType] = useState<ServiceType | ''>('');
   const [deadline, setDeadline] = useState('');
   const [projectDetails, setProjectDetails] = useState('');
-  const [mobileNumber, setMobileNumber] = useState(userProfile?.mobileNumber ?? '');
-  const [email, setEmail] = useState(userProfile?.email ?? '');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [fileError, setFileError] = useState('');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [designStatus, setDesignStatus] = useState<DesignStatus>(DesignStatus.needed);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setFileError('');
-    if (!file) {
-      setSelectedFile(null);
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      setFileError(language === 'te' ? 'ఫైల్ పరిమాణం 10MB కంటే తక్కువగా ఉండాలి' : 'File size must be less than 10MB');
-      setSelectedFile(null);
-      return;
-    }
-    setSelectedFile(file);
-  };
-
-  const removeFile = () => {
-    setSelectedFile(null);
-    setFileError('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!serviceType) newErrors.serviceType = t('errorRequired');
+    if (!deadline) newErrors.deadline = t('errorRequired');
+    if (!projectDetails.trim()) newErrors.projectDetails = t('errorRequired');
+    if (!mobileNumber.trim()) newErrors.mobileNumber = t('errorRequired');
+    if (!email.trim()) newErrors.email = t('errorRequired');
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = t('errorInvalidEmail');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     haptics.tap();
 
-    // Find the service type value
-    const selectedOption = extendedServiceOptions.find(o => o.labelEn === serviceType);
-    if (!selectedOption) return;
-
-    let fileBlob: ExternalBlob | null = null;
-    if (selectedFile) {
-      const bytes = new Uint8Array(await selectedFile.arrayBuffer());
-      fileBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((pct) => {
-        setUploadProgress(pct);
-      });
-    }
-
     try {
+      const deadlineDate = new Date(deadline).getTime();
       const id = await createQuotation.mutateAsync({
-        serviceType: selectedOption.value,
-        deadline: BigInt(new Date(deadline).getTime() * 1_000_000),
+        serviceType: serviceType as ServiceType,
+        deadline: BigInt(deadlineDate),
         projectDetails,
         mobileNumber,
         email,
-        file: fileBlob,
+        designStatus,
       });
       haptics.success();
       navigate({ to: '/quotation-confirmation/$id', params: { id } });
-    } catch {
+    } catch (err) {
       haptics.error();
     }
   };
 
-  const t = {
-    title: language === 'te' ? 'కోటేషన్ అభ్యర్థన' : 'Request a Quotation',
-    subtitle: language === 'te' ? 'మీ ప్రాజెక్ట్ వివరాలు పూరించండి' : 'Fill in your project details',
-    serviceLabel: language === 'te' ? 'సేవ రకం' : 'Service Type',
-    servicePlaceholder: language === 'te' ? 'సేవ ఎంచుకోండి' : 'Select a service',
-    deadlineLabel: language === 'te' ? 'గడువు తేదీ' : 'Deadline',
-    detailsLabel: language === 'te' ? 'ప్రాజెక్ట్ వివరాలు' : 'Project Details',
-    detailsPlaceholder: language === 'te' ? 'మీ ప్రాజెక్ట్ గురించి వివరించండి' : 'Describe your project requirements',
-    mobileLabel: language === 'te' ? 'మొబైల్ నంబర్' : 'Mobile Number',
-    emailLabel: language === 'te' ? 'ఇమెయిల్' : 'Email',
-    attachFile: language === 'te' ? 'ఫైల్ జోడించండి' : 'Attach File',
-    attachHint: language === 'te' ? 'చిత్రాలు, PDF, Word పత్రాలు (గరిష్టంగా 10MB)' : 'Images, PDF, Word documents (max 10MB)',
-    submit: language === 'te' ? 'సమర్పించండి' : 'Submit Request',
-    submitting: language === 'te' ? 'సమర్పిస్తోంది...' : 'Submitting...',
-  };
-
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="bg-gradient-to-br from-primary/10 via-background to-accent/10 px-4 pt-8 pb-6">
-        <h1 className="text-2xl font-bold text-foreground">{t.title}</h1>
-        <p className="text-muted-foreground text-sm mt-1">{t.subtitle}</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="px-4 py-6 max-w-lg mx-auto space-y-5">
-        {/* Service Type */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t.serviceLabel}</label>
-          <select
-            value={serviceType}
-            onChange={e => setServiceType(e.target.value)}
-            required
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">{t.servicePlaceholder}</option>
-            {extendedServiceOptions.map((opt, i) => (
-              <option key={i} value={opt.labelEn}>
-                {language === 'te' ? opt.labelTe : opt.labelEn}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Deadline */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t.deadlineLabel}</label>
-          <input
-            type="date"
-            value={deadline}
-            onChange={e => setDeadline(e.target.value)}
-            required
-            min={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-        </div>
-
-        {/* Project Details */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t.detailsLabel}</label>
-          <textarea
-            value={projectDetails}
-            onChange={e => setProjectDetails(e.target.value)}
-            required
-            rows={4}
-            placeholder={t.detailsPlaceholder}
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-          />
-        </div>
-
-        {/* Mobile Number */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t.mobileLabel}</label>
-          <input
-            type="tel"
-            value={mobileNumber}
-            onChange={e => setMobileNumber(e.target.value)}
-            required
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            placeholder="+91XXXXXXXXXX"
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t.emailLabel}</label>
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-            placeholder="you@example.com"
-          />
-        </div>
-
-        {/* File Attachment */}
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">{t.attachFile}</label>
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-border rounded-xl p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
-          >
-            {selectedFile ? (
-              <div className="flex items-center gap-3">
-                <FileText className="w-8 h-8 text-primary flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{selectedFile.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                  {createQuotation.isPending && uploadProgress > 0 && uploadProgress < 100 && (
-                    <div className="mt-1.5 bg-muted rounded-full h-1.5">
-                      <div
-                        className="bg-primary h-1.5 rounded-full transition-all"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={e => { e.stopPropagation(); removeFile(); }}
-                  className="p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-center">
-                <Upload className="w-8 h-8 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {language === 'te' ? 'ఫైల్ అప్‌లోడ్ చేయండి' : 'Upload a file'}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t.attachHint}</p>
-                </div>
-                <Paperclip className="w-4 h-4 text-primary" />
-              </div>
-            )}
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+            <Printer className="w-8 h-8 text-primary" />
           </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,application/pdf,.doc,.docx"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          {fileError && (
-            <p className="text-xs text-destructive mt-1">{fileError}</p>
-          )}
+          <h1 className="text-3xl font-bold text-foreground mb-2">{t('quotationTitle')}</h1>
+          <p className="text-muted-foreground">{t('quotationSubtitle')}</p>
         </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={createQuotation.isPending}
-          className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-60 text-sm"
-        >
-          {createQuotation.isPending ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground" />
-              {t.submitting}
-            </>
-          ) : t.submit}
-        </button>
+        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-primary" />
+              {t('quotationTitle')}
+            </CardTitle>
+            <CardDescription>{t('quotationSubtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Service Type */}
+              <div className="space-y-2">
+                <Label htmlFor="serviceType" className="text-sm font-semibold">
+                  {t('serviceType')} *
+                </Label>
+                <Select value={serviceType} onValueChange={(v) => setServiceType(v as ServiceType)}>
+                  <SelectTrigger id="serviceType" className={errors.serviceType ? 'border-destructive' : ''}>
+                    <SelectValue placeholder={t('selectService')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={ServiceType.digital}>{t('digitalPrinting')}</SelectItem>
+                    <SelectItem value={ServiceType.banner}>{t('bannerPrinting')}</SelectItem>
+                    <SelectItem value={ServiceType.offset}>{t('offsetPrinting')}</SelectItem>
+                    <SelectItem value={ServiceType.design}>{t('designServices')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.serviceType && <p className="text-xs text-destructive">{errors.serviceType}</p>}
+              </div>
 
-        {createQuotation.isError && (
-          <p className="text-xs text-destructive text-center">
-            {language === 'te' ? 'సమర్పణ విఫలమైంది. మళ్ళీ ప్రయత్నించండి.' : 'Submission failed. Please try again.'}
-          </p>
-        )}
-      </form>
+              {/* Project Details */}
+              <div className="space-y-2">
+                <Label htmlFor="projectDetails" className="text-sm font-semibold">
+                  {t('projectDetails')} *
+                </Label>
+                <Textarea
+                  id="projectDetails"
+                  value={projectDetails}
+                  onChange={(e) => setProjectDetails(e.target.value)}
+                  placeholder={t('projectDetailsPlaceholder')}
+                  rows={4}
+                  className={errors.projectDetails ? 'border-destructive' : ''}
+                />
+                {errors.projectDetails && <p className="text-xs text-destructive">{errors.projectDetails}</p>}
+              </div>
+
+              {/* Design Status - NEW: replaces file attachment */}
+              <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-primary" />
+                  {t('designStatusQuestion')} *
+                </Label>
+                <RadioGroup
+                  value={designStatus}
+                  onValueChange={(v) => setDesignStatus(v as DesignStatus)}
+                  className="space-y-3"
+                >
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      designStatus === DesignStatus.ready
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-background hover:border-primary/50'
+                    }`}
+                    onClick={() => setDesignStatus(DesignStatus.ready)}
+                  >
+                    <RadioGroupItem value={DesignStatus.ready} id="design-ready" />
+                    <Label htmlFor="design-ready" className="cursor-pointer font-medium text-sm">
+                      ✅ {t('designStatusReady')}
+                    </Label>
+                  </div>
+                  <div
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      designStatus === DesignStatus.needed
+                        ? 'border-accent bg-accent/10'
+                        : 'border-border bg-background hover:border-accent/50'
+                    }`}
+                    onClick={() => setDesignStatus(DesignStatus.needed)}
+                  >
+                    <RadioGroupItem value={DesignStatus.needed} id="design-needed" />
+                    <Label htmlFor="design-needed" className="cursor-pointer font-medium text-sm">
+                      🎨 {t('designStatusNeeded')}
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Deadline */}
+              <div className="space-y-2">
+                <Label htmlFor="deadline" className="text-sm font-semibold flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  {t('deadline')} *
+                </Label>
+                <Input
+                  id="deadline"
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className={errors.deadline ? 'border-destructive' : ''}
+                />
+                {errors.deadline && <p className="text-xs text-destructive">{errors.deadline}</p>}
+              </div>
+
+              {/* Mobile Number */}
+              <div className="space-y-2">
+                <Label htmlFor="mobileNumber" className="text-sm font-semibold flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-primary" />
+                  {t('mobileNumber')} *
+                </Label>
+                <Input
+                  id="mobileNumber"
+                  type="tel"
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  placeholder="+91 XXXXX XXXXX"
+                  className={errors.mobileNumber ? 'border-destructive' : ''}
+                />
+                {errors.mobileNumber && <p className="text-xs text-destructive">{errors.mobileNumber}</p>}
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-primary" />
+                  {t('email')} *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className={errors.email ? 'border-destructive' : ''}
+                />
+                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              </div>
+
+              {/* Submit */}
+              <Button
+                type="submit"
+                disabled={createQuotation.isPending}
+                className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+              >
+                {createQuotation.isPending ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    {t('submitting')}
+                  </>
+                ) : (
+                  <>
+                    <Printer className="w-5 h-5 mr-2" />
+                    {t('submitQuotation')}
+                  </>
+                )}
+              </Button>
+
+              {createQuotation.isError && (
+                <p className="text-sm text-destructive text-center">
+                  Something went wrong. Please try again.
+                </p>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -1,277 +1,246 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Customer Portal, Bilingual UI, Services Redesign, Adaptive Gallery, and Full Admin Content Editor",
+  "title": "Quotation form update, admin login redirect, UX improvements, bilingual toggle, and app branding",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Implement customer self-service portal with email/mobile login, personal profile, and quotation history view",
+      "summary": "Replace file attachment input on QuotationRequestPage with a design status radio button asking 'Is your design ready?' with options 'Yes, my design is ready' and 'No, I need design assistance'",
       "acceptanceCriteria": [
-        "A customer can register using an email address or mobile number plus a password.",
-        "A customer can log in using their credentials and land on a personal portal page.",
-        "The portal page lists all work orders / quotations submitted by that customer with status, dates, and history.",
-        "Customers cannot see other customers' data.",
-        "Backend associates quotations with the customer's account by email or mobile number."
+        "No file upload input or attachment button is visible on the quotation form",
+        "A 'Is your design ready?' question is displayed with two selectable options: 'Yes, my design is ready' and 'No, I need design assistance'",
+        "The selected design status is submitted with the quotation to the backend",
+        "The option is displayed in both English and Telugu based on current language setting",
+        "Admin quotation management page displays the design status for each quotation"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useCustomerAuth.ts",
-          "operation": "create",
-          "description": "Create a custom hook for customer authentication separate from Internet Identity. Implements registerCustomer and authenticateCustomer backend methods with password hashing (SHA-256). Manages customer session state using React Context or localStorage. Provides login, logout, register functions and current customer identifier state."
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Remove the file attachment input and FileUpload component from the quotation form. Add a radio button group with bilingual labels asking 'Is your design ready?' with two options: 'Yes, my design is ready' (designStatus: 'ready') and 'No, I need design assistance' (designStatus: 'needed'). Update the form submission to pass the designStatus field to createQuotationRequest backend method. Use translations from LanguageContext for both English and Telugu labels."
         },
         {
-          "path": "frontend/src/contexts/CustomerAuthContext.tsx",
-          "operation": "create",
-          "description": "Create a React context provider for customer authentication state. Wraps the useCustomerAuth hook and exposes customer identity (email or mobile), authentication status, and auth functions to child components. Persists customer session across page reloads."
+          "path": "frontend/src/translations/en.ts",
+          "operation": "modify",
+          "description": "Add English translation keys for the design status question and options under the quotation section: designStatusQuestion: 'Is your design ready?', designStatusReady: 'Yes, my design is ready', designStatusNeeded: 'No, I need design assistance'."
         },
         {
-          "path": "frontend/src/pages/customer/CustomerLoginPage.tsx",
-          "operation": "create",
-          "description": "Create customer login page with form fields for email/mobile identifier and password. Uses the customer auth hook to call authenticateCustomer. On success, redirects to /customer/portal. Includes link to registration page. Supports bilingual labels (English and Telugu) using the LanguageContext."
+          "path": "frontend/src/translations/te.ts",
+          "operation": "modify",
+          "description": "Add Telugu translation keys for the design status question and options under the quotation section: designStatusQuestion (Telugu), designStatusReady (Telugu), designStatusNeeded (Telugu)."
         },
         {
-          "path": "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
-          "operation": "create",
-          "description": "Create customer registration page with form fields for email, mobile number, and password (with confirmation). Validates inputs and calls registerCustomer backend method via the customer auth hook. On success, redirects to login page. Supports bilingual labels."
+          "path": "frontend/src/pages/admin/QuotationManagementPage.tsx",
+          "operation": "modify",
+          "description": "Add a display field in the quotation detail view that shows the designStatus value for each quotation request. Use bilingual labels to display 'Design Ready' or 'Design Assistance Needed' based on the stored designStatus field from the backend QuotationRequest type."
         },
         {
           "path": "frontend/src/pages/customer/CustomerPortalPage.tsx",
-          "operation": "create",
-          "description": "Create customer portal page that fetches and displays all quotations for the logged-in customer using getCustomerQuotations backend method with the customer's identifier. Shows quotation ID, service type, status, timestamp, and negotiation history count. Includes a logout button. Requires customer authentication via a guard component."
-        },
-        {
-          "path": "frontend/src/components/CustomerGuard.tsx",
-          "operation": "create",
-          "description": "Create a route guard component that checks if a customer is authenticated via CustomerAuthContext. If not authenticated, redirects to /customer/login. If authenticated, renders children. Similar pattern to AdminGuard but for customer auth flow."
-        },
-        {
-          "path": "frontend/src/hooks/useCustomerQuotations.ts",
-          "operation": "create",
-          "description": "Create a React Query hook that fetches quotations for a specific customer using getCustomerQuotations(customerId) backend method. Returns quotation list with status, dates, and history. Invalidates on quotation updates."
-        },
-        {
-          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add new routes for customer portal: /customer/login, /customer/register, and /customer/portal. Wrap the portal route with CustomerGuard. Ensure CustomerAuthContext provider wraps relevant routes."
+          "description": "Display the designStatus field in the quotation card details shown on the customer portal, using bilingual labels from translations."
         },
         {
-          "path": "frontend/src/components/Layout.tsx",
+          "path": "frontend/src/pages/MyQuotationsPage.tsx",
           "operation": "modify",
-          "description": "Add a navigation link in the header or bottom nav to access the customer portal (/customer/login). Display customer name or identifier when a customer is logged in (from CustomerAuthContext). Ensure layout does not conflict with existing Internet Identity admin auth."
-        },
-        {
-          "path": "frontend/src/main.tsx",
-          "operation": "modify",
-          "description": "Wrap the App component with CustomerAuthProvider to ensure customer authentication state is available throughout the app. Place it inside QueryClientProvider and InternetIdentityProvider."
+          "description": "Display the designStatus field in the expandable quotation detail sections, using bilingual labels from translations."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Display English and Telugu text side-by-side throughout the app without requiring a language toggle",
+      "summary": "Redirect admin users to the Admin Dashboard page immediately after successful email/password login",
       "acceptanceCriteria": [
-        "All major headings and labels on every page show both English and Telugu text simultaneously.",
-        "No page requires switching language to see translated content.",
-        "Existing LanguageContext and translation files are leveraged without breaking the toggle for any remaining preference features."
+        "After entering correct admin email and password, the user is automatically redirected to the Admin Dashboard page",
+        "No manual navigation step is required after successful login",
+        "Incorrect credentials show an error message and do not redirect",
+        "Biometric and Internet Identity login paths are unaffected"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/bilingualText.ts",
-          "operation": "create",
-          "description": "Create a utility function getBilingualText(enKey: string, teKey: string) that returns a formatted string combining English and Telugu translations side-by-side or stacked (e.g., 'English / తెలుగు'). Use this across all pages for headings, labels, and buttons."
-        },
-        {
-          "path": "frontend/src/components/BilingualText.tsx",
-          "operation": "create",
-          "description": "Create a reusable component that renders English and Telugu text together. Accepts translationKey prop and displays both languages using a consistent style (e.g., English on top, Telugu below, or separated by a slash). Uses LanguageContext to fetch both translation sets."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Update all headings, labels, and button text to display both English and Telugu simultaneously using BilingualText component or getBilingualText utility. Replace single-language t() calls with bilingual rendering."
-        },
-        {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Update all service headings, descriptions, and category labels to show both English and Telugu text side-by-side. Use BilingualText component for consistent rendering."
-        },
-        {
-          "path": "frontend/src/pages/AboutPage.tsx",
-          "operation": "modify",
-          "description": "Update hero section, benefit cards, and commitment section text to display bilingual content simultaneously. Apply BilingualText component to all translated strings."
-        },
-        {
-          "path": "frontend/src/pages/ContactUsPage.tsx",
-          "operation": "modify",
-          "description": "Update all labels, headings, and button text on the contact page to display both English and Telugu. Use BilingualText for consistency."
-        },
-        {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
-          "operation": "modify",
-          "description": "Update category tabs, project titles, descriptions, and filter labels to show bilingual text. Ensure ProjectDetailModal also displays bilingual content."
-        },
-        {
-          "path": "frontend/src/pages/TestimonialsPage.tsx",
-          "operation": "modify",
-          "description": "Update page headings, filter labels, and rating text to display both English and Telugu simultaneously."
-        },
-        {
-          "path": "frontend/src/pages/QuotationRequestPage.tsx",
-          "operation": "modify",
-          "description": "Update all form labels, placeholders, and button text to show bilingual content using BilingualText component."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Update navigation labels in header and BottomNav to display bilingual text for all menu items."
-        },
-        {
-          "path": "frontend/src/components/BottomNav.tsx",
-          "operation": "modify",
-          "description": "Update navigation label rendering to show both English and Telugu text for each tab item."
+          "description": "After successful email/password authentication (verifyAuthentication returns true), use TanStack Router's navigate function to immediately redirect to '/admin/dashboard' instead of showing any intermediate success state. Ensure this redirect only applies to email/password login and does not affect biometric or Internet Identity authentication flows."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Redesign services section to remove alphabetic labels, add sample images and videos, and enable admin management of service media",
+      "summary": "Improve customer-facing UX with share button, enhanced hero section, animations, consistent button styling, status indicators, and permanent 'Sponsored by Magic Advertising' footer badge",
       "acceptanceCriteria": [
-        "No alphabetic prefix labels (A, B, C, etc.) appear on any service listing.",
-        "Service cards display a sample image or video thumbnail relevant to the service type.",
-        "HomePage has a dedicated section showcasing printing sample images and embedded video previews.",
-        "Admin can upload/update service sample images and video URLs from the admin panel."
+        "Home page has a clear share button visible to customers without scrolling far",
+        "Hero section has a bold headline and primary CTA button",
+        "Service cards and gallery items have visible hover/tap transitions",
+        "All primary action buttons share a consistent filled style across customer pages",
+        "Customer portal shows friendly status progress for their orders",
+        "'Sponsored by Magic Advertising' text is visible in the footer on all pages"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ServicesPage.tsx",
-          "operation": "modify",
-          "description": "Remove all alphabetic prefix labels (A, B, C) from service item rendering. Redesign service cards to display as visually attractive cards with sample images or video thumbnails fetched from backend using getServiceImages and getVideoClips methods. Use a grid layout with image/video preview, service title, and short description. Ensure bilingual text is displayed."
-        },
-        {
           "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Add a new 'Printing Samples & Videos' section below the hero and features. Fetch service sample images using getServiceImages hook and video clips using getVideoClips hook. Display sample images from frontend/public/assets/generated/ (print-sample-banner.dim_800x450.png, print-sample-business-card.dim_800x450.png, print-sample-flex.dim_800x450.png, print-sample-brochure.dim_800x450.png) as static assets in a gallery grid. Display video thumbnails with play icons that link to video URLs. Use bilingual section headings."
+          "description": "Add the existing ShareAppButton component prominently in the hero section, positioned near the main CTA button. Enhance the hero section with a bolder, larger headline using typography utilities (text-4xl or text-5xl), add vibrant accent colors using oklch CSS custom properties (--color-accent, --color-primary), and ensure the primary CTA button uses a filled style (bg-primary with hover states). Reference the generated hero banner image at frontend/public/assets/generated/hero-banner.dim_1200x400.png as the hero background. Use translations from LanguageContext for all text."
         },
         {
-          "path": "frontend/src/hooks/useServiceImages.ts",
-          "operation": "create",
-          "description": "Create React Query hooks to fetch, add, and delete service images using getServiceImages, addServiceImage, and deleteServiceImage backend methods. Returns array of ServiceImage objects with id, serviceType, imageUrl, and description."
-        },
-        {
-          "path": "frontend/src/hooks/useVideoClips.ts",
-          "operation": "create",
-          "description": "Create React Query hooks to fetch, add, and delete video clips using getVideoClips, addVideoClip, and deleteVideoClip backend methods. Returns array of VideoClip objects with id, serviceType, videoUrl, thumbnailUrl, and description."
-        },
-        {
-          "path": "frontend/src/pages/admin/ServiceMediaManagementPage.tsx",
-          "operation": "create",
-          "description": "Create admin page for managing service sample images and video clips. Includes two sections: one for uploading/editing/deleting service images (with image preview and serviceType selector), and one for adding/editing/deleting video clips (with videoUrl and thumbnailUrl fields). Uses useServiceImages and useVideoClips hooks. Wrapped in AdminGuard. Supports bilingual labels."
-        },
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/ServicesPage.tsx",
           "operation": "modify",
-          "description": "Add route for /admin/service-media that renders ServiceMediaManagementPage wrapped in AdminGuard."
+          "description": "Add smooth hover and tap animations to service cards using Tailwind transition utilities (transition-transform, hover:scale-105, active:scale-95). Ensure all main action buttons (e.g., 'Request Quotation') use a consistent filled primary button style."
         },
         {
-          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
           "operation": "modify",
-          "description": "Add a quick-link card to navigate to /admin/service-media for managing service sample images and videos. Use bilingual label 'Service Media / సేవా మీడియా'."
+          "description": "Add smooth hover and tap transitions to gallery project cards using Tailwind utilities (transition-all, hover:shadow-lg, hover:scale-[1.02], active:scale-[0.98])."
         },
         {
-          "path": "frontend/src/components/ServiceCard.tsx",
-          "operation": "create",
-          "description": "Create a reusable ServiceCard component that accepts serviceType, imageUrl or videoThumbnailUrl, title (bilingual), and description (bilingual). Renders an attractive card with image/thumbnail, title overlay, and description. Used on ServicesPage and HomePage."
+          "path": "frontend/src/pages/customer/CustomerPortalPage.tsx",
+          "operation": "modify",
+          "description": "Add friendly status messages and progress indicators for each quotation/order card. For example, show step-by-step progress (Submitted → Under Review → Approved → In Progress → Completed) using bilingual labels. Add visual progress bars or step indicators to help customers understand their order journey."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Add a permanent footer badge displaying 'Sponsored by Magic Advertising' using the generated image at frontend/public/assets/generated/magic-advertising-badge.dim_320x64.png. Position it at the bottom of the footer in a visually subtle but permanent manner. Ensure it is visible on all pages and in both language modes. Do not make this badge editable or removable through any admin interface."
+        },
+        {
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the submit button uses a consistent filled primary button style (bg-primary with hover states) matching other customer-facing pages."
+        },
+        {
+          "path": "frontend/src/pages/customer/CustomerLoginPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the login button uses a consistent filled primary button style matching other customer-facing pages."
+        },
+        {
+          "path": "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the registration button uses a consistent filled primary button style matching other customer-facing pages."
+        },
+        {
+          "path": "frontend/src/pages/ContactUsPage.tsx",
+          "operation": "modify",
+          "description": "Ensure any action buttons (e.g., 'Send Message') use a consistent filled primary button style."
+        },
+        {
+          "path": "frontend/src/pages/MyQuotationsPage.tsx",
+          "operation": "modify",
+          "description": "Ensure action buttons (approve, accept, reject) use consistent styling with filled primary style for main actions and outline/ghost for secondary actions."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Update ProjectGalleryPage to display images at natural aspect ratios using a masonry or variable-height grid layout",
+      "summary": "Ensure fully functional and prominent language toggle between English and Telugu on all pages, with complete translations for all customer-facing content",
       "acceptanceCriteria": [
-        "Gallery images are displayed with their original aspect ratios preserved (no forced crop to a single uniform height).",
-        "A masonry or variable-height grid layout is used so images of different shapes fit naturally.",
-        "The layout remains responsive across mobile and desktop screen sizes.",
-        "No image appears stretched or distorted."
+        "Language toggle button is visible in the app header on all screen sizes",
+        "Switching language immediately updates all visible text without a page reload",
+        "All customer-facing pages display fully in Telugu when Telugu is selected",
+        "All customer-facing pages display fully in English when English is selected",
+        "Language preference persists across page navigation and browser refresh",
+        "New quotation design-status option (REQ-1) has translations in both languages"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "path": "frontend/src/components/Layout.tsx",
           "operation": "modify",
-          "description": "Replace the current uniform grid layout with a masonry or CSS columns layout that preserves each image's natural aspect ratio. Remove any fixed height or object-fit: cover styles that crop images. Use CSS columns (column-count, column-gap) or a masonry library (e.g., react-masonry-css) to create a variable-height grid. Ensure images load with their intrinsic width and height, scaled to fit the column width. Test with portrait, landscape, and square images. Maintain responsive breakpoints for mobile and desktop."
+          "description": "Ensure the LanguageToggle component is prominently visible in the header on all screen sizes. Verify it is positioned consistently and easily accessible. Ensure the toggle persists across all pages."
         },
         {
-          "path": "frontend/src/components/ProjectCard.tsx",
-          "operation": "create",
-          "description": "Create a reusable ProjectCard component that displays a project image, title, category badge, and description. The image should render at its natural aspect ratio without cropping. Accepts imageUrl, title, category, and description props. Used within the masonry layout on ProjectGalleryPage."
+          "path": "frontend/src/components/BottomNav.tsx",
+          "operation": "modify",
+          "description": "Add or ensure the LanguageToggle component is visible in the mobile bottom navigation or as a fixed floating button for easy access on mobile devices."
+        },
+        {
+          "path": "frontend/src/translations/en.ts",
+          "operation": "modify",
+          "description": "Review and add any missing English translation keys for customer-facing pages including QuotationRequestPage, CustomerLoginPage, CustomerRegistrationPage, CustomerPortalPage, HomePage, ServicesPage, ContactUsPage, and TestimonialsPage. Ensure all form labels, buttons, status messages, and error messages have translation keys."
+        },
+        {
+          "path": "frontend/src/translations/te.ts",
+          "operation": "modify",
+          "description": "Review and add corresponding Telugu translations for all English keys added or verified in en.ts. Ensure full coverage for all customer-facing pages."
+        },
+        {
+          "path": "frontend/src/pages/QuotationRequestPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text (labels, placeholders, buttons, error messages) uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/customer/CustomerLoginPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/customer/CustomerRegistrationPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/customer/CustomerPortalPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/ServicesPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/ContactUsPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
+        },
+        {
+          "path": "frontend/src/pages/TestimonialsPage.tsx",
+          "operation": "modify",
+          "description": "Verify all text uses translation keys from LanguageContext and displays correctly in both English and Telugu."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Build comprehensive admin content editor for all dynamic content including contact details, services, business hours, gallery, and homepage/about content",
+      "summary": "Set permanent app branding to 'Nellore Printing Hub' everywhere and add permanent 'Sponsored by Magic Advertising' footer badge on all pages",
       "acceptanceCriteria": [
-        "Admin dashboard has management pages for: Contact Details, Services, Business Hours, Project Gallery, and Homepage/About content.",
-        "Admin can create, update, and delete entries in each of those sections.",
-        "All content changes are persisted to the backend and immediately reflected on the public-facing pages.",
-        "Business hours can be set per day (Mon–Sun) with open/close times.",
-        "No user-facing page contains hardcoded text that the admin should be able to change.",
-        "Only authenticated admins can access the edit interfaces."
+        "Browser tab title reads 'Nellore Printing Hub'",
+        "App header/logo displays 'Nellore Printing Hub'",
+        "Footer permanently shows 'Sponsored by Magic Advertising' on every page",
+        "The sponsor text is not removable or editable through the admin panel",
+        "Branding is consistent in both English and Telugu language modes"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useAdminContent.ts",
-          "operation": "create",
-          "description": "Create React Query hooks to fetch and update admin content using getAdminContent and updateAdminContent backend methods. AdminContent includes contactInfo, services array, businessHours array, gallery array, homepageContent, and aboutPageContent. Provides getAdminContent query and updateAdminContent mutation with query invalidation."
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Change the <title> tag content from 'Nellore Print Hub' to 'Nellore Printing Hub'."
         },
         {
-          "path": "frontend/src/pages/admin/BusinessHoursManagementPage.tsx",
-          "operation": "create",
-          "description": "Create admin page for editing business hours. Displays a form with seven rows (Mon–Sun), each with open time and close time inputs (time pickers). Fetches current businessHours array from getAdminContent, allows editing, and saves via updateAdminContent mutation. Wrapped in AdminGuard. Supports bilingual labels."
-        },
-        {
-          "path": "frontend/src/pages/admin/HomepageContentManagementPage.tsx",
-          "operation": "create",
-          "description": "Create admin page for editing homepage dynamic content (hero text, feature highlights, promotional banners). Displays a rich text editor or textarea for homepageContent field. Fetches from getAdminContent and saves via updateAdminContent. Wrapped in AdminGuard. Supports bilingual labels."
-        },
-        {
-          "path": "frontend/src/pages/admin/AboutContentManagementPage.tsx",
-          "operation": "create",
-          "description": "Create admin page for editing about page content. Displays a rich text editor or textarea for aboutPageContent field. Fetches from getAdminContent and saves via updateAdminContent. Wrapped in AdminGuard. Supports bilingual labels."
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Update the header logo text to display 'Nellore Printing Hub' consistently in both language modes. Add a permanent footer section displaying 'Sponsored by Magic Advertising' using the generated badge image at frontend/public/assets/generated/magic-advertising-badge.dim_320x64.png. Ensure this sponsor badge is hardcoded and not removable or editable through any admin interface. The badge should be visible on every page in a visually subtle but permanent position."
         },
         {
           "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Replace hardcoded hero text, feature highlights, and promotional content with dynamic content fetched from getAdminContent hook (homepageContent field). Parse and render the content appropriately (e.g., as HTML or formatted text). Ensure bilingual display."
+          "description": "Update the hero section to display 'Nellore Printing Hub' as the main app name in both English and Telugu translations. Ensure consistency with the header branding."
         },
         {
           "path": "frontend/src/pages/AboutPage.tsx",
           "operation": "modify",
-          "description": "Replace hardcoded about page content with dynamic content fetched from getAdminContent hook (aboutPageContent field). Parse and render the content. Ensure bilingual display."
+          "description": "Update any references to the app name to 'Nellore Printing Hub' in both English and Telugu translations."
         },
         {
-          "path": "frontend/src/pages/ContactUsPage.tsx",
+          "path": "frontend/src/translations/en.ts",
           "operation": "modify",
-          "description": "Update to display business hours fetched from getAdminContent hook (businessHours array). Render open/close times for each day of the week. Ensure bilingual day labels."
+          "description": "Add or update translation keys for app branding: appName: 'Nellore Printing Hub', sponsoredBy: 'Sponsored by Magic Advertising'. Ensure these keys are used consistently across the app."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/translations/te.ts",
           "operation": "modify",
-          "description": "Add routes for /admin/business-hours, /admin/homepage-content, and /admin/about-content, each rendering the respective management page wrapped in AdminGuard."
-        },
-        {
-          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Add quick-link cards to navigate to /admin/business-hours, /admin/homepage-content, and /admin/about-content for managing dynamic content. Use bilingual labels."
-        },
-        {
-          "path": "frontend/src/pages/admin/ContactInfoManagementPage.tsx",
-          "operation": "modify",
-          "description": "Ensure this page uses getAdminContent and updateAdminContent hooks instead of separate updateContactInfo mutation, so all admin content is managed via a unified interface. Update form to edit contactInfo field within AdminContent structure."
-        },
-        {
-          "path": "frontend/src/pages/admin/ProjectManagementPage.tsx",
-          "operation": "modify",
-          "description": "Ensure gallery management (add/edit/delete projects) uses the gallery array from AdminContent structure. Update to use getAdminContent and updateAdminContent for persisting gallery changes, in addition to existing useProjects hooks."
+          "description": "Add or update corresponding Telugu translation keys for app branding: appName (Telugu translation of 'Nellore Printing Hub'), sponsoredBy (Telugu translation of 'Sponsored by Magic Advertising')."
         }
       ]
     }

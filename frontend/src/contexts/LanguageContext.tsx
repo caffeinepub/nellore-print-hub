@@ -1,17 +1,23 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
+import en from '../translations/en';
+import te from '../translations/te';
 
 type Language = 'en' | 'te';
 
-interface LanguageContextType {
+const translations = { en, te };
+
+export interface LanguageContextType {
   language: Language;
   toggleLanguage: () => void;
   setLanguage: (lang: Language) => void;
+  t: (key: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
   toggleLanguage: () => {},
   setLanguage: () => {},
+  t: (key: string) => key,
 });
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -21,7 +27,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   });
 
   const toggleLanguage = () => {
-    setLanguageState(prev => {
+    setLanguageState((prev) => {
       const next = prev === 'en' ? 'te' : 'en';
       localStorage.setItem('appLanguage', next);
       return next;
@@ -33,8 +39,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(lang);
   };
 
+  const t = (key: string): string => {
+    const dict = translations[language] as Record<string, string>;
+    return dict[key] ?? key;
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, setLanguage }}>
+    <LanguageContext.Provider value={{ language, toggleLanguage, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

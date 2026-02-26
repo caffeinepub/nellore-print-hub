@@ -4,15 +4,19 @@ import Text "mo:core/Text";
 import List "mo:core/List";
 import Time "mo:core/Time";
 import Int "mo:core/Int";
+import Float "mo:core/Float";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
+import Migration "migration";
 import Principal "mo:core/Principal";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
+// Enable data migration via the with clause
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -60,7 +64,12 @@ actor {
     timestamp : Int;
     negotiationHistory : [NegotiationMessage];
     customer : Principal;
-    quotationFileBlob : ?Storage.ExternalBlob;
+    designStatus : DesignStatus;
+  };
+
+  public type DesignStatus = {
+    #ready;
+    #needed;
   };
 
   public type QuotationDetails = {
@@ -572,7 +581,7 @@ actor {
     projectDetails : Text,
     mobileNumber : Text,
     email : Text,
-    file : ?Storage.ExternalBlob,
+    designStatus : DesignStatus,
   ) : async Text {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can submit quotation requests");
@@ -589,7 +598,7 @@ actor {
       timestamp = Time.now();
       negotiationHistory = [];
       customer = caller;
-      quotationFileBlob = file;
+      designStatus;
     };
     quotations.add(id, request);
     id;
@@ -616,7 +625,7 @@ actor {
         timestamp = request.timestamp;
         negotiationHistory = request.negotiationHistory;
         customer = request.customer;
-        quotationFileBlob = request.quotationFileBlob;
+        designStatus = request.designStatus;
       };
       updatedRequests.add((id, updatedRequest));
     };
@@ -652,7 +661,7 @@ actor {
             timestamp = quote.timestamp;
             negotiationHistory = quote.negotiationHistory;
             customer = quote.customer;
-            quotationFileBlob = quote.quotationFileBlob;
+            designStatus = quote.designStatus;
           };
           updatedRequests.add((id, updatedRequest));
         };
@@ -688,7 +697,7 @@ actor {
         timestamp = request.timestamp;
         negotiationHistory = request.negotiationHistory;
         customer = request.customer;
-        quotationFileBlob = request.quotationFileBlob;
+        designStatus = request.designStatus;
       };
       updatedRequests.add((id, updatedRequest));
     };
@@ -820,7 +829,7 @@ actor {
           timestamp = q.timestamp;
           negotiationHistory = negotiationHistory.toArray();
           customer = q.customer;
-          quotationFileBlob = q.quotationFileBlob;
+          designStatus = q.designStatus;
         };
         quotations.add(quotationId, updatedQuotation);
       };
@@ -858,7 +867,7 @@ actor {
           timestamp = q.timestamp;
           negotiationHistory = negotiationHistory.toArray();
           customer = q.customer;
-          quotationFileBlob = q.quotationFileBlob;
+          designStatus = q.designStatus;
         };
         quotations.add(quotationId, updatedQuotation);
       };

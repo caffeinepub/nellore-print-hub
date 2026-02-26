@@ -60,10 +60,10 @@ export interface QuotationRequest {
     mobileNumber: string;
     deadline: bigint;
     email: string;
+    designStatus: DesignStatus;
     negotiationHistory: Array<NegotiationMessage>;
     timestamp: bigint;
     projectDetails: string;
-    quotationFileBlob?: ExternalBlob;
 }
 export interface AdminContent {
     aboutPageContent: string;
@@ -122,6 +122,10 @@ export interface UserProfile {
     mobileNumber: string;
     email: string;
 }
+export enum DesignStatus {
+    needed = "needed",
+    ready = "ready"
+}
 export enum QuotationStatus {
     customerPending = "customerPending",
     completed = "completed",
@@ -156,7 +160,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     authenticateCustomer(identifier: string, passwordHash: string): Promise<string>;
     calculateDeliveryFee(distance: bigint): Promise<bigint>;
-    createQuotationRequest(serviceType: ServiceType, deadline: bigint, projectDetails: string, mobileNumber: string, email: string, file: ExternalBlob | null): Promise<string>;
+    createQuotationRequest(serviceType: ServiceType, deadline: bigint, projectDetails: string, mobileNumber: string, email: string, designStatus: DesignStatus): Promise<string>;
     customerApproveQuotation(quotationId: string): Promise<void>;
     deleteProject(projectId: string): Promise<void>;
     deleteServiceImage(imageId: string): Promise<void>;

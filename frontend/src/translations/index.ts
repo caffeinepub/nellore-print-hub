@@ -1,10 +1,8 @@
-import { en } from './en';
-import { te } from './te';
-import type { Translations } from './en';
+import en from './en';
+import te from './te';
 
-export type { Translations };
 export { en, te };
 
-export function getTranslations(language: 'en' | 'te'): Translations {
+export function getTranslations(language: 'en' | 'te'): Record<string, string> {
   return language === 'te' ? te : en;
 }

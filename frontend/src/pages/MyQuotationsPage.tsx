@@ -1,6 +1,7 @@
+import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useGetMyQuotations, useGetQuotationDetails, useCustomerApproveQuotation } from '../hooks/useQuotations';
-import { QuotationRequest } from '../backend';
+import { QuotationRequest, DesignStatus } from '../backend';
 import {
   Clock,
   CheckCircle,
@@ -13,6 +14,7 @@ import {
   Wrench,
   CircleDot,
   ThumbsUp,
+  Palette,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -133,7 +135,7 @@ function QuotationCard({ quotation }: { quotation: QuotationRequest }) {
     digital: language === 'te' ? 'డిజిటల్ ప్రింటింగ్' : 'Digital Printing',
     banner: language === 'te' ? 'అవుట్‌డోర్/ఇండోర్ ప్రింటింగ్' : 'Outdoor/Indoor Printing',
     offset: language === 'te' ? 'ఆఫ్‌సెట్ ప్రింటింగ్' : 'Offset Printing',
-  }[quotation.serviceType as string] ?? quotation.serviceType;
+  }[quotation.serviceType as string] ?? String(quotation.serviceType);
 
   const isCustomerPending = quotation.status === 'customerPending';
   const isPaymentPending = quotation.status === 'paymentPending';
@@ -187,13 +189,15 @@ function QuotationCard({ quotation }: { quotation: QuotationRequest }) {
           </div>
         </div>
 
-        {/* Customer uploaded file indicator */}
-        {quotation.quotationFileBlob && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Paperclip className="w-3 h-3" />
-            <span>{language === 'te' ? 'ఫైల్ జోడించబడింది' : 'File attached'}</span>
-          </div>
-        )}
+        {/* Design Status */}
+        <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Palette className="w-3 h-3 text-primary" />
+          <span>
+            {quotation.designStatus === DesignStatus.ready
+              ? (language === 'te' ? 'డిజైన్ సిద్ధంగా ఉంది' : 'Design Ready')
+              : (language === 'te' ? 'డిజైన్ సహాయం అవసరం' : 'Design Assistance Needed')}
+          </span>
+        </div>
 
         <QuotationDetailsSection quotationId={quotation.id} />
 
@@ -299,7 +303,7 @@ export default function MyQuotationsPage() {
             <p>{language === 'te' ? 'కోటేషన్లు లేవు' : 'No quotations yet'}</p>
           </div>
         ) : (
-          quotations.map(q => <QuotationCard key={q.id} quotation={q} />)
+          quotations.map((q) => <QuotationCard key={q.id} quotation={q} />)
         )}
       </div>
     </div>

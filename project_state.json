@@ -1,50 +1,50 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "A printing/services business app with customer portals, bilingual support, rich service showcases, and a fully editable admin panel.",
+  "summary": "A printing hub web app called 'Nellore Printing Hub' (sponsored by Magic Advertising) with customer login, admin dashboard, quotation requests, Telugu/English bilingual support, gallery, and home page visuals.",
   "architectural_notes": [
-    "Customer portal: per-customer login (email or mobile) with individual work order history pages",
-    "Admin panel must support full content editing: contact info, services, business hours, gallery"
+    "App name is 'Nellore Printing Hub', permanently sponsored by Magic Advertising",
+    "Bilingual support required: Telugu and English with user-facing language toggle"
   ],
   "known_issues": [],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Attractive banner printing sample showing a colorful large-format outdoor banner with vivid graphics (print-sample-banner.dim_800x450.png)\n- Business card printing sample showing a premium matte business card with modern design (print-sample-business-card.dim_800x450.png)\n- Flex printing sample showing a bright flex board with Telugu and English text on a storefront (print-sample-flex.dim_800x450.png)\n- Brochure / pamphlet printing sample showing an open tri-fold brochure with vibrant print (print-sample-brochure.dim_800x450.png)",
+  "imageRequirements": "## Required Images\n- Vibrant hero banner for a printing business with bold typography, ink splashes, and warm orange-red accent colors on a dark background (hero-banner.dim_1200x400.png)\n- 'Sponsored by Magic Advertising' footer badge with a small magic wand icon and elegant typography on a transparent background (magic-advertising-badge.dim_320x64.png)",
   "existing_features": [
     {
-      "id": "feature-implement-a-customer-self-service-portal-customers-register-login-using-their-email-address-or-mobile-number-no-internet-identity-required-each-customer-gets-a-unique-profile-page-that-shows-all-quotation-work-orders-they-have-submitted-to-the-business-including-status-dates-and-any-negotiation-history-the-portal-must-be-accessible-via-a-dedicated-route-e-g-customer-login-and-customer-portal-backend-must-store-customer-credentials-email-or-mobile-hashed-password-and-associate-all-quotations-with-the-logged-in-customer-account",
-      "title": "Implement a customer self-service portal: customers register/login using their email address or mobile number (no Internet Identity required). Each customer gets a unique profile page that shows all quotation/work orders they have submitted to the business, including status, dates, and any negotiation history. The portal must be accessible via a dedicated route (e.g., /customer/login and /customer/portal). Backend must store customer credentials (email or mobile, hashed password) and associate all quotations with the logged-in customer account.",
+      "id": "feature-on-the-request-a-quotation-page-quotationrequestpage-tsx-remove-the-file-attachment-input-entirely-replace-it-with-a-clearly-labeled-radio-button-or-toggle-option-asking-is-your-design-ready-with-two-choices-yes-my-design-is-ready-and-no-i-need-design-assistance-store-this-selection-in-the-quotation-submission-payload-using-an-appropriate-field-e-g-designstatus-ready-needed",
+      "title": "On the 'Request A Quotation' page (QuotationRequestPage.tsx), remove the file attachment input entirely. Replace it with a clearly labeled radio button or toggle option asking: 'Is your design ready?' with two choices — 'Yes, my design is ready' and 'No, I need design assistance'. Store this selection in the quotation submission payload using an appropriate field (e.g., designStatus: 'ready' | 'needed').",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-display-english-and-telugu-text-together-side-by-side-or-stacked-throughout-the-entire-app-for-all-user-facing-labels-headings-buttons-and-content-sections-both-languages-should-be-visible-simultaneously-without-requiring-a-language-toggle-though-the-toggle-can-remain-as-an-optional-preference-update-all-translation-usage-across-pages-homepage-servicespage-aboutpage-contactuspage-projectgallerypage-etc-to-render-both-english-and-telugu-strings-together",
-      "title": "Display English and Telugu text together side-by-side (or stacked) throughout the entire app for all user-facing labels, headings, buttons, and content sections. Both languages should be visible simultaneously without requiring a language toggle, though the toggle can remain as an optional preference. Update all translation usage across pages (HomePage, ServicesPage, AboutPage, ContactUsPage, ProjectGalleryPage, etc.) to render both English and Telugu strings together.",
+      "id": "feature-in-adminloginpage-tsx-after-a-successful-email-password-login-verifyauthentication-returns-success-immediately-redirect-the-user-to-the-admin-dashboard-page-admin-dashboard-or-equivalent-admin-dashboard-route-instead-of-any-intermediate-or-default-page",
+      "title": "In AdminLoginPage.tsx, after a successful email/password login (verifyAuthentication returns success), immediately redirect the user to the Admin Dashboard page (/admin/dashboard or equivalent admin dashboard route) instead of any intermediate or default page.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-redesign-the-our-services-section-on-servicespage-and-the-services-preview-on-homepage-remove-all-a-b-c-alphabetic-labels-prefixes-from-service-items-replace-with-visually-attractive-cards-that-display-sample-printing-work-images-short-video-clips-or-video-embed-thumbnails-and-visual-previews-of-printing-outputs-e-g-banners-business-cards-flex-prints-add-a-dedicated-printing-samples-videos-showcase-section-on-the-homepage-featuring-real-sample-images-and-video-content-admin-must-be-able-to-manage-the-service-images-and-video-urls-through-the-admin-panel-see-req-6",
-      "title": "Redesign the Our Services section on ServicesPage and the services preview on HomePage: remove all A/B/C alphabetic labels/prefixes from service items. Replace with visually attractive cards that display sample printing work images, short video clips or video embed thumbnails, and visual previews of printing outputs (e.g., banners, business cards, flex prints). Add a dedicated 'Printing Samples & Videos' showcase section on the HomePage featuring real sample images and video content. Admin must be able to manage the service images and video URLs through the admin panel (see REQ-6).",
+      "id": "feature-improve-the-overall-customer-facing-ux-and-visual-appeal-of-the-app-to-make-it-more-attractive-easier-to-use-and-shareable-apply-the-following-enhancements-1-add-a-prominent-visually-appealing-share-this-app-call-to-action-on-the-home-page-using-the-existing-shareappbutton-component-2-improve-the-hero-section-on-homepage-tsx-with-a-bold-tagline-a-clear-call-to-action-button-and-vibrant-accent-colors-consistent-with-the-existing-print-industry-theme-3-add-smooth-hover-and-tap-animations-to-service-cards-gallery-items-and-navigation-elements-4-improve-button-styling-across-all-customer-facing-pages-for-consistency-use-filled-primary-buttons-for-main-actions-and-outline-ghost-for-secondary-actions-5-on-the-customer-portal-and-quotation-pages-display-friendly-status-messages-and-progress-indicators-to-guide-customers-through-the-order-journey-6-add-a-sponsored-by-magic-advertising-footer-badge-or-text-on-all-pages-in-a-visually-subtle-but-permanent-manner",
+      "title": "Improve the overall customer-facing UX and visual appeal of the app to make it more attractive, easier to use, and shareable. Apply the following enhancements: (1) Add a prominent, visually appealing 'Share This App' call-to-action on the Home page using the existing ShareAppButton component. (2) Improve the hero section on HomePage.tsx with a bold tagline, a clear call-to-action button, and vibrant accent colors consistent with the existing print-industry theme. (3) Add smooth hover and tap animations to service cards, gallery items, and navigation elements. (4) Improve button styling across all customer-facing pages for consistency — use filled primary buttons for main actions and outline/ghost for secondary actions. (5) On the customer portal and quotation pages, display friendly status messages and progress indicators to guide customers through the order journey. (6) Add a 'Sponsored by Magic Advertising' footer badge or text on all pages in a visually subtle but permanent manner.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-update-projectgallerypage-so-that-each-photo-displays-at-its-natural-aspect-ratio-intrinsic-proportions-use-a-masonry-or-variable-height-grid-layout-so-portrait-landscape-and-square-images-each-render-at-their-correct-proportions-scaled-to-fit-within-a-reasonable-column-width-rather-than-being-cropped-or-forced-into-a-uniform-square-fixed-height-container",
-      "title": "Update ProjectGalleryPage so that each photo displays at its natural aspect ratio (intrinsic proportions). Use a masonry or variable-height grid layout so portrait, landscape, and square images each render at their correct proportions scaled to fit within a reasonable column width, rather than being cropped or forced into a uniform square/fixed-height container.",
+      "id": "feature-ensure-a-fully-functional-and-prominent-language-switch-between-english-and-telugu-is-available-on-all-pages-the-languagetoggle-component-should-be-visible-in-both-the-header-layout-tsx-and-the-bottom-navigation-or-a-fixed-floating-position-on-mobile-ensure-all-customer-facing-pages-including-quotationrequestpage-customerloginpage-customerregistrationpage-customerportalpage-homepage-servicespage-contactuspage-and-testimonialspage-use-translations-from-languagecontext-and-display-correctly-in-both-languages-add-any-missing-translation-keys-to-both-en-ts-and-te-ts",
+      "title": "Ensure a fully functional and prominent language switch between English and Telugu is available on all pages. The LanguageToggle component should be visible in both the header (Layout.tsx) and the bottom navigation or a fixed floating position on mobile. Ensure all customer-facing pages — including QuotationRequestPage, CustomerLoginPage, CustomerRegistrationPage, CustomerPortalPage, HomePage, ServicesPage, ContactUsPage, and TestimonialsPage — use translations from LanguageContext and display correctly in both languages. Add any missing translation keys to both en.ts and te.ts.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-a-comprehensive-admin-content-editor-that-allows-the-admin-to-edit-all-dynamic-content-in-the-app-from-the-admin-panel-this-must-cover-a-contact-details-phone-email-address-whatsapp-number-google-maps-link-b-services-list-add-edit-delete-services-including-name-description-sample-images-and-video-urls-c-business-hours-set-opening-closing-times-per-day-of-the-week-d-project-gallery-add-edit-delete-gallery-projects-with-image-title-category-and-description-e-homepage-content-hero-text-feature-highlights-and-promotional-banners-f-about-page-content-all-editable-content-must-be-persisted-in-the-backend-and-fetched-dynamically-on-the-frontend-no-hardcoded-static-content-extend-the-backend-data-model-to-store-services-business-hours-and-homepage-about-content-as-stable-mutable-records",
-      "title": "Build a comprehensive Admin Content Editor that allows the admin to edit all dynamic content in the app from the admin panel. This must cover: (a) Contact Details (phone, email, address, WhatsApp number, Google Maps link); (b) Services list — add, edit, delete services including name, description, sample images, and video URLs; (c) Business Hours — set opening/closing times per day of the week; (d) Project Gallery — add, edit, delete gallery projects with image, title, category, and description; (e) Homepage content — hero text, feature highlights, and promotional banners; (f) About page content. All editable content must be persisted in the backend and fetched dynamically on the frontend (no hardcoded static content). Extend the backend data model to store services, business hours, and homepage/about content as stable mutable records.",
+      "id": "feature-set-the-permanent-app-branding-to-nellore-printing-hub-everywhere-it-appears-browser-tab-title-index-html-layout-header-logo-text-homepage-hero-about-page-and-any-other-visible-app-name-instances-add-sponsored-by-magic-advertising-as-a-permanent-subtitle-or-badge-in-the-footer-of-layout-tsx-visible-on-every-page-this-branding-must-not-be-editable-by-admins-and-must-appear-consistently-in-both-language-modes",
+      "title": "Set the permanent app branding to 'Nellore Printing Hub' everywhere it appears: browser tab title (index.html), Layout header logo text, HomePage hero, About page, and any other visible app name instances. Add 'Sponsored by Magic Advertising' as a permanent subtitle or badge in the footer of Layout.tsx, visible on every page. This branding must not be editable by admins and must appear consistently in both language modes.",
       "reqIds": [
         "REQ-5"
       ],
@@ -54,37 +54,37 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Each customer has their own page/portal — login via email or mobile number — to track their work orders history",
+      "summary": "On 'Request A Quotation' form, remove file attachment and replace with an option asking if customer design is ready or needs to be created",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Bilingual support: Telugu and English displayed together throughout the app",
+      "summary": "After successful login with correct email and password, redirect owner to Admin Dashboard",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-3",
-      "summary": "Remove A/B/C labels from Our Services section; replace with attractive samples of printing work, videos, and visuals on home page",
+      "summary": "Improve UX/UI to make the app more attractive, user-friendly, and shareable for customers",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-4",
-      "summary": "Project Gallery photos display at their actual/natural proportions (scaled to fit, not forced to one uniform size)",
+      "summary": "Add two language versions (Telugu and English) with a language switch option",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-5",
-      "summary": "Admin can edit everything in the app: contact details, services, business hours, Project Gallery, and all other content",
+      "summary": "Set app name to 'Nellore Printing Hub' with 'Sponsored by Magic Advertising' branding permanently",
       "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Nellore Print Hub",
+  "projectName": "Nellore Printing Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

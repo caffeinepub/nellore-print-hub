@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { QuotationRequest, QuotationDetails, ServiceType, ExternalBlob } from '../backend';
+import { QuotationRequest, QuotationDetails, ServiceType, DesignStatus } from '../backend';
 
 export function useGetAllQuotations() {
   const { actor, isFetching } = useActor();
@@ -57,12 +57,12 @@ export function useCreateQuotation() {
       projectDetails: string;
       mobileNumber: string;
       email: string;
-      file: ExternalBlob | null;
+      designStatus: DesignStatus;
     }
   >({
-    mutationFn: async ({ serviceType, deadline, projectDetails, mobileNumber, email, file }) => {
+    mutationFn: async ({ serviceType, deadline, projectDetails, mobileNumber, email, designStatus }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createQuotationRequest(serviceType, deadline, projectDetails, mobileNumber, email, file);
+      return actor.createQuotationRequest(serviceType, deadline, projectDetails, mobileNumber, email, designStatus);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myQuotations'] });

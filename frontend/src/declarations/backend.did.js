@@ -31,6 +31,10 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const DesignStatus = IDL.Variant({
+  'needed' : IDL.Null,
+  'ready' : IDL.Null,
+});
 export const ContactInfo = IDL.Record({
   'mapsLink' : IDL.Text,
   'email' : IDL.Text,
@@ -100,10 +104,10 @@ export const QuotationRequest = IDL.Record({
   'mobileNumber' : IDL.Text,
   'deadline' : IDL.Int,
   'email' : IDL.Text,
+  'designStatus' : DesignStatus,
   'negotiationHistory' : IDL.Vec(NegotiationMessage),
   'timestamp' : IDL.Int,
   'projectDetails' : IDL.Text,
-  'quotationFileBlob' : IDL.Opt(ExternalBlob),
 });
 export const Review = IDL.Record({
   'id' : IDL.Text,
@@ -207,14 +211,7 @@ export const idlService = IDL.Service({
   'authenticateCustomer' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
   'createQuotationRequest' : IDL.Func(
-      [
-        ServiceType,
-        IDL.Int,
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Opt(ExternalBlob),
-      ],
+      [ServiceType, IDL.Int, IDL.Text, IDL.Text, IDL.Text, DesignStatus],
       [IDL.Text],
       [],
     ),
@@ -369,6 +366,7 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const DesignStatus = IDL.Variant({ 'needed' : IDL.Null, 'ready' : IDL.Null });
   const ContactInfo = IDL.Record({
     'mapsLink' : IDL.Text,
     'email' : IDL.Text,
@@ -438,10 +436,10 @@ export const idlFactory = ({ IDL }) => {
     'mobileNumber' : IDL.Text,
     'deadline' : IDL.Int,
     'email' : IDL.Text,
+    'designStatus' : DesignStatus,
     'negotiationHistory' : IDL.Vec(NegotiationMessage),
     'timestamp' : IDL.Int,
     'projectDetails' : IDL.Text,
-    'quotationFileBlob' : IDL.Opt(ExternalBlob),
   });
   const Review = IDL.Record({
     'id' : IDL.Text,
@@ -549,14 +547,7 @@ export const idlFactory = ({ IDL }) => {
     'authenticateCustomer' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'calculateDeliveryFee' : IDL.Func([IDL.Int], [IDL.Int], ['query']),
     'createQuotationRequest' : IDL.Func(
-        [
-          ServiceType,
-          IDL.Int,
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Opt(ExternalBlob),
-        ],
+        [ServiceType, IDL.Int, IDL.Text, IDL.Text, IDL.Text, DesignStatus],
         [IDL.Text],
         [],
       ),

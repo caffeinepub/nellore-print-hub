@@ -1,15 +1,21 @@
 # Specification
 
 ## Summary
-**Goal:** Add a customer self-service portal, display English and Telugu simultaneously across all pages, redesign services with visual sample cards and videos, update the gallery to a masonry layout, and build a comprehensive admin content editor for all dynamic content.
+**Goal:** Update the Nellore Printing Hub app with quotation form improvements, admin login redirect fix, customer-facing UX enhancements, bilingual English/Telugu toggle, and permanent app branding.
 
 **Planned changes:**
-- Add customer registration and login (email or mobile + password) with dedicated routes (`/customer/login`, `/customer/portal`); each customer sees their own quotation/work order history with status and dates
-- Display English and Telugu text simultaneously (side-by-side or stacked) on all user-facing labels, headings, buttons, and content sections across every page — no language switch required to see both
-- Redesign Services section: remove all A/B/C alphabetic prefixes, replace with visual cards showing sample print images and video thumbnails; add a "Printing Samples & Videos" showcase section on HomePage
-- Update ProjectGalleryPage to a masonry/variable-height grid layout that preserves each image's natural aspect ratio (no forced crops or uniform heights)
-- Build an Admin Content Editor covering: Contact Details, Services (with images and video URLs), Business Hours (per day), Project Gallery, and Homepage/About page content — all persisted in the backend and reflected live on public pages
-- Extend backend data model to store services, business hours, homepage/about content, and customer accounts as mutable records
-- All previously hardcoded user-facing content replaced with dynamically fetched, admin-editable content
+- Remove file attachment input from the quotation form; replace with a "Is your design ready?" radio option ("Yes, my design is ready" / "No, I need design assistance") stored as `designStatus` in the submission payload
+- Update admin quotation management view to display the `designStatus` field for each quotation
+- Fix admin login to redirect directly to the Admin Dashboard after successful email/password authentication
+- Add a prominent "Share This App" call-to-action on the Home page using the existing ShareAppButton component
+- Improve the hero section on HomePage with a bold tagline and clear CTA button using vibrant accent colors
+- Add smooth hover/tap animations to service cards, gallery items, and navigation elements
+- Standardize button styling across all customer-facing pages (filled primary, outline secondary)
+- Add friendly status messages and progress indicators on the customer portal and quotation pages
+- Ensure the LanguageToggle component is visible in the header on all screen sizes and in a fixed/floating position on mobile
+- Ensure all customer-facing pages (Quotation, CustomerLogin, CustomerRegistration, CustomerPortal, Home, Services, ContactUs, Testimonials) use LanguageContext translations and display correctly in both English and Telugu
+- Add missing translation keys (including the new design-status options) to both `en.ts` and `te.ts`
+- Set app name to "Nellore Printing Hub" in the browser tab title, header logo, hero section, About page, and all other visible instances
+- Add a permanent hardcoded "Sponsored by Magic Advertising" footer badge/text in Layout.tsx visible on every page (not admin-configurable)
 
-**User-visible outcome:** Customers can register and log in to view their own order history. All pages show both English and Telugu text at once. Services are displayed as attractive visual cards with print samples and videos. Gallery images display in a natural masonry layout. Admins can edit all site content (contact info, services, hours, gallery, homepage, about) directly from the admin panel.
+**User-visible outcome:** Customers see a fully bilingual, visually polished app branded as "Nellore Printing Hub" with a simpler quotation form, better UX, and a persistent sponsor footer. Admins are taken directly to the dashboard after login.

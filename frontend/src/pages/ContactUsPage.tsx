@@ -1,150 +1,208 @@
-import React from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import React, { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useGetContactInfo } from '../hooks/useContactInfo';
-import { useGetAdminContent } from '../hooks/useAdminContent';
+import { useActor } from '../hooks/useActor';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, Phone, MapPin, Clock, ExternalLink, ArrowRight } from 'lucide-react';
-
-const DEFAULT_HOURS = [
-  { day: 'Monday / సోమవారం', hours: '09:00 - 18:00' },
-  { day: 'Tuesday / మంగళవారం', hours: '09:00 - 18:00' },
-  { day: 'Wednesday / బుధవారం', hours: '09:00 - 18:00' },
-  { day: 'Thursday / గురువారం', hours: '09:00 - 18:00' },
-  { day: 'Friday / శుక్రవారం', hours: '09:00 - 18:00' },
-  { day: 'Saturday / శనివారం', hours: '09:00 - 14:00' },
-  { day: 'Sunday / ఆదివారం', hours: 'Closed / మూసివేయబడింది' },
-];
-
-const DAY_LABELS: Record<string, string> = {
-  Mon: 'Monday / సోమవారం',
-  Tue: 'Tuesday / మంగళవారం',
-  Wed: 'Wednesday / బుధవారం',
-  Thu: 'Thursday / గురువారం',
-  Fri: 'Friday / శుక్రవారం',
-  Sat: 'Saturday / శనివారం',
-  Sun: 'Sunday / ఆదివారం',
-};
-
-function parseBusinessHours(hoursArray: string[]) {
-  return hoursArray.map((entry) => {
-    const colonIdx = entry.indexOf(':');
-    if (colonIdx === -1) return { day: entry, hours: '' };
-    const key = entry.substring(0, colonIdx).trim();
-    const hours = entry.substring(colonIdx + 1).trim();
-    const dayLabel = DAY_LABELS[key] || key;
-    return { day: dayLabel, hours };
-  });
-}
+import { Badge } from '@/components/ui/badge';
+import { Phone, Mail, MapPin, MessageCircle, Loader2, CheckCircle } from 'lucide-react';
 
 export default function ContactUsPage() {
-  const navigate = useNavigate();
+  const { t } = useLanguage();
   const { data: contactInfo } = useGetContactInfo();
-  const { data: adminContent } = useGetAdminContent();
+  const { actor } = useActor();
 
-  const businessHours =
-    adminContent?.businessHours && adminContent.businessHours.length > 0
-      ? parseBusinessHours(adminContent.businessHours)
-      : DEFAULT_HOURS;
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!actor) return;
+    setSending(true);
+    setError('');
+    try {
+      await actor.sendMessage(name, email, message);
+      setSent(true);
+      setName('');
+      setEmail('');
+      setMessage('');
+    } catch {
+      setError(t('language') === 'te' ? 'సందేశం పంపడం విఫలమైంది' : 'Failed to send message. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary/10 to-background py-10 px-4 text-center">
-        <h1 className="text-3xl font-extrabold text-foreground mb-1">Contact Us</h1>
-        <p className="text-xl text-primary font-semibold mb-2">సంప్రదించండి</p>
-        <p className="text-muted-foreground text-sm">
-          We're here to help / మేము సహాయం చేయడానికి ఇక్కడ ఉన్నాము
-        </p>
+      <section className="bg-gradient-to-br from-primary/10 to-accent/5 py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <Badge variant="outline" className="mb-4 text-primary border-primary">
+            {t('contactTitle')}
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+            {t('contactTitle')}
+          </h1>
+          <p className="text-lg text-muted-foreground">{t('contactSubtitle')}</p>
+        </div>
       </section>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {/* Contact Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-5 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                <Mail className="w-6 h-6 text-primary" />
-              </div>
-              <p className="font-semibold text-sm text-foreground mb-0.5">Email / ఇమెయిల్</p>
-              <a
-                href={`mailto:${contactInfo?.email || 'magic.nellorehub@gmail.com'}`}
-                className="text-xs text-primary hover:underline break-all"
-              >
-                {contactInfo?.email || 'magic.nellorehub@gmail.com'}
-              </a>
-            </CardContent>
-          </Card>
+      <section className="py-16 px-4">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Contact Info */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              {t('language') === 'te' ? 'మా సంప్రదింపు వివరాలు' : 'Get in Touch'}
+            </h2>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-5 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                <Phone className="w-6 h-6 text-primary" />
-              </div>
-              <p className="font-semibold text-sm text-foreground mb-0.5">Phone / ఫోన్</p>
-              <a
-                href={`tel:${contactInfo?.phone || '+919390535070'}`}
-                className="text-xs text-primary hover:underline"
-              >
-                {contactInfo?.phone || '+91 9390535070'}
-              </a>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-5 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                <MapPin className="w-6 h-6 text-primary" />
-              </div>
-              <p className="font-semibold text-sm text-foreground mb-0.5">Address / చిరునామా</p>
-              <p className="text-xs text-muted-foreground">
-                {contactInfo?.physicalAddress || 'Dargamitta, Podalakur Road, Nellore'}
-              </p>
-              {(contactInfo?.mapsLink) && (
-                <a
-                  href={contactInfo.mapsLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-primary hover:underline flex items-center justify-center gap-1 mt-1"
-                >
-                  View Map <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Business Hours */}
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-5 h-5 text-primary" />
-              <div>
-                <h2 className="font-bold text-foreground">Business Hours</h2>
-                <p className="text-xs text-muted-foreground">వ్యాపార సమయాలు</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {businessHours.map((item, i) => (
-                <div key={i} className="flex justify-between items-center py-1.5 border-b border-border last:border-0">
-                  <span className="text-sm text-foreground">{item.day}</span>
-                  <span className={`text-sm font-medium ${item.hours.toLowerCase().includes('closed') ? 'text-destructive' : 'text-primary'}`}>
-                    {item.hours}
-                  </span>
+            <Card className="border-0 shadow-md hover:shadow-lg transition-all">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Phone className="w-6 h-6 text-primary" />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <div>
+                  <p className="font-semibold text-sm text-foreground">{t('phone')}</p>
+                  <a href={`tel:${contactInfo?.phone}`} className="text-primary hover:underline text-sm">
+                    {contactInfo?.phone || '+91 93905 35070'}
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* CTA */}
-        <div className="text-center">
-          <Button size="lg" onClick={() => navigate({ to: '/request-quote' })} className="gap-2">
-            Request a Quote / కోటేషన్ అడగండి
-            <ArrowRight className="w-4 h-4" />
-          </Button>
+            <Card className="border-0 shadow-md hover:shadow-lg transition-all">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Mail className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-foreground">{t('emailLabel')}</p>
+                  <a href={`mailto:${contactInfo?.email}`} className="text-primary hover:underline text-sm">
+                    {contactInfo?.email || 'magic.nellorehub@gmail.com'}
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md hover:shadow-lg transition-all">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <MapPin className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm text-foreground">{t('address')}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {contactInfo?.physicalAddress || 'Dargamitta, Podalakur Road, Nellore'}
+                  </p>
+                  {contactInfo?.mapsLink && (
+                    <a
+                      href={contactInfo.mapsLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-xs"
+                    >
+                      {t('language') === 'te' ? 'మ్యాప్‌లో చూడండి' : 'View on Maps'}
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Contact Form */}
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              {t('language') === 'te' ? 'సందేశం పంపండి' : 'Send a Message'}
+            </h2>
+
+            {sent ? (
+              <Card className="border-0 shadow-md">
+                <CardContent className="py-12 text-center">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    {t('language') === 'te' ? 'సందేశం పంపబడింది!' : 'Message Sent!'}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {t('language') === 'te' ? 'మేము త్వరలో మీకు తెలియజేస్తాం' : 'We\'ll get back to you soon'}
+                  </p>
+                  <Button
+                    className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+                    onClick={() => setSent(false)}
+                  >
+                    {t('language') === 'te' ? 'మరొక సందేశం పంపండి' : 'Send Another Message'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 shadow-md">
+                <CardContent className="p-6">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">{t('name')} *</Label>
+                      <Input
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder={t('name')}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">{t('email')} *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="message">{t('message')} *</Label>
+                      <Textarea
+                        id="message"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder={t('messagePlaceholder')}
+                        rows={4}
+                        required
+                      />
+                    </div>
+
+                    {error && <p className="text-sm text-destructive">{error}</p>}
+
+                    <Button
+                      type="submit"
+                      disabled={sending}
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full h-11"
+                    >
+                      {sending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {t('sending')}
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          {t('sendMessage')}
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

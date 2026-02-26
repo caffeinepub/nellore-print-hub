@@ -1,143 +1,132 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useActor } from '../../hooks/useActor';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import { useActor } from '../../hooks/useActor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, LogIn, UserPlus, Printer } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, User, Lock, Printer, AlertCircle } from 'lucide-react';
 
-async function sha256(message: string): Promise<string> {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export default function CustomerLoginPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
-  const { actor } = useActor();
   const { login } = useCustomerAuth();
+  const { actor } = useActor();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!actor) return;
-    setLoading(true);
     setError('');
+    setLoading(true);
     try {
-      const hash = await sha256(password);
-      const customerId = await actor.authenticateCustomer(identifier, hash);
+      if (!actor) throw new Error('Actor not available');
+      const hashedPassword = await hashPassword(password);
+      const customerId = await actor.authenticateCustomer(identifier, hashedPassword);
       login(customerId, identifier);
       navigate({ to: '/customer/portal' });
-    } catch (err: any) {
-      setError('Invalid credentials. Please check your email/mobile and password.');
+    } catch {
+      setError(t('loginError'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
       <div className="w-full max-w-md">
-        {/* Logo / Brand */}
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4">
-            <Printer className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+            <Printer className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Magic Hub Nellore</h1>
-          <p className="text-muted-foreground text-sm mt-1">మేజిక్ హబ్ నెల్లూరు</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('appName')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('loginSubtitle')}</p>
         </div>
 
-        <Card className="shadow-lg">
+        <Card className="shadow-xl border-0">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl">
-              Customer Login
-              <span className="block text-sm font-normal text-muted-foreground mt-1">కస్టమర్ లాగిన్</span>
-            </CardTitle>
-            <CardDescription>
-              Sign in to view your orders and quotations
-              <span className="block text-xs mt-0.5">మీ ఆర్డర్లు మరియు కోటేషన్లు చూడండి</span>
-            </CardDescription>
+            <CardTitle className="text-xl">{t('welcomeBack')}</CardTitle>
+            <CardDescription>{t('loginSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="identifier">
-                  Email or Mobile Number
-                  <span className="block text-xs text-muted-foreground font-normal">ఇమెయిల్ లేదా మొబైల్ నంబర్</span>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="identifier" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {t('email')} / {t('mobileNumber')}
                 </Label>
                 <Input
                   id="identifier"
-                  type="text"
-                  placeholder="email@example.com or 9876543210"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="email@example.com or mobile"
                   required
-                  disabled={loading}
                 />
               </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="password">
-                  Password
-                  <span className="block text-xs text-muted-foreground font-normal">పాస్‌వర్డ్</span>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="flex items-center gap-2">
+                  <Lock className="w-4 h-4" />
+                  {t('password')}
                 </Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
                   required
-                  disabled={loading}
                 />
               </div>
 
               {error && (
-                <div className="text-sm text-destructive bg-destructive/10 rounded-lg p-3">
-                  {error}
-                </div>
+                <Alert variant="destructive">
+                  <AlertCircle className="w-4 h-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-full"
+              >
                 {loading ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Signing in... / లాగిన్ అవుతోంది...</>
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t('loggingIn')}
+                  </>
                 ) : (
-                  <><LogIn className="w-4 h-4 mr-2" /> Sign In / లాగిన్</>
+                  t('login')
                 )}
               </Button>
-
-              <div className="text-center pt-2">
-                <p className="text-sm text-muted-foreground">
-                  Don't have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => navigate({ to: '/customer/register' })}
-                    className="text-primary font-medium hover:underline"
-                  >
-                    Register / నమోదు చేయండి
-                  </button>
-                </p>
-              </div>
             </form>
+
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              {t('noAccount')}{' '}
+              <button
+                onClick={() => navigate({ to: '/customer/register' })}
+                className="text-primary hover:underline font-medium"
+              >
+                {t('registerHere')}
+              </button>
+            </div>
           </CardContent>
         </Card>
-
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          <button
-            type="button"
-            onClick={() => navigate({ to: '/' })}
-            className="hover:underline"
-          >
-            ← Back to Home / హోమ్‌కి తిరిగి వెళ్ళండి
-          </button>
-        </p>
       </div>
     </div>
   );

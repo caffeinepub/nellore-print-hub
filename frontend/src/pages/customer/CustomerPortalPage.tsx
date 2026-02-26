@@ -1,171 +1,296 @@
 import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
-import { useGetCustomerQuotations } from '../../hooks/useCustomerQuotations';
+import { useGetMyQuotations } from '../../hooks/useQuotations';
+import { QuotationStatus, DesignStatus } from '../../backend';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LogOut, FileText, Clock, CheckCircle, XCircle, Loader2, User, Printer } from 'lucide-react';
-import { QuotationStatus, ServiceType } from '../../backend';
+import {
+  LogOut,
+  FileText,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Loader2,
+  Printer,
+  ChevronRight,
+  Palette,
+} from 'lucide-react';
 
-const statusConfig: Record<string, { label: string; teLabel: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  draft: { label: 'Draft', teLabel: 'డ్రాఫ్ట్', variant: 'secondary' },
-  customerPending: { label: 'Review Pending', teLabel: 'సమీక్ష పెండింగ్', variant: 'default' },
-  paymentPending: { label: 'Payment Pending', teLabel: 'చెల్లింపు పెండింగ్', variant: 'default' },
-  workInProgress: { label: 'Work In Progress', teLabel: 'పని జరుగుతోంది', variant: 'default' },
-  completed: { label: 'Completed', teLabel: 'పూర్తయింది', variant: 'default' },
-  accepted: { label: 'Accepted', teLabel: 'అంగీకరించారు', variant: 'default' },
-  rejected: { label: 'Rejected', teLabel: 'తిరస్కరించారు', variant: 'destructive' },
-  negotiating: { label: 'Negotiating', teLabel: 'చర్చలు జరుగుతున్నాయి', variant: 'outline' },
-};
+const STATUS_STEPS = [
+  QuotationStatus.draft,
+  QuotationStatus.customerPending,
+  QuotationStatus.paymentPending,
+  QuotationStatus.workInProgress,
+  QuotationStatus.completed,
+];
 
-const serviceTypeLabels: Record<string, { en: string; te: string }> = {
-  digital: { en: 'Digital Printing', te: 'డిజిటల్ ప్రింటింగ్' },
-  banner: { en: 'Banner / Flex', te: 'బ్యానర్ / ఫ్లెక్స్' },
-  offset: { en: 'Offset Printing', te: 'ఆఫ్‌సెట్ ప్రింటింగ్' },
-  design: { en: 'Design Services', te: 'డిజైన్ సేవలు' },
-};
+function getProgressPercent(status: QuotationStatus): number {
+  const idx = STATUS_STEPS.indexOf(status);
+  if (idx === -1) return 0;
+  return Math.round((idx / (STATUS_STEPS.length - 1)) * 100);
+}
+
+function StatusBadge({ status, t }: { status: QuotationStatus; t: (k: string) => string }) {
+  const config: Record<
+    string,
+    {
+      label: string;
+      variant: 'default' | 'secondary' | 'destructive' | 'outline';
+      icon: React.ReactNode;
+    }
+  > = {
+    [QuotationStatus.draft]: {
+      label: t('statusDraft'),
+      variant: 'secondary',
+      icon: <Clock className="w-3 h-3" />,
+    },
+    [QuotationStatus.customerPending]: {
+      label: t('statusCustomerPending'),
+      variant: 'default',
+      icon: <AlertCircle className="w-3 h-3" />,
+    },
+    [QuotationStatus.paymentPending]: {
+      label: t('statusPaymentPending'),
+      variant: 'default',
+      icon: <AlertCircle className="w-3 h-3" />,
+    },
+    [QuotationStatus.workInProgress]: {
+      label: t('statusWorkInProgress'),
+      variant: 'default',
+      icon: <Loader2 className="w-3 h-3 animate-spin" />,
+    },
+    [QuotationStatus.completed]: {
+      label: t('statusCompleted'),
+      variant: 'default',
+      icon: <CheckCircle className="w-3 h-3" />,
+    },
+    [QuotationStatus.accepted]: {
+      label: t('statusAccepted'),
+      variant: 'default',
+      icon: <CheckCircle className="w-3 h-3" />,
+    },
+    [QuotationStatus.rejected]: {
+      label: t('statusRejected'),
+      variant: 'destructive',
+      icon: <XCircle className="w-3 h-3" />,
+    },
+    [QuotationStatus.negotiating]: {
+      label: t('statusNegotiating'),
+      variant: 'outline',
+      icon: <AlertCircle className="w-3 h-3" />,
+    },
+  };
+  const c = config[status] ?? { label: status, variant: 'secondary' as const, icon: null };
+  return (
+    <Badge variant={c.variant} className="flex items-center gap-1 text-xs">
+      {c.icon}
+      {c.label}
+    </Badge>
+  );
+}
 
 export default function CustomerPortalPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { customer, logout } = useCustomerAuth();
-  const { data: quotations, isLoading } = useGetCustomerQuotations(customer?.customerId ?? null);
+  const { data: quotations, isLoading } = useGetMyQuotations();
 
   const handleLogout = () => {
     logout();
-    navigate({ to: '/' });
+    navigate({ to: '/customer/login' });
   };
 
-  const formatDate = (timestamp: bigint) => {
-    return new Date(Number(timestamp) / 1_000_000).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
-  const getServiceLabel = (serviceType: ServiceType) => {
-    const key = serviceType.toString().toLowerCase();
-    return serviceTypeLabels[key] || { en: key, te: key };
-  };
+  const stepLabels = [
+    t('step_submitted'),
+    t('step_review'),
+    t('step_approved'),
+    t('step_inProgress'),
+    t('step_completed'),
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
-              <Printer className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm text-foreground leading-none">Magic Hub Nellore</p>
-              <p className="text-xs text-muted-foreground">Customer Portal / కస్టమర్ పోర్టల్</p>
-            </div>
+      <div className="bg-primary text-primary-foreground py-8 px-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">{t('customerPortal')}</h1>
+            <p className="text-primary-foreground/80 text-sm mt-1">
+              {t('language') === 'te' ? 'స్వాగతం' : 'Welcome'},{' '}
+              {customer?.identifier}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground">
-              <User className="w-4 h-4" />
-              <span className="max-w-[150px] truncate">{customer?.identifier}</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-1.5" />
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        {/* Welcome */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
-            My Orders
-            <span className="block text-base font-normal text-muted-foreground mt-0.5">నా ఆర్డర్లు</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            View all your quotation requests and their current status.
-            <span className="block">మీ అన్ని కోటేషన్ అభ్యర్థనలు మరియు వాటి ప్రస్తుత స్థితి చూడండి.</span>
-          </p>
-        </div>
-
-        {/* Quotations */}
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <Skeleton className="h-5 w-1/3 mb-2" />
-                  <Skeleton className="h-4 w-1/2 mb-1" />
-                  <Skeleton className="h-4 w-1/4" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : !quotations || quotations.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <p className="text-foreground font-medium">No orders yet</p>
-              <p className="text-muted-foreground text-sm mt-1">ఇంకా ఆర్డర్లు లేవు</p>
-              <Button
-                className="mt-4"
-                onClick={() => navigate({ to: '/request-quote' })}
-              >
-                Request a Quote / కోటేషన్ అడగండి
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {quotations.map((q) => {
-              const statusInfo = statusConfig[q.status.toString()] || statusConfig.draft;
-              const serviceLabel = getServiceLabel(q.serviceType);
-              return (
-                <Card key={q.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-foreground text-sm">
-                            Order #{q.id}
-                          </span>
-                          <Badge variant={statusInfo.variant} className="text-xs">
-                            {statusInfo.label} / {statusInfo.teLabel}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {serviceLabel.en} / {serviceLabel.te}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {q.projectDetails}
-                        </p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {formatDate(q.timestamp)}
-                          </span>
-                          {q.negotiationHistory.length > 0 && (
-                            <span>{q.negotiationHistory.length} message(s)</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-
-        {/* CTA */}
-        <div className="mt-8 text-center">
-          <Button onClick={() => navigate({ to: '/request-quote' })} size="lg">
-            Request New Quote / కొత్త కోటేషన్ అడగండి
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="border-white/30 text-white hover:bg-white/20"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            {t('logout')}
           </Button>
         </div>
-      </main>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <Card
+            className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-0 bg-gradient-to-br from-primary/10 to-primary/5"
+            onClick={() => navigate({ to: '/request-quote' })}
+          >
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Printer className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-foreground">{t('requestQuote')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('language') === 'te' ? 'కొత్త కోటేషన్' : 'New quotation'}
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-0 bg-gradient-to-br from-accent/10 to-accent/5"
+            onClick={() => navigate({ to: '/my-quotations' })}
+          >
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-foreground">{t('myQuotations')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('language') === 'te' ? 'అన్ని కోటేషన్లు' : 'All quotations'}
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Quotations */}
+        <div>
+          <h2 className="text-xl font-bold text-foreground mb-4">{t('myQuotations')}</h2>
+
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-32 rounded-xl" />
+              ))}
+            </div>
+          ) : !quotations || quotations.length === 0 ? (
+            <Card className="border-dashed border-2 border-muted">
+              <CardContent className="py-12 text-center">
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground font-medium">
+                  {t('language') === 'te' ? 'ఇంకా కోటేషన్లు లేవు' : 'No quotations yet'}
+                </p>
+                <Button
+                  className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
+                  onClick={() => navigate({ to: '/request-quote' })}
+                >
+                  {t('requestQuote')}
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {quotations.map((q) => {
+                const progress = getProgressPercent(q.status);
+                const stepIdx = STATUS_STEPS.indexOf(q.status);
+
+                return (
+                  <Card
+                    key={q.id}
+                    className="border-0 shadow-md hover:shadow-lg transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                    onClick={() => navigate({ to: '/my-quotations' })}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <CardTitle className="text-base">
+                            {t('language') === 'te' ? 'కోటేషన్' : 'Quotation'} #{q.id}
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(Number(q.timestamp) / 1_000_000).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <StatusBadge status={q.status} t={t} />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {q.projectDetails}
+                      </p>
+
+                      {/* Design Status */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <Palette className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-xs text-muted-foreground">
+                          {q.designStatus === DesignStatus.ready
+                            ? t('designReady')
+                            : t('designNeeded')}
+                        </span>
+                      </div>
+
+                      {/* Progress Bar */}
+                      {STATUS_STEPS.includes(q.status) && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>{t('orderProgress')}</span>
+                            <span>{progress}%</span>
+                          </div>
+                          <Progress value={progress} className="h-2" />
+                          <div className="flex justify-between text-[10px] text-muted-foreground">
+                            {stepLabels.map((label, i) => (
+                              <span
+                                key={i}
+                                className={i <= stepIdx ? 'text-primary font-medium' : ''}
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action hints */}
+                      {q.status === QuotationStatus.customerPending && (
+                        <div className="mt-3 p-2 rounded-lg bg-primary/10 border border-primary/20">
+                          <p className="text-xs text-primary font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {t('language') === 'te'
+                              ? 'మీ సమీక్ష అవసరం — ట్యాప్ చేయండి'
+                              : 'Your review needed — tap to view'}
+                          </p>
+                        </div>
+                      )}
+                      {q.status === QuotationStatus.paymentPending && (
+                        <div className="mt-3 p-2 rounded-lg bg-yellow-50 border border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800">
+                          <p className="text-xs text-yellow-700 dark:text-yellow-400 font-medium flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {t('language') === 'te' ? 'చెల్లింపు పెండింగ్ ఉంది' : 'Payment pending'}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

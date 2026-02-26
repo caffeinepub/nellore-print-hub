@@ -3,19 +3,17 @@ import { CheckCircle, ArrowRight, List } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getTranslations } from '../translations';
 
 export default function QuotationConfirmationPage() {
   const navigate = useNavigate();
   const { id } = useParams({ from: '/quotation-confirmation/$id' });
-  const { language } = useLanguage();
-  const t = getTranslations(language);
+  const { t, language } = useLanguage();
 
   const steps = [
-    t.quotationConfirmation.step1,
-    t.quotationConfirmation.step2,
-    t.quotationConfirmation.step3,
-    t.quotationConfirmation.step4,
+    t('quotationConfirmation.step1'),
+    t('quotationConfirmation.step2'),
+    t('quotationConfirmation.step3'),
+    t('quotationConfirmation.step4'),
   ];
 
   return (
@@ -26,8 +24,10 @@ export default function QuotationConfirmationPage() {
         </div>
       </div>
 
-      <h1 className="text-2xl font-extrabold text-foreground mb-2">{t.quotationConfirmation.title}</h1>
-      <p className="text-muted-foreground mb-2">{t.quotationConfirmation.subtitle}</p>
+      <h1 className="text-2xl font-extrabold text-foreground mb-2">
+        {t('quotationConfirmation.title')}
+      </h1>
+      <p className="text-muted-foreground mb-2">{t('quotationConfirmation.subtitle')}</p>
       {id && (
         <p className="text-xs text-muted-foreground mb-6 font-mono bg-muted px-3 py-1 rounded-full inline-block">
           ID: {id}
@@ -53,11 +53,11 @@ export default function QuotationConfirmationPage() {
 
       <div className="flex flex-col gap-3">
         <Button onClick={() => navigate({ to: '/my-quotations' })} className="gap-2">
-          {t.quotationConfirmation.viewQuotations}
+          {t('quotationConfirmation.viewQuotations')}
           <ArrowRight className="w-4 h-4" />
         </Button>
         <Button variant="outline" onClick={() => navigate({ to: '/' })}>
-          {t.quotationConfirmation.backHome}
+          {t('quotationConfirmation.backHome')}
         </Button>
       </div>
     </div>

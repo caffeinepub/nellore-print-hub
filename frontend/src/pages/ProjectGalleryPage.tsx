@@ -1,130 +1,121 @@
 import React, { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useGetAllProjects } from '../hooks/useProjects';
-import { useIsCallerAdmin } from '../hooks/useAdmin';
+import { ServiceType } from '../backend';
 import ProjectDetailModal from '../components/ProjectDetailModal';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Filter } from 'lucide-react';
-import { Project } from '../backend';
-
-const CATEGORIES = [
-  { value: 'all', en: 'All', te: 'అన్నీ' },
-  { value: 'digital', en: 'Digital', te: 'డిజిటల్' },
-  { value: 'banner', en: 'Banner', te: 'బ్యానర్' },
-  { value: 'offset', en: 'Offset', te: 'ఆఫ్‌సెట్' },
-  { value: 'design', en: 'Design', te: 'డిజైన్' },
-];
+import { Image } from 'lucide-react';
 
 export default function ProjectGalleryPage() {
-  const navigate = useNavigate();
-  const { data: isAdmin } = useIsCallerAdmin();
+  const { t } = useLanguage();
   const { data: projects, isLoading } = useGetAllProjects();
+  const [selectedCategory, setSelectedCategory] = useState<ServiceType | 'all'>('all');
+  const [selectedProject, setSelectedProject] = useState<any>(null);
 
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const categories = [
+    { value: 'all', label: t('allCategories') },
+    { value: ServiceType.digital, label: t('digitalPrinting') },
+    { value: ServiceType.banner, label: t('bannerPrinting') },
+    { value: ServiceType.offset, label: t('offsetPrinting') },
+    { value: ServiceType.design, label: t('designServices') },
+  ];
 
-  const filtered = projects?.filter((p) => {
-    if (selectedCategory === 'all') return true;
-    return p.category.toString().toLowerCase() === selectedCategory;
-  }) ?? [];
+  const filtered = projects?.filter(
+    (p) => selectedCategory === 'all' || p.category === selectedCategory
+  ) ?? [];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <section className="bg-gradient-to-br from-primary/10 to-background py-10 px-4 text-center">
-        <h1 className="text-3xl font-extrabold text-foreground mb-1">Project Gallery</h1>
-        <p className="text-xl text-primary font-semibold mb-2">ప్రాజెక్ట్ గ్యాలరీ</p>
-        <p className="text-muted-foreground text-sm">
-          Our completed work / మా పూర్తయిన పని
-        </p>
+    <div className="min-h-screen bg-background">
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-primary/10 to-accent/5 py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <Badge variant="outline" className="mb-4 text-primary border-primary">
+            {t('galleryTitle')}
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4">
+            {t('galleryTitle')}
+          </h1>
+          <p className="text-lg text-muted-foreground">{t('gallerySubtitle')}</p>
+        </div>
       </section>
 
       {/* Filters */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
-          {CATEGORIES.map((cat) => (
-            <button
+      <section className="py-6 px-4 border-b border-border bg-background sticky top-16 z-10">
+        <div className="max-w-6xl mx-auto flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          {categories.map((cat) => (
+            <Button
               key={cat.value}
-              onClick={() => setSelectedCategory(cat.value)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              variant={selectedCategory === cat.value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCategory(cat.value as ServiceType | 'all')}
+              className={`shrink-0 rounded-full transition-all ${
                 selectedCategory === cat.value
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  : 'hover:border-primary hover:text-primary'
               }`}
             >
-              {cat.en} / {cat.te}
-            </button>
-          ))}
-          {isAdmin && (
-            <Button
-              size="sm"
-              className="shrink-0 ml-auto h-7 text-xs"
-              onClick={() => navigate({ to: '/admin/projects' })}
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Manage
+              {cat.label}
             </Button>
-          )}
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* Masonry Gallery */}
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        {isLoading ? (
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="break-inside-avoid mb-3">
-                <Skeleton
-                  className="w-full rounded-xl"
-                  style={{ height: `${[200, 280, 180, 240, 300, 160, 220, 260][i % 8]}px` }}
-                />
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground text-lg">No projects found</p>
-            <p className="text-muted-foreground text-sm">ప్రాజెక్టులు కనుగొనబడలేదు</p>
-          </div>
-        ) : (
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3">
-            {filtered.map((project) => (
-              <div
-                key={project.id}
-                className="break-inside-avoid mb-3 group cursor-pointer"
-                onClick={() => setSelectedProject(project)}
-              >
-                <div className="relative overflow-hidden rounded-xl shadow-sm hover:shadow-lg transition-shadow">
-                  <img
-                    src={project.imageUrl}
-                    alt={project.title}
-                    className="w-full h-auto block group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <Badge variant="secondary" className="text-xs mb-1">
-                        {project.category.toString()}
-                      </Badge>
-                      <p className="text-white text-sm font-semibold line-clamp-1">{project.title}</p>
+      {/* Gallery Grid */}
+      <section className="py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {isLoading ? (
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="w-full h-48 rounded-xl break-inside-avoid mb-4" />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20">
+              <Image className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground text-lg">
+                {t('language') === 'te' ? 'ఇంకా ప్రాజెక్టులు లేవు' : 'No projects yet'}
+              </p>
+            </div>
+          ) : (
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
+              {filtered.map((project) => (
+                <div
+                  key={project.id}
+                  className="break-inside-avoid mb-4 group cursor-pointer"
+                  onClick={() => setSelectedProject(project)}
+                >
+                  <div className="relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title}
+                      className="w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                      <div>
+                        <p className="text-white font-semibold text-sm">{project.title}</p>
+                        <Badge variant="secondary" className="text-xs mt-1">
+                          {project.category}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Project Detail Modal */}
-      <ProjectDetailModal
-        open={!!selectedProject}
-        onClose={() => setSelectedProject(null)}
-        project={selectedProject}
-      />
+      {selectedProject && (
+        <ProjectDetailModal
+          project={selectedProject}
+          open={!!selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </div>
   );
 }
