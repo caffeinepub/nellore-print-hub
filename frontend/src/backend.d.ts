@@ -40,14 +40,14 @@ export interface AdminUser {
     principal?: Principal;
     active: boolean;
     registrationTimestamp: bigint;
-    registrationMethod: Variant_internetIdentity_biometric;
+    registrationMethod: string;
 }
 export interface AdminInvitationEntry {
     invitedBy: Principal;
     email: string;
     invitationTimestamp: bigint;
     hashedPassword: string;
-    registrationMethod: Variant_internetIdentity_biometric;
+    registrationMethod: string;
 }
 export interface NegotiationMessage {
     sender: string;
@@ -117,10 +117,6 @@ export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
-}
-export enum Variant_internetIdentity_biometric {
-    internetIdentity = "internetIdentity",
-    biometric = "biometric"
 }
 export interface backendInterface {
     addInternetIdentityAdmin(principal: Principal): Promise<void>;

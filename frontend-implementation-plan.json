@@ -1,91 +1,46 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin-Editable Contact Us, Customer Project Gallery, and Admin Icon Login",
+  "title": "Fix first-admin auto-promotion and set admin password",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Wire ContactInfoManagementPage into admin dashboard as a quick-link card labeled 'Edit Contact Info'",
-      "acceptanceCriteria": [
-        "Admin dashboard has a visible 'Edit Contact Info' quick-link card",
-        "Clicking the card navigates to ContactInfoManagementPage",
-        "The page is protected by AdminGuard and only accessible to logged-in admins",
-        "Admin can update email, phone, address, and Google Maps link and save changes",
-        "Updated contact info is immediately reflected on the public ContactUsPage"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "operation": "modify",
-          "description": "Add a new quick-link card with label 'Edit Contact Info' (English) and 'సంప్రదింపు సమాచారాన్ని సవరించండి' (Telugu) that navigates to '/admin/contact-info'. Position it alongside existing quick-link cards (Manage Quotations, Manage Users, Delivery Pricing). Use the Mail or Contact icon from lucide-react. The card should be visible to all authenticated admins and use the same styling as existing dashboard cards."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Verify that the route '/admin/contact-info' for ContactInfoManagementPage is already registered and wrapped with AdminGuard. If not present, add the route with lazy import: { path: '/admin/contact-info', lazy: () => import('./pages/admin/ContactInfoManagementPage') } and ensure AdminGuard wrapper is applied via the route configuration."
-        }
-      ]
-    },
-    {
       "id": "REQ-2",
-      "summary": "Remove authentication gates from ProjectGalleryPage to make it fully public while preserving admin-only controls",
+      "summary": "Set the first admin account's password to 'Munnu1998@' (SHA-256 hashed before sending to backend)",
       "acceptanceCriteria": [
-        "ProjectGalleryPage is accessible to unauthenticated (guest) users without any login prompt",
-        "Each project card displays the project image, title, description, and category",
-        "Clicking a project card opens a detail view or expanded view with full project information",
-        "Category filter buttons are visible and functional for all users",
-        "Add/Edit/Delete project controls are only shown to authenticated admin users"
+        "On the AdminLoginPage, logging in with the password 'Munnu1998@' (hashed via SHA-256 before the backend call, consistent with useAdminAuth.ts) successfully authenticates the first admin.",
+        "The admin can access the AdminDashboardPage after logging in with this password."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Remove any conditional authentication checks or login prompts that block unauthenticated users from viewing the gallery. Ensure useGetAllProjects hook is called unconditionally (not guarded by authentication state). Keep the category filter buttons (All, Banner, Digital, Offset, Design) visible and functional for all users. Ensure the 'Upload New Project' button and any edit/delete controls remain conditionally rendered based on isAdmin check from useIsAdmin hook. Verify each project card displays imageUrl, title, description, and category for all visitors."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Verify the route '/gallery' for ProjectGalleryPage is registered without any authentication or AdminGuard wrapper. The route should be publicly accessible. If the route has an auth guard, remove it. Ensure lazy loading: { path: '/gallery', lazy: () => import('./pages/ProjectGalleryPage') }."
+          "description": "Update the AdminLoginPage to pre-fill or document the password field with 'Munnu1998@' during first-admin registration flow. When the first-admin registration is triggered (adminExists === false), either auto-populate the password field or display a prominent note instructing the user to use 'Munnu1998@' as the initial password. Ensure the password is SHA-256 hashed via useAdminAuth before calling the backend's verifyAuthentication method. Verify the authorization component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Add a project detail modal to ProjectGalleryPage that opens when a user clicks a project card",
+      "summary": "Update AdminGuard and AdminLoginPage first-admin registration flow to complete successfully without 'Unauthorized' error",
       "acceptanceCriteria": [
-        "Clicking any project card opens a detail dialog/modal",
-        "The modal shows the full-size project image, project title, full description, and category",
-        "The modal has a close button and can be dismissed by clicking outside or pressing Escape",
-        "The detail view is accessible to all users including unauthenticated guests"
+        "When no admin exists, the AdminGuard shows the first-admin registration prompt and submitting it does not produce an 'Unauthorized' error.",
+        "The flow completes and the user is recognized as admin after registration.",
+        "No 'Unauthorized: Only admins can assign user roles' error appears during the first-admin setup flow."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/ProjectDetailModal.tsx",
-          "operation": "create",
-          "description": "Create a new modal component that accepts props: open (boolean), onClose (callback), and project (Project type from backend.d.ts). Use shadcn/ui Dialog component for the modal structure with Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription. Render the project.imageUrl as a large image using <img> tag with object-fit cover. Display project.title in DialogTitle, project.description in DialogDescription, and project.category as a badge or label below the description. Include a close button (X icon) in the DialogHeader. Ensure the modal is dismissible by clicking the backdrop or pressing Escape (Dialog default behavior). The modal should be fully accessible to unauthenticated users. Add bilingual support for the close button using useLanguage context."
+          "path": "frontend/src/components/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Review the AdminGuard component's first-admin registration flow. When adminExists is false, ensure the component calls useAdminRegistration's registerFirstAdmin mutation instead of any role-assignment flow that requires prior admin authorization. Remove or bypass any adminCheck guard during the first-admin registration flow. After successful first-admin registration, invalidate admin-related queries (isAdmin, adminExists) so the user is immediately recognized as admin. Verify the authorization component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/ProjectGalleryPage.tsx",
+          "path": "frontend/src/pages/admin/AdminLoginPage.tsx",
           "operation": "modify",
-          "description": "Import and integrate ProjectDetailModal component. Add local state to track the selected project (useState<Project | null>). When a project card is clicked, set the selected project in state. Render ProjectDetailModal with open={!!selectedProject}, onClose={() => setSelectedProject(null)}, and project={selectedProject}. Ensure clicking any project card (including from filtered results) opens the modal with full project details. The modal must be accessible to all users (no authentication check)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Add an admin icon to the app header that navigates to login for guests or dashboard for authenticated admins",
-      "acceptanceCriteria": [
-        "An admin icon (shield or settings icon) is visible in the header or navigation area",
-        "Clicking the icon when not logged in redirects to /admin/login",
-        "Clicking the icon when logged in as admin redirects to /admin/dashboard",
-        "The icon is always visible but does not expose admin controls to non-admins",
-        "After admin login, clicking the same icon goes directly to the admin dashboard without showing the login page again"
-      ],
-      "file_operations": [
+          "description": "Ensure the first-admin registration flow on AdminLoginPage calls useAdminRegistration's registerFirstAdmin mutation when no admin exists. Do not call any role-assignment or invitation methods during first-admin setup. After successful registration, automatically trigger a login attempt using the pre-seeded password 'Munnu1998@' (SHA-256 hashed). On success, navigate to AdminDashboardPage. Add error handling to display user-friendly messages if registration fails. Verify the authorization component's usage instructions before implementing."
+        },
         {
-          "path": "frontend/src/components/Layout.tsx",
+          "path": "frontend/src/hooks/useAdminRegistration.ts",
           "operation": "modify",
-          "description": "Add an admin icon button to the header section (next to LanguageToggle and LoginButton). Use ShieldCheck or Settings icon from lucide-react. Import useInternetIdentity hook to check authentication state (identity). Import useIsAdmin hook to check if the authenticated user is an admin. Import useNavigate from TanStack Router. On click: if not authenticated (!identity), navigate to '/admin/login'; if authenticated and isAdmin, navigate to '/admin/dashboard'; if authenticated but not admin, navigate to '/admin/login' (they may need to authenticate as admin). The icon should be visible to all users (always rendered) with a neutral color (e.g., text-gray-600 hover:text-gray-900). Add aria-label for accessibility: 'Admin Access'."
+          "description": "Review the useAdminRegistration hook's registerFirstAdmin mutation. Ensure it correctly calls actor.registerFirstAdmin() without requiring prior admin authorization. After successful registration, invalidate ['isAdmin'], ['adminExists'], and ['adminUserCount'] query keys so subsequent checks recognize the new admin. Add comprehensive error handling and return success/failure status. The hook should not call assignRole or inviteAdminUser during first-admin registration."
         }
       ]
     }

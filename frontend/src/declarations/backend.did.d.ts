@@ -15,15 +15,13 @@ export interface AdminInvitationEntry {
   'email' : string,
   'invitationTimestamp' : bigint,
   'hashedPassword' : string,
-  'registrationMethod' : { 'internetIdentity' : null } |
-    { 'biometric' : null },
+  'registrationMethod' : string,
 }
 export interface AdminUser {
   'principal' : [] | [Principal],
   'active' : boolean,
   'registrationTimestamp' : bigint,
-  'registrationMethod' : { 'internetIdentity' : null } |
-    { 'biometric' : null },
+  'registrationMethod' : string,
 }
 export interface ChatMessage {
   'id' : string,

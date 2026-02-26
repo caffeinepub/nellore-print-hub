@@ -14,8 +14,9 @@ import MixinStorage "blob-storage/Mixin";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
+import Migration "migration";
 
-
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -112,20 +113,14 @@ actor {
   public type AdminInvitationEntry = {
     email : Text;
     hashedPassword : Text;
-    registrationMethod : {
-      #biometric;
-      #internetIdentity;
-    };
+    registrationMethod : Text;
     invitedBy : Principal;
     invitationTimestamp : Int;
   };
 
   public type AdminUser = {
     principal : ?Principal;
-    registrationMethod : {
-      #biometric;
-      #internetIdentity;
-    };
+    registrationMethod : Text;
     registrationTimestamp : Int;
     active : Bool;
   };
@@ -440,7 +435,7 @@ actor {
 
     let newAdmin : AdminUser = {
       principal = ?caller;
-      registrationMethod = #internetIdentity;
+      registrationMethod = "internetIdentity";
       registrationTimestamp = Time.now();
       active = true;
     };
@@ -465,7 +460,7 @@ actor {
     let newUser : AdminInvitationEntry = {
       email;
       hashedPassword;
-      registrationMethod = #biometric;
+      registrationMethod = "biometric";
       invitedBy = caller;
       invitationTimestamp = Time.now();
     };
@@ -484,7 +479,7 @@ actor {
 
     let newAdmin : AdminUser = {
       principal = ?principal;
-      registrationMethod = #internetIdentity;
+      registrationMethod = "internetIdentity";
       registrationTimestamp = Time.now();
       active = true;
     };
@@ -497,7 +492,7 @@ actor {
   public shared ({ caller }) func registerBiometric(email : Text) : async () {
     switch (adminUsers.get(email)) {
       case (?user) {
-        if (user.registrationMethod != #biometric) {
+        if (user.registrationMethod != "biometric") {
           Runtime.trap("Invalid: This invitation is not for biometric registration");
         };
 
@@ -507,7 +502,7 @@ actor {
 
         let newAdmin : AdminUser = {
           principal = ?caller;
-          registrationMethod = #biometric;
+          registrationMethod = "biometric";
           registrationTimestamp = Time.now();
           active = true;
         };

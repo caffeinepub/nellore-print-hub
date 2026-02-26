@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Fingerprint, Loader2, Lock, Mail, UserPlus, LogIn } from 'lucide-react';
+import { Fingerprint, Loader2, Lock, Mail, UserPlus, LogIn, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVerifyEmailPassword } from '@/hooks/useAdminAuth';
 import { useBiometricLogin } from '@/hooks/useBiometricAuth';
 import { useAdminExists } from '@/hooks/useAdminExists';
-import { useRegisterFirstAdmin } from '@/hooks/useAdminRegistration';
+import { useRegisterFirstAdmin, useSeedFirstAdminPassword } from '@/hooks/useAdminRegistration';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
 import { useIsCallerAdmin } from '@/hooks/useAdmin';
 import { checkWebAuthnSupport } from '@/utils/webauthn';
+
+// The pre-seeded admin credentials for first-time setup
+const FIRST_ADMIN_EMAIL = 'admin@magicnellore.com';
+const FIRST_ADMIN_PASSWORD = 'Munnu1998@';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -21,7 +25,9 @@ export default function AdminLoginPage() {
   const verifyMutation = useVerifyEmailPassword();
   const biometricMutation = useBiometricLogin();
   const registerFirstAdminMutation = useRegisterFirstAdmin();
+  const seedFirstAdminMutation = useSeedFirstAdminPassword();
   const [biometricSupported, setBiometricSupported] = useState(false);
+  const [seedingDone, setSeedingDone] = useState(false);
   const { adminExists, isLoading: adminExistsLoading } = useAdminExists();
   const { identity, login, isLoggingIn } = useInternetIdentity();
   const { data: isAdmin, isLoading: isCheckingAdmin } = useIsCallerAdmin();
@@ -39,6 +45,23 @@ export default function AdminLoginPage() {
       navigate({ to: '/admin/dashboard' });
     }
   }, [isAuthenticated, isAdmin, isCheckingAdmin, navigate]);
+
+  // Auto-seed the admin password when no admin exists yet
+  // inviteAdminUser has no auth check when adminCount == 0
+  useEffect(() => {
+    if (!adminExistsLoading && !adminExists && !seedingDone && !seedFirstAdminMutation.isPending) {
+      setSeedingDone(true);
+      seedFirstAdminMutation.mutate(
+        { email: FIRST_ADMIN_EMAIL, password: FIRST_ADMIN_PASSWORD },
+        {
+          onError: () => {
+            // Silently ignore — may already be seeded or actor not ready yet
+            setSeedingDone(false);
+          },
+        }
+      );
+    }
+  }, [adminExists, adminExistsLoading, seedingDone, seedFirstAdminMutation]);
 
   const handleEmailPasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,8 +98,6 @@ export default function AdminLoginPage() {
   const handleInternetIdentityLogin = async () => {
     try {
       await login();
-      // After successful login, the identity will be available
-      // and the user will be redirected if they're already an admin
     } catch (error: any) {
       if (error.message !== 'User is already authenticated') {
         toast.error(error.message || 'Login failed');
@@ -92,11 +113,21 @@ export default function AdminLoginPage() {
 
     try {
       await registerFirstAdminMutation.mutateAsync();
-      // Navigation will happen automatically via the useEffect above
-      // after the admin status is updated
+      toast.success('You are now the admin! Redirecting...');
+      navigate({ to: '/admin/dashboard' });
     } catch (error: any) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Failed to register as admin');
+      // Provide a helpful message for the common assignRole error
+      if (error.message?.includes('assign user roles') || error.message?.includes('Unauthorized')) {
+        toast.error(
+          'Registration failed. Please try logging in with email & password using: ' +
+            FIRST_ADMIN_EMAIL +
+            ' / ' +
+            FIRST_ADMIN_PASSWORD
+        );
+      } else {
+        toast.error(error.message || 'Failed to register as admin');
+      }
     }
   };
 
@@ -108,6 +139,11 @@ export default function AdminLoginPage() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          <div className="flex items-center justify-center mb-2">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+          </div>
           <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
           <CardDescription className="text-center">
             {showInternetIdentityRegistration
@@ -143,6 +179,66 @@ export default function AdminLoginPage() {
                   </>
                 )}
               </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or use email & password
+                  </span>
+                </div>
+              </div>
+
+              {/* Email/password fallback for first admin */}
+              <form onSubmit={handleEmailPasswordLogin} className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="email-reg">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email-reg"
+                      type="email"
+                      placeholder={FIRST_ADMIN_EMAIL}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 h-11"
+                      disabled={verifyMutation.isPending}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-reg">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password-reg"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 h-11"
+                      disabled={verifyMutation.isPending}
+                    />
+                  </div>
+                </div>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="w-full h-11"
+                  disabled={verifyMutation.isPending}
+                >
+                  {verifyMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    'Login with Email'
+                  )}
+                </Button>
+              </form>
             </>
           ) : (
             <>
@@ -261,6 +357,21 @@ export default function AdminLoginPage() {
                 </>
               )}
             </>
+          )}
+
+          {/* Show first-admin credentials hint when no admin exists */}
+          {showRegistrationOption && (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 space-y-1">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">
+                First-time setup credentials:
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Email: <span className="font-mono font-medium">{FIRST_ADMIN_EMAIL}</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Password: <span className="font-mono font-medium">{FIRST_ADMIN_PASSWORD}</span>
+              </p>
+            </div>
           )}
 
           <p className="text-xs text-center text-muted-foreground mt-4">

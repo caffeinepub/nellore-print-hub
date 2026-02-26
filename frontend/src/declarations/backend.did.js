@@ -36,19 +36,13 @@ export const AdminInvitationEntry = IDL.Record({
   'email' : IDL.Text,
   'invitationTimestamp' : IDL.Int,
   'hashedPassword' : IDL.Text,
-  'registrationMethod' : IDL.Variant({
-    'internetIdentity' : IDL.Null,
-    'biometric' : IDL.Null,
-  }),
+  'registrationMethod' : IDL.Text,
 });
 export const AdminUser = IDL.Record({
   'principal' : IDL.Opt(IDL.Principal),
   'active' : IDL.Bool,
   'registrationTimestamp' : IDL.Int,
-  'registrationMethod' : IDL.Variant({
-    'internetIdentity' : IDL.Null,
-    'biometric' : IDL.Null,
-  }),
+  'registrationMethod' : IDL.Text,
 });
 export const ChatMessage = IDL.Record({
   'id' : IDL.Text,
@@ -319,19 +313,13 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'invitationTimestamp' : IDL.Int,
     'hashedPassword' : IDL.Text,
-    'registrationMethod' : IDL.Variant({
-      'internetIdentity' : IDL.Null,
-      'biometric' : IDL.Null,
-    }),
+    'registrationMethod' : IDL.Text,
   });
   const AdminUser = IDL.Record({
     'principal' : IDL.Opt(IDL.Principal),
     'active' : IDL.Bool,
     'registrationTimestamp' : IDL.Int,
-    'registrationMethod' : IDL.Variant({
-      'internetIdentity' : IDL.Null,
-      'biometric' : IDL.Null,
-    }),
+    'registrationMethod' : IDL.Text,
   });
   const ChatMessage = IDL.Record({
     'id' : IDL.Text,

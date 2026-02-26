@@ -47,19 +47,15 @@ export default function AdminGuard({ children }: AdminGuardProps) {
             </div>
             <CardTitle>Register as First Admin</CardTitle>
             <CardDescription>
-              No admin accounts exist yet. You can register as the first administrator to access
-              this area.
+              No admin accounts exist yet. Go to the admin login page to register as the first
+              administrator.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <Button onClick={() => navigate({ to: '/admin/login' })} className="w-full">
-              Register as Admin
+              Go to Admin Setup
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate({ to: '/' })}
-              className="w-full"
-            >
+            <Button variant="outline" onClick={() => navigate({ to: '/' })} className="w-full">
               Return to Home
             </Button>
           </CardContent>
@@ -87,11 +83,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
             <Button onClick={() => navigate({ to: '/admin/login' })} className="w-full">
               Go to Admin Login
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate({ to: '/' })}
-              className="w-full"
-            >
+            <Button variant="outline" onClick={() => navigate({ to: '/' })} className="w-full">
               Return to Home
             </Button>
           </CardContent>
@@ -110,19 +102,13 @@ export default function AdminGuard({ children }: AdminGuardProps) {
               <ShieldAlert className="h-6 w-6 text-destructive" />
             </div>
             <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>
-              You must be logged in to access this area.
-            </CardDescription>
+            <CardDescription>You must be logged in to access this area.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
             <Button onClick={() => navigate({ to: '/admin/login' })} className="w-full">
               Go to Admin Login
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate({ to: '/' })}
-              className="w-full"
-            >
+            <Button variant="outline" onClick={() => navigate({ to: '/' })} className="w-full">
               Return to Home
             </Button>
           </CardContent>

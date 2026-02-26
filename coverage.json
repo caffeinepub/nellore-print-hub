@@ -1,74 +1,64 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T23:41:03.812Z",
+  "generatedAt": "2026-02-26T00:04:30.267Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/admin/AdminDashboardPage.tsx"
-        ]
+        "summary": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
+        "summary": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/ProjectGalleryPage.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/ProjectGalleryPage.tsx"
+          "frontend/src/pages/admin/AdminLoginPage.tsx"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
+        "summary": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/ProjectDetailModal.tsx",
-          "frontend/src/pages/ProjectGalleryPage.tsx"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/hooks/useAdminRegistration.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/ProjectDetailModal.tsx",
-          "frontend/src/pages/ProjectGalleryPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Layout.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Layout.tsx"
+          "frontend/src/components/AdminGuard.tsx",
+          "frontend/src/pages/admin/AdminLoginPage.tsx",
+          "frontend/src/hooks/useAdminRegistration.ts"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/ProjectDetailModal.tsx",
-    "frontend/src/pages/ProjectGalleryPage.tsx",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AdminGuard.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useAdminRegistration.ts",
+    "frontend/src/pages/admin/AdminLoginPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,99 +1,76 @@
 {
   "kind": "build_request",
-  "title": "Admin-Editable Contact Us, Customer Project Gallery, and Admin Icon Login",
+  "title": "Fix first-admin auto-promotion and set admin password",
   "projectName": "Nellore Print Hub",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
-      "target": "frontend",
+      "text": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "make contact us editable for admin anytime"
+          "Unauthorized: Only admins can assign user roles i am the admin i cant log in",
+          "The first person to log in usually gets auto-assigned as admin — but if that's not working, I need to update the code"
         ]
       },
       "acceptanceCriteria": [
-        "Admin dashboard has a visible 'Edit Contact Info' quick-link card",
-        "Clicking the card navigates to ContactInfoManagementPage",
-        "The page is protected by AdminGuard and only accessible to logged-in admins",
-        "Admin can update email, phone, address, and Google Maps link and save changes",
-        "Updated contact info is immediately reflected on the public ContactUsPage"
+        "When zero admin accounts exist in the system, the first authenticated caller who attempts admin registration is automatically granted admin privileges without an existing admin needing to approve.",
+        "Subsequent users attempting to self-promote without invitation are rejected with the existing 'Unauthorized' error.",
+        "The fix does not break the existing admin invitation/role-assignment flow for subsequent admins."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
-      "target": "frontend",
+      "text": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-2"
         ],
         "quotes": [
-          "make project gallary open for customer show our pictures and deatils of projects"
+          "make my admin psaaword     Munnu1998@"
         ]
       },
       "acceptanceCriteria": [
-        "ProjectGalleryPage is accessible to unauthenticated (guest) users without any login prompt",
-        "Each project card displays the project image, title, description, and category",
-        "Clicking a project card opens a detail view or expanded view with full project information",
-        "Category filter buttons are visible and functional for all users",
-        "Add/Edit/Delete project controls are only shown to authenticated admin users"
+        "On the AdminLoginPage, logging in with the password 'Munnu1998@' (hashed via SHA-256 before the backend call, consistent with useAdminAuth.ts) successfully authenticates the first admin.",
+        "The backend verifyAuthentication method accepts the SHA-256 hash of 'Munnu1998@' as valid credentials for the first admin account.",
+        "The admin can access the AdminDashboardPage after logging in with this password."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
+      "text": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1",
+          "msg-2"
         ],
         "quotes": [
-          "show our pictures and deatils of projects"
+          "Unauthorized: Only admins can assign user roles i am the admin i cant log in what i need to do"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking any project card opens a detail dialog/modal",
-        "The modal shows the full-size project image, project title, full description, and category",
-        "The modal has a close button and can be dismissed by clicking outside or pressing Escape",
-        "The detail view is accessible to all users including unauthenticated guests"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "make admin login on admin icon after admin loged"
-        ]
-      },
-      "acceptanceCriteria": [
-        "An admin icon (shield or settings icon) is visible in the header or navigation area",
-        "Clicking the icon when not logged in redirects to /admin/login",
-        "Clicking the icon when logged in as admin redirects to /admin/dashboard",
-        "The icon is always visible but does not expose admin controls to non-admins",
-        "After admin login, clicking the same icon goes directly to the admin dashboard without showing the login page again"
+        "When no admin exists, the AdminGuard shows the first-admin registration prompt and submitting it does not produce an 'Unauthorized' error.",
+        "The flow completes and the user is recognized as admin after registration.",
+        "No 'Unauthorized: Only admins can assign user roles' error appears during the first-admin setup flow."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "All Motoko backend logic must remain in the single actor in backend/main.mo",
-    "Admin create/edit/delete project actions must remain protected by AdminGuard"
+    "Do not change the existing SHA-256 password hashing approach used in useAdminAuth.ts.",
+    "Do not break the existing admin invitation flow for adding subsequent admin users.",
+    "All Motoko logic must remain in backend/main.mo."
   ],
   "nonGoals": [
-    "Adding new backend data fields for projects beyond what already exists",
-    "Changing the authentication mechanism (Internet Identity remains the only auth method)",
-    "Adding real-time updates or WebSocket-based gallery refresh",
-    "Redesigning the overall app theme or color scheme"
+    "Adding new authentication methods (biometric, social login).",
+    "Changing the overall admin role/permission model beyond fixing first-admin auto-promotion.",
+    "Modifying any file under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts."
   ],
   "imageRequirements": {
     "required": [],

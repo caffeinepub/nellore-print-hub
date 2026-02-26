@@ -1,43 +1,28 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "A service/business web app with admin and customer-facing features including WhatsApp/mobile chat, editable contact info, services list, quotation requests with file uploads, delivery pricing, and hourly reminders. New features being added: admin-editable contact us section, customer-facing project gallery with pictures and details, and admin login triggered from admin icon.",
+  "summary": "Web application with admin panel, project gallery, contact info management, and admin authentication. First-login auto-promotes to admin with password Munnu1998@.",
   "architectural_notes": [
-    "Admin authentication is initiated via an admin icon click; post-login state unlocks admin-only features",
-    "Project Gallery is publicly visible to customers and managed by admin (add/edit pictures and details)"
+    "Admin password set to Munnu1998@ for claiming admin rights on first login"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "First user login not auto-promoted to admin, causing 'Unauthorized: Only admins can assign user roles' error"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-ensure-the-contact-us-page-admin-editing-capability-is-accessible-from-the-admin-dashboard-at-any-time-the-contactinfomanagementpage-must-be-linked-from-the-admin-dashboard-quick-link-cards-so-admins-can-navigate-to-it-directly-to-update-email-phone-address-and-google-maps-link-the-link-should-be-clearly-labeled-edit-contact-info-and-protected-by-adminguard",
-      "title": "Ensure the Contact Us page admin editing capability is accessible from the admin dashboard at any time. The ContactInfoManagementPage must be linked from the admin dashboard quick-link cards so admins can navigate to it directly to update email, phone, address, and Google Maps link. The link should be clearly labeled 'Edit Contact Info' and protected by AdminGuard.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-make-the-project-gallery-page-fully-public-and-customer-facing-remove-any-admin-only-gate-or-authentication-requirement-for-viewing-projects-the-gallery-must-display-project-images-titles-descriptions-and-categories-for-all-visitors-logged-in-or-not-the-add-edit-delete-project-controls-must-remain-visible-only-to-authenticated-admins",
-      "title": "Make the Project Gallery page fully public and customer-facing. Remove any admin-only gate or authentication requirement for viewing projects. The gallery must display project images, titles, descriptions, and categories for all visitors (logged in or not). The add/edit/delete project controls must remain visible only to authenticated admins.",
+      "id": "feature-set-the-first-admin-account-s-password-to-munnu1998-when-the-first-admin-registration-form-is-submitted-or-auto-filled-on-first-login-use-this-password-sha-256-hashed-before-sending-to-the-backend-as-the-admin-credential",
+      "title": "Set the first admin account's password to 'Munnu1998@'. When the first-admin registration form is submitted (or auto-filled on first login), use this password (SHA-256 hashed before sending to the backend) as the admin credential.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-add-a-project-detail-modal-or-expanded-view-on-the-projectgallerypage-so-that-when-a-customer-clicks-a-project-card-a-full-screen-or-overlay-dialog-opens-showing-the-project-image-at-larger-size-title-full-description-and-category-label",
-      "title": "Add a project detail modal or expanded view on the ProjectGalleryPage so that when a customer clicks a project card, a full-screen or overlay dialog opens showing the project image at larger size, title, full description, and category label.",
+      "id": "feature-update-the-adminguard-and-or-adminloginpage-first-admin-registration-flow-so-that-when-no-admin-exists-the-registration-form-pre-seeds-or-clearly-documents-the-initial-admin-password-as-munnu1998-and-the-first-admin-registration-completes-successfully-without-the-unauthorized-error",
+      "title": "Update the AdminGuard and/or AdminLoginPage first-admin registration flow so that when no admin exists, the registration form pre-seeds or clearly documents the initial admin password as 'Munnu1998@', and the first-admin registration completes successfully without the 'Unauthorized' error.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-an-admin-icon-e-g-a-shield-or-user-cog-icon-to-the-app-header-or-bottom-navigation-bar-when-clicked-unauthenticated-users-are-navigated-to-the-adminloginpage-when-an-admin-is-already-logged-in-clicking-the-icon-navigates-directly-to-the-admindashboardpage-bypassing-the-login-page",
-      "title": "Add an admin icon (e.g., a shield or user-cog icon) to the app header or bottom navigation bar. When clicked, unauthenticated users are navigated to the AdminLoginPage. When an admin is already logged in, clicking the icon navigates directly to the AdminDashboardPage, bypassing the login page.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -45,20 +30,16 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Admin can edit Contact Us section anytime from admin panel",
+      "summary": "Fix first-login auto-promotion to admin and set admin password to Munnu1998@",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Customer-facing Project Gallery showing pictures and project details",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Admin login triggered by clicking the admin icon; admin features accessible after login",
-      "reqIds": [],
+      "summary": "Update the backend so that when no admin account exists yet, the first user who calls a registration or login endpoint is automatically promoted to admin role without requiring prior authorization.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     }
   ],
